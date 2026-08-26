@@ -11,7 +11,10 @@ import { VenueType } from './entities/venue-type.entity';
 import { VenueTypeAssignment } from './entities/venue-type-assignment.entity';
 import { VenuesService } from './venues.service';
 import { RbacModule } from '../rbac/rbac.module';
+import { UsersModule } from '../users/users.module';
 import { VenueCacheListener } from './listeners/venue-cache.listener';
+import { VenuesController } from './venues.controller';
+import { VenuesAdminController } from './venues-admin.controller';
 
 @Module({
   imports: [
@@ -20,7 +23,9 @@ import { VenueCacheListener } from './listeners/venue-cache.listener';
       Tag, VenueTag, VenueType, VenueTypeAssignment,
     ]),
     RbacModule,
+    UsersModule,
   ],
+  controllers: [VenuesController, VenuesAdminController],
   providers: [VenuesService, VenueCacheListener],
   exports: [VenuesService, TypeOrmModule],
 })
