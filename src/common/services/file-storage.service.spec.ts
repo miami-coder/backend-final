@@ -54,4 +54,27 @@ describe('FileStorageService', () => {
       }),
     ).rejects.toThrow(/too large/);
   });
+
+  it('falls back to mime-derived extension when originalname has none', async () => {
+    const result = await service.save('test', {
+      originalname: 'photo',
+      mimetype: 'image/png',
+      size: 50,
+      buffer: Buffer.from('png-content'),
+    });
+    expect(result.url).toMatch(/^\/static\/test\/[a-f0-9-]+\.png$/);
+  });
+
+  it('remove is idempotent', async () => {
+    const saved = await service.save('test', {
+      originalname: 'remove.jpg',
+      mimetype: 'image/jpeg',
+      size: 30,
+      buffer: Buffer.from('remove-me'),
+    });
+    const filepath = join(TMP, 'test', saved.filename);
+    await service.remove('test', saved.filename);
+    await expect(fs.stat(filepath)).rejects.toThrow(/ENOENT/);
+    await expect(service.remove('test', saved.filename)).resolves.toBeUndefined();
+  });
 });

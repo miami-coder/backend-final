@@ -3,7 +3,6 @@ import { promises as fs } from 'fs';
 import { extname, join } from 'path';
 import { randomUUID } from 'crypto';
 
-const UPLOADS_ROOT = process.env.UPLOADS_DIR ?? join(process.cwd(), 'uploads');
 const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 
@@ -21,7 +20,7 @@ export class FileStorageService {
     }
     const ext = extname(file.originalname).toLowerCase() || this.extFromMime(file.mimetype);
     const filename = `${randomUUID()}${ext}`;
-    const dir = join(UPLOADS_ROOT, folder);
+    const dir = join(this.uploadsRoot, folder);
     await fs.mkdir(dir, { recursive: true });
     const filepath = join(dir, filename);
     await fs.writeFile(filepath, file.buffer);
@@ -30,8 +29,12 @@ export class FileStorageService {
   }
 
   async remove(folder: string, filename: string): Promise<void> {
-    const filepath = join(UPLOADS_ROOT, folder, filename);
+    const filepath = join(this.uploadsRoot, folder, filename);
     await fs.unlink(filepath).catch(() => undefined);
+  }
+
+  private get uploadsRoot(): string {
+    return process.env.UPLOADS_DIR ?? join(process.cwd(), 'uploads');
   }
 
   private extFromMime(mime: string): string {
