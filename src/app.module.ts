@@ -6,6 +6,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 import { validateEnv } from './config/env.validation';
 import { HealthModule } from './modules/health/health.module';
+import { CacheService } from './common/services/cache.service';
 
 @Module({
   imports: [
@@ -21,5 +22,7 @@ import { HealthModule } from './modules/health/health.module';
     }),
     HealthModule,
   ],
+  providers: [CacheService],
+  exports: [CacheService],
 })
 export class AppModule {}
