@@ -1,0 +1,47 @@
+services:
+  postgres:
+    image: postgis/postgis:16-3.4-alpine
+    environment:
+      POSTGRES_USER: piyachok
+      POSTGRES_PASSWORD: piyachok_dev
+      POSTGRES_DB: piyachok
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U piyachok"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    command: ["redis-server", "--appendonly", "yes"]
+
+  backend:
+    build: .
+    command: pnpm run start:dev
+    ports:
+      - "3000:3000"
+    env_file: .env
+    environment:
+      DATABASE_HOST: postgres
+      REDIS_HOST: redis
+    volumes:
+      - ./src:/app/src
+      - uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+volumes:
+  pgdata: {}
+  redisdata: {}
+  uploads: {}
