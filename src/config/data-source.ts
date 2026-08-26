@@ -5,6 +5,8 @@ import { Permission } from '../modules/rbac/entities/permission.entity';
 import { RolePermission } from '../modules/rbac/entities/role-permission.entity';
 import { UserRole } from '../modules/rbac/entities/user-role.entity';
 import { User } from '../modules/users/entities/user.entity';
+import { Profile } from '../modules/users/entities/profile.entity';
+import { OAuthAccount } from '../modules/users/entities/oauth-account.entity';
 import { Init1700000000000 } from '../migrations/1700000000000-Init';
 
 loadEnv();
@@ -16,7 +18,7 @@ export default new DataSource({
   username: process.env.DATABASE_USER ?? 'piyachok',
   password: process.env.DATABASE_PASS ?? 'piyachok_dev',
   database: process.env.DATABASE_NAME ?? 'piyachok',
-  entities: [Role, Permission, RolePermission, UserRole, User],
+  entities: [Role, Permission, RolePermission, UserRole, User, Profile, OAuthAccount],
   migrations: [Init1700000000000],
   synchronize: false,
 });
