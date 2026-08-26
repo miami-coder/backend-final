@@ -1,4 +1,5 @@
-import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, Index, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Profile } from './profile.entity';
 
 @Entity('users')
 export class User {
@@ -8,4 +9,7 @@ export class User {
   @Column({ type: 'boolean', default: false }) emailVerified: boolean;
   @CreateDateColumn() createdAt: Date;
   @UpdateDateColumn() updatedAt: Date;
+
+  @OneToOne(() => Profile, (profile) => profile.user)
+  profile: Profile;
 }

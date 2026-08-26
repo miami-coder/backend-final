@@ -1,5 +1,9 @@
 import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
+import { VenuePhoto } from './venue-photo.entity';
+import { VenueFeatureAssignment } from './venue-feature-assignment.entity';
+import { VenueTag } from './venue-tag.entity';
+import { VenueTypeAssignment } from './venue-type-assignment.entity';
 
 export enum VenueStatus {
   Pending = 'pending',
@@ -32,4 +36,16 @@ export class Venue {
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'ownerId' })
   owner: User;
+
+  @OneToMany(() => VenuePhoto, (photo) => photo.venue)
+  photos: VenuePhoto[];
+
+  @OneToMany(() => VenueFeatureAssignment, (fa) => fa.venue)
+  featureAssignments: VenueFeatureAssignment[];
+
+  @OneToMany(() => VenueTag, (vt) => vt.venue)
+  venueTags: VenueTag[];
+
+  @OneToMany(() => VenueTypeAssignment, (vta) => vta.venue)
+  venueTypeAssignments: VenueTypeAssignment[];
 }
