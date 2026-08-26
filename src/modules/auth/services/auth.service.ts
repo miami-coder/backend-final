@@ -68,6 +68,14 @@ export class AuthService {
     await this.cache.set(`revoked:${refreshToken}`, true, 60 * 60 * 24 * 30);
   }
 
+  async getRolesForUser(userId: string): Promise<string[]> {
+    return this.getUserRoles(userId);
+  }
+
+  async issueTokensForUser(sub: string, email: string, roles: string[]) {
+    return this.issueTokens(sub, email, roles);
+  }
+
   private async getUserRoles(userId: string): Promise<string[]> {
     const rows = await this.userRoles
       .createQueryBuilder('ur')

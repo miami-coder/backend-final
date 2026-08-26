@@ -10,6 +10,8 @@ import { typeOrmAsyncConfig } from './config/typeorm.config';
 import { HealthModule } from './modules/health/health.module';
 import { CommonModule } from './common/common.module';
 import { RbacModule } from './modules/rbac/rbac.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -27,6 +29,8 @@ import { RbacModule } from './modules/rbac/rbac.module';
     CommonModule,
     HealthModule,
     RbacModule,
+    AuthModule,
+    UsersModule,
   ],
 })
 export class AppModule {}
