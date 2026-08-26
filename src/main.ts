@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import compression from 'compression';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
@@ -22,6 +23,7 @@ async function bootstrap() {
       transform: true,
     }),
   );
+  app.useGlobalFilters(new AllExceptionsFilter());
   const port = Number(process.env.PORT ?? 3000);
   await app.listen(port);
 }
