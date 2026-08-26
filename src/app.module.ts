@@ -9,6 +9,7 @@ import { validateEnv } from './config/env.validation';
 import { typeOrmAsyncConfig } from './config/typeorm.config';
 import { HealthModule } from './modules/health/health.module';
 import { CommonModule } from './common/common.module';
+import { RbacModule } from './modules/rbac/rbac.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { CommonModule } from './common/common.module';
     }),
     CommonModule,
     HealthModule,
+    RbacModule,
   ],
 })
 export class AppModule {}
