@@ -23,6 +23,8 @@ import { Favorite } from '../modules/favorites/entities/favorite.entity';
 import { Favorites1700000003000 } from '../migrations/1700000003000-Favorites';
 import { News } from '../modules/news/entities/news.entity';
 import { News1700000004000 } from '../migrations/1700000004000-News';
+import { Complaint } from '../modules/complaints/entities/complaint.entity';
+import { Complaints1700000005000 } from '../migrations/1700000005000-Complaints';
 
 loadEnv();
 
@@ -52,6 +54,7 @@ export default new DataSource({
     Review,
     Favorite,
     News,
+    Complaint,
   ],
   migrations: [
     Init1700000000000,
@@ -59,6 +62,7 @@ export default new DataSource({
     Reviews1700000002000,
     Favorites1700000003000,
     News1700000004000,
+    Complaints1700000005000,
   ],
   synchronize: false,
 });

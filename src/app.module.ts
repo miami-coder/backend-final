@@ -16,6 +16,7 @@ import { VenuesModule } from './modules/venues/venues.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { FavoritesModule } from './modules/favorites/favorites.module';
 import { NewsModule } from './modules/news/news.module';
+import { ComplaintsModule } from './modules/complaints/complaints.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { NewsModule } from './modules/news/news.module';
     ReviewsModule,
     FavoritesModule,
     NewsModule,
+    ComplaintsModule,
   ],
 })
 export class AppModule {}
