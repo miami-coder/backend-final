@@ -19,6 +19,7 @@ import { NewsModule } from './modules/news/news.module';
 import { ComplaintsModule } from './modules/complaints/complaints.module';
 import { HangoutsModule } from './modules/hangouts/hangouts.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
     ComplaintsModule,
     HangoutsModule,
     AnalyticsModule,
+    AdminModule,
   ],
 })
 export class AppModule {}

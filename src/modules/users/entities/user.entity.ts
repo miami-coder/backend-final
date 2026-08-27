@@ -17,6 +17,7 @@ export class User {
   @Column({ type: 'boolean', default: false }) emailVerified: boolean;
   @CreateDateColumn() createdAt: Date;
   @UpdateDateColumn() updatedAt: Date;
+  @Column({ type: 'timestamptz', nullable: true }) deletedAt: Date | null;
 
   @OneToOne(() => Profile, (profile) => profile.user)
   profile: Profile;

@@ -31,6 +31,8 @@ import { Hangouts1700000006000 } from '../migrations/1700000006000-Hangouts';
 import { VenueView } from '../modules/analytics/entities/venue-view.entity';
 import { AnalyticsEvent } from '../modules/analytics/entities/analytics-event.entity';
 import { Analytics1700000007000 } from '../migrations/1700000007000-Analytics';
+import { AuditLog } from '../modules/admin/entities/audit-log.entity';
+import { Admin1700000008000 } from '../migrations/1700000008000-Admin';
 
 loadEnv();
 
@@ -65,6 +67,7 @@ export default new DataSource({
     HangoutParticipant,
     VenueView,
     AnalyticsEvent,
+    AuditLog,
   ],
   migrations: [
     Init1700000000000,
@@ -75,6 +78,7 @@ export default new DataSource({
     Complaints1700000005000,
     Hangouts1700000006000,
     Analytics1700000007000,
+    Admin1700000008000,
   ],
   synchronize: false,
 });
