@@ -22,8 +22,8 @@ export class PermissionsService {
     const rows = await this.userRoles
       .createQueryBuilder('ur')
       .innerJoin('ur.role', 'r')
-      .innerJoin('role_permissions', 'rp', 'rp.roleId = r.id')
-      .innerJoin('permissions', 'p', 'p.id = rp.permissionId')
+      .innerJoin('role_permissions', 'rp', 'rp."roleId" = r.id')
+      .innerJoin('permissions', 'p', 'p.id = rp."permissionId"')
       .where('ur.userId = :userId', { userId })
       .select('DISTINCT p.code', 'code')
       .getRawMany<{ code: string }>();
