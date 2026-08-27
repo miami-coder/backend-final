@@ -21,6 +21,8 @@ import { VenueTypeAssignment } from '../modules/venues/entities/venue-type-assig
 import { Review } from '../modules/reviews/entities/review.entity';
 import { Favorite } from '../modules/favorites/entities/favorite.entity';
 import { Favorites1700000003000 } from '../migrations/1700000003000-Favorites';
+import { News } from '../modules/news/entities/news.entity';
+import { News1700000004000 } from '../migrations/1700000004000-News';
 
 loadEnv();
 
@@ -49,12 +51,14 @@ export default new DataSource({
     VenueTypeAssignment,
     Review,
     Favorite,
+    News,
   ],
   migrations: [
     Init1700000000000,
     Venues1700000001000,
     Reviews1700000002000,
     Favorites1700000003000,
+    News1700000004000,
   ],
   synchronize: false,
 });
