@@ -20,7 +20,8 @@ export class EnvVars {
   @IsString() REDIS_HOST: string = 'localhost';
   @IsNumber() REDIS_PORT: number = 6379;
 
-  @IsString() JWT_ACCESS_SECRET: string = 'dev_access_secret_min_32_chars_xxxxxx';
+  @IsString() JWT_ACCESS_SECRET: string =
+    'dev_access_secret_min_32_chars_xxxxxx';
   @IsString() JWT_REFRESH_SECRET: string = 'dev_refresh_secret_min_32_chars_xx';
   @IsString() JWT_ACCESS_TTL: string = '15m';
   @IsString() JWT_REFRESH_TTL: string = '30d';
@@ -38,7 +39,9 @@ export class EnvVars {
 }
 
 export function validateEnv(config: Record<string, unknown>) {
-  const validated = plainToInstance(EnvVars, config, { enableImplicitConversion: true });
+  const validated = plainToInstance(EnvVars, config, {
+    enableImplicitConversion: true,
+  });
   const errors = validateSync(validated, { skipMissingProperties: false });
   if (errors.length) {
     throw new Error(`Env validation failed: ${errors.toString()}`);

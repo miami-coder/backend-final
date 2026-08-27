@@ -9,7 +9,13 @@ describe('VenuesController', () => {
   let storage: any;
 
   beforeEach(async () => {
-    venues = { search: jest.fn(), findOnePublic: jest.fn(), create: jest.fn(), update: jest.fn(), findOneOrThrow: jest.fn() };
+    venues = {
+      search: jest.fn(),
+      findOnePublic: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      findOneOrThrow: jest.fn(),
+    };
     storage = { save: jest.fn() };
     const module = await Test.createTestingModule({
       controllers: [VenuesController],
@@ -23,13 +29,16 @@ describe('VenuesController', () => {
 
   it('list delegates to service', async () => {
     venues.search.mockResolvedValue({ data: [], meta: { total: 0 } });
-    const res = await controller.list({ page: 1, limit: 20 } as any);
+    const res = await controller.list({ page: 1, limit: 20 });
     expect(res.meta.total).toBe(0);
   });
 
   it('create delegates to service with user sub', async () => {
     venues.create.mockResolvedValue({ id: 'v1' });
-    const res = await controller.create({ sub: 'u1', email: 'a@b.com', roles: ['user'] }, { name: 'X', address: 'Y' } as any);
+    const res = await controller.create(
+      { sub: 'u1', email: 'a@b.com', roles: ['user'] },
+      { name: 'X', address: 'Y' },
+    );
     expect(res.data.id).toBe('v1');
     expect(venues.create).toHaveBeenCalledWith('u1', expect.anything());
   });

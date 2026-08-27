@@ -14,6 +14,9 @@ export const typeOrmAsyncConfig: TypeOrmModuleAsyncOptions = {
     synchronize: false,
     migrationsRun: false,
     migrations: ['dist/migrations/*.js'],
-    logging: config.get<string>('NODE_ENV') === 'development' ? ['error', 'warn'] : false,
+    logging:
+      config.get<string>('NODE_ENV') === 'development'
+        ? ['error', 'warn']
+        : false,
   }),
 };

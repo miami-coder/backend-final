@@ -1,4 +1,11 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpException,
+  HttpStatus,
+  Logger,
+} from '@nestjs/common';
 import { Request, Response } from 'express';
 
 interface ErrorResponse {
@@ -30,7 +37,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
         message = resp;
       } else if (typeof resp === 'object' && resp !== null) {
         const r = resp as { message?: string | string[]; error?: string };
-        message = Array.isArray(r.message) ? r.message.join('; ') : (r.message ?? message);
+        message = Array.isArray(r.message)
+          ? r.message.join('; ')
+          : (r.message ?? message);
         code = r.error ?? this.codeFromStatus(status);
       }
       code = this.codeFromStatus(status);
@@ -41,7 +50,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
     }
 
     if (status >= 500) {
-      this.logger.error(`${request.method} ${request.url} -> ${status} ${code} ${message}`);
+      this.logger.error(
+        `${request.method} ${request.url} -> ${status} ${code} ${message}`,
+      );
     }
 
     const body: ErrorResponse = { error: { code, message, details } };

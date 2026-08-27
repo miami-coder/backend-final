@@ -12,7 +12,9 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
       super({
         clientID: 'placeholder',
         clientSecret: 'placeholder',
-        callbackURL: process.env.FACEBOOK_CALLBACK_URL ?? 'http://localhost:3000/api/v1/auth/facebook/callback',
+        callbackURL:
+          process.env.FACEBOOK_CALLBACK_URL ??
+          'http://localhost:3000/api/v1/auth/facebook/callback',
         profileFields: ['id', 'emails', 'name', 'displayName'],
       });
     } else {
@@ -26,11 +28,22 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
     this.users = users;
   }
 
-  async validate(accessToken: string, refreshToken: string, profile: Profile, done: (err: any, user: any) => void) {
-    const email = profile.emails?.[0]?.value ?? `${profile.id}@facebook.placeholder`;
+  async validate(
+    accessToken: string,
+    refreshToken: string,
+    profile: Profile,
+    done: (err: any, user: any) => void,
+  ) {
+    const email =
+      profile.emails?.[0]?.value ?? `${profile.id}@facebook.placeholder`;
     const firstname = profile.name?.givenName ?? profile.displayName ?? 'User';
     const lastname = profile.name?.familyName ?? '';
-    const user = await this.users.findOrCreateOAuthUser(email, 'facebook', profile.id, { firstname, lastname });
+    const user = await this.users.findOrCreateOAuthUser(
+      email,
+      'facebook',
+      profile.id,
+      { firstname, lastname },
+    );
     done(null, { id: user.id, email: user.email });
   }
 }

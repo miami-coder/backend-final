@@ -13,13 +13,17 @@ export class UserRoleListener {
 
   @OnEvent(USER_ROLE_ADDED)
   async handleAdded(payload: { userId: string }) {
-    this.logger.log(`Invalidating permissions cache for user ${payload.userId} (role added)`);
+    this.logger.log(
+      `Invalidating permissions cache for user ${payload.userId} (role added)`,
+    );
     await this.perms.invalidate(payload.userId);
   }
 
   @OnEvent(USER_ROLE_REMOVED)
   async handleRemoved(payload: { userId: string }) {
-    this.logger.log(`Invalidating permissions cache for user ${payload.userId} (role removed)`);
+    this.logger.log(
+      `Invalidating permissions cache for user ${payload.userId} (role removed)`,
+    );
     await this.perms.invalidate(payload.userId);
   }
 }

@@ -15,10 +15,19 @@ describe('PermissionsService', () => {
         innerJoin: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
         select: jest.fn().mockReturnThis(),
-        getRawMany: jest.fn().mockResolvedValue([{ code: 'venue:create' }, { code: 'review:create' }]),
+        getRawMany: jest
+          .fn()
+          .mockResolvedValue([
+            { code: 'venue:create' },
+            { code: 'review:create' },
+          ]),
       }),
     };
-    cache = { get: jest.fn().mockResolvedValue(null), set: jest.fn().mockResolvedValue(undefined), del: jest.fn().mockResolvedValue(undefined) };
+    cache = {
+      get: jest.fn().mockResolvedValue(null),
+      set: jest.fn().mockResolvedValue(undefined),
+      del: jest.fn().mockResolvedValue(undefined),
+    };
     const module = await Test.createTestingModule({
       providers: [
         PermissionsService,
@@ -33,7 +42,11 @@ describe('PermissionsService', () => {
     const perms = await service.getUserPermissions('u1');
     expect(perms.has('venue:create')).toBe(true);
     expect(perms.has('review:create')).toBe(true);
-    expect(cache.set).toHaveBeenCalledWith('perms:u1', ['venue:create', 'review:create'], 300);
+    expect(cache.set).toHaveBeenCalledWith(
+      'perms:u1',
+      ['venue:create', 'review:create'],
+      300,
+    );
   });
 
   it('returns from cache when present', async () => {

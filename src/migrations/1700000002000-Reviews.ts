@@ -17,7 +17,9 @@ export class Reviews1700000002000 implements MigrationInterface {
         UNIQUE("venueId","userId")
       )
     `);
-    await q.query(`CREATE INDEX "idx_reviews_venue_created" ON "reviews"("venueId","createdAt" DESC)`);
+    await q.query(
+      `CREATE INDEX "idx_reviews_venue_created" ON "reviews"("venueId","createdAt" DESC)`,
+    );
   }
   public async down(q: QueryRunner): Promise<void> {
     await q.query(`DROP TABLE IF EXISTS "reviews" CASCADE`);

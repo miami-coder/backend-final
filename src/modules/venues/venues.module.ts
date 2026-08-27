@@ -19,8 +19,14 @@ import { VenuesAdminController } from './venues-admin.controller';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
-      Venue, VenuePhoto, VenueFeature, VenueFeatureAssignment,
-      Tag, VenueTag, VenueType, VenueTypeAssignment,
+      Venue,
+      VenuePhoto,
+      VenueFeature,
+      VenueFeatureAssignment,
+      Tag,
+      VenueTag,
+      VenueType,
+      VenueTypeAssignment,
     ]),
     RbacModule,
     UsersModule,

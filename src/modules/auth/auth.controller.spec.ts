@@ -6,11 +6,21 @@ import { OAuthHandlerService } from './auth.service.oauth';
 
 describe('AuthController', () => {
   let controller: AuthController;
-  let auth: { register: jest.Mock; login: jest.Mock; refresh: jest.Mock; logout: jest.Mock };
+  let auth: {
+    register: jest.Mock;
+    login: jest.Mock;
+    refresh: jest.Mock;
+    logout: jest.Mock;
+  };
   let oauth: { buildRedirectUrl: jest.Mock };
 
   beforeEach(async () => {
-    auth = { register: jest.fn(), login: jest.fn(), refresh: jest.fn(), logout: jest.fn() };
+    auth = {
+      register: jest.fn(),
+      login: jest.fn(),
+      refresh: jest.fn(),
+      logout: jest.fn(),
+    };
     oauth = { buildRedirectUrl: jest.fn() };
     const module = await Test.createTestingModule({
       controllers: [AuthController],
@@ -26,14 +36,27 @@ describe('AuthController', () => {
   });
 
   it('register delegates to AuthService', async () => {
-    auth.register.mockResolvedValue({ accessToken: 'a', refreshToken: 'r', user: { id: 'u1' } });
-    const res = await controller.register({ email: 'a@b.com', password: 'Password1', firstname: 'A', lastname: 'B', acceptEula: true } as any);
+    auth.register.mockResolvedValue({
+      accessToken: 'a',
+      refreshToken: 'r',
+      user: { id: 'u1' },
+    });
+    const res = await controller.register({
+      email: 'a@b.com',
+      password: 'Password1',
+      firstname: 'A',
+      lastname: 'B',
+      acceptEula: true,
+    });
     expect(res.accessToken).toBe('a');
   });
 
   it('login delegates to AuthService', async () => {
     auth.login.mockResolvedValue({ accessToken: 'a' });
-    const res = await controller.login({ email: 'a@b.com', password: 'x' } as any);
+    const res = await controller.login({
+      email: 'a@b.com',
+      password: 'x',
+    });
     expect(res.accessToken).toBe('a');
   });
 

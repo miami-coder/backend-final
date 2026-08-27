@@ -25,7 +25,13 @@ import { OAuthHandlerService } from './auth.service.oauth';
   ],
   controllers: [AuthController],
   providers: [
-    AuthService, TokenService, JwtStrategy, LocalStrategy, GoogleStrategy, FacebookStrategy, OAuthHandlerService,
+    AuthService,
+    TokenService,
+    JwtStrategy,
+    LocalStrategy,
+    GoogleStrategy,
+    FacebookStrategy,
+    OAuthHandlerService,
   ],
   exports: [AuthService, TokenService],
 })

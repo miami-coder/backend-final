@@ -1,4 +1,8 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UsersService } from '../../users/users.service';
 import { UserRole } from '../../rbac/entities/user-role.entity';
@@ -15,7 +19,8 @@ import { JwtUser } from '../../../common/decorators/current-user.decorator';
 export class AuthService {
   constructor(
     private readonly users: UsersService,
-    @InjectRepository(UserRole) private readonly userRoles: Repository<UserRole>,
+    @InjectRepository(UserRole)
+    private readonly userRoles: Repository<UserRole>,
     private readonly tokens: TokenService,
     private readonly cache: CacheService,
     private readonly events: EventEmitter2,
@@ -28,7 +33,9 @@ export class AuthService {
     const user = await this.users.create(dto, 'user');
 
     // Assign 'user' role
-    const role = (await this.userRoles.manager.findOne('Role' as any, { where: { code: 'user' } })) as any;
+    const role = (await this.userRoles.manager.findOne('Role', {
+      where: { code: 'user' },
+    })) as any;
     if (role) {
       await this.userRoles.save({ userId: user.id, roleId: role.id });
       this.events.emit(USER_ROLE_ADDED, { userId: user.id });
@@ -83,7 +90,7 @@ export class AuthService {
       .where('ur.userId = :userId', { userId })
       .select('r.code', 'code')
       .getRawMany<{ code: string }>();
-    return rows.map(r => r.code);
+    return rows.map((r) => r.code);
   }
 
   private issueTokens(sub: string, email: string, roles: string[]) {

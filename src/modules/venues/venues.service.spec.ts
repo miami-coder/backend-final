@@ -38,21 +38,49 @@ describe('VenuesService', () => {
   let events: any;
 
   beforeEach(async () => {
-    venues = { create: jest.fn((x) => x), save: jest.fn().mockResolvedValue(undefined), findOne: jest.fn(), findAndCount: jest.fn(), createQueryBuilder: jest.fn().mockReturnValue(qb()) };
+    venues = {
+      create: jest.fn((x) => x),
+      save: jest.fn().mockResolvedValue(undefined),
+      findOne: jest.fn(),
+      findAndCount: jest.fn(),
+      createQueryBuilder: jest.fn().mockReturnValue(qb()),
+    };
     perms = { hasPermission: jest.fn() };
-    cache = { get: jest.fn().mockResolvedValue(null), set: jest.fn(), delByPattern: jest.fn() };
+    cache = {
+      get: jest.fn().mockResolvedValue(null),
+      set: jest.fn(),
+      delByPattern: jest.fn(),
+    };
     events = { emit: jest.fn() };
     const module = await Test.createTestingModule({
       providers: [
         VenuesService,
         { provide: getRepositoryToken(Venue), useValue: venues },
-        { provide: getRepositoryToken(VenuePhoto), useValue: { save: jest.fn() } },
-        { provide: getRepositoryToken(VenueFeature), useValue: { find: jest.fn() } },
-        { provide: getRepositoryToken(VenueFeatureAssignment), useValue: { save: jest.fn() } },
+        {
+          provide: getRepositoryToken(VenuePhoto),
+          useValue: { save: jest.fn() },
+        },
+        {
+          provide: getRepositoryToken(VenueFeature),
+          useValue: { find: jest.fn() },
+        },
+        {
+          provide: getRepositoryToken(VenueFeatureAssignment),
+          useValue: { save: jest.fn() },
+        },
         { provide: getRepositoryToken(Tag), useValue: { find: jest.fn() } },
-        { provide: getRepositoryToken(VenueTag), useValue: { save: jest.fn() } },
-        { provide: getRepositoryToken(VenueType), useValue: { findOne: jest.fn() } },
-        { provide: getRepositoryToken(VenueTypeAssignment), useValue: { save: jest.fn() } },
+        {
+          provide: getRepositoryToken(VenueTag),
+          useValue: { save: jest.fn() },
+        },
+        {
+          provide: getRepositoryToken(VenueType),
+          useValue: { findOne: jest.fn() },
+        },
+        {
+          provide: getRepositoryToken(VenueTypeAssignment),
+          useValue: { save: jest.fn() },
+        },
         { provide: PermissionsService, useValue: perms },
         { provide: CacheService, useValue: cache },
         { provide: EventEmitter2, useValue: events },
@@ -62,52 +90,83 @@ describe('VenuesService', () => {
   });
 
   it('create sets status=pending and emits event', async () => {
-    const v = await service.create('u1', { name: 'X', address: 'Y' } as any);
+    const v = await service.create('u1', { name: 'X', address: 'Y' });
     expect((v as any).status).toBe(VenueStatus.Pending);
-    expect(events.emit).toHaveBeenCalledWith('venue.created', expect.anything());
+    expect(events.emit).toHaveBeenCalledWith(
+      'venue.created',
+      expect.anything(),
+    );
   });
 
   it('update allows owner', async () => {
-    venues.findOne.mockResolvedValueOnce({ id: 'v1', ownerId: 'u1', status: VenueStatus.Approved });
-    await service.update('u1', 'v1', { name: 'New' } as any);
-    expect(events.emit).toHaveBeenCalledWith('venue.updated', expect.anything());
+    venues.findOne.mockResolvedValueOnce({
+      id: 'v1',
+      ownerId: 'u1',
+      status: VenueStatus.Approved,
+    });
+    await service.update('u1', 'v1', { name: 'New' });
+    expect(events.emit).toHaveBeenCalledWith(
+      'venue.updated',
+      expect.anything(),
+    );
   });
 
   it('update throws for non-owner without permission', async () => {
-    venues.findOne.mockResolvedValueOnce({ id: 'v1', ownerId: 'u2', status: VenueStatus.Approved });
+    venues.findOne.mockResolvedValueOnce({
+      id: 'v1',
+      ownerId: 'u2',
+      status: VenueStatus.Approved,
+    });
     perms.hasPermission.mockResolvedValueOnce(false);
-    await expect(service.update('u1', 'v1', { name: 'X' } as any)).rejects.toThrow(ForbiddenException);
+    await expect(
+      service.update('u1', 'v1', { name: 'X' } as any),
+    ).rejects.toThrow(ForbiddenException);
   });
 
   it('update allows super_admin (venue:edit:any)', async () => {
-    venues.findOne.mockResolvedValueOnce({ id: 'v1', ownerId: 'u2', status: VenueStatus.Approved });
+    venues.findOne.mockResolvedValueOnce({
+      id: 'v1',
+      ownerId: 'u2',
+      status: VenueStatus.Approved,
+    });
     perms.hasPermission.mockResolvedValueOnce(true);
-    await service.update('admin', 'v1', { name: 'X' } as any);
+    await service.update('admin', 'v1', { name: 'X' });
     expect(venues.save).toHaveBeenCalled();
   });
 
   it('findOneOrThrow throws on missing', async () => {
     venues.findOne.mockResolvedValueOnce(null);
-    await expect(service.findOneOrThrow('x')).rejects.toThrow(NotFoundException);
+    await expect(service.findOneOrThrow('x')).rejects.toThrow(
+      NotFoundException,
+    );
   });
 
   it('search returns from cache when present', async () => {
-    cache.get.mockResolvedValueOnce({ data: [{ id: 'v1', name: 'X' }], total: 1 });
-    const res = await service.search({ page: 1, limit: 20 } as any);
+    cache.get.mockResolvedValueOnce({
+      data: [{ id: 'v1', name: 'X' }],
+      total: 1,
+    });
+    const res = await service.search({ page: 1, limit: 20 });
     expect(res.data).toHaveLength(1);
     expect(res.meta.total).toBe(1);
   });
 
   it('search queries DB on cache miss', async () => {
-    const res = await service.search({ page: 1, limit: 20 } as any);
+    const res = await service.search({ page: 1, limit: 20 });
     expect(venues.createQueryBuilder).toHaveBeenCalled();
     expect(cache.set).toHaveBeenCalled();
     expect(res.data).toEqual([]);
   });
 
   it('changeStatus emits status_changed event', async () => {
-    venues.findOne.mockResolvedValueOnce({ id: 'v1', status: VenueStatus.Pending });
+    venues.findOne.mockResolvedValueOnce({
+      id: 'v1',
+      status: VenueStatus.Pending,
+    });
     await service.changeStatus('v1', VenueStatus.Approved);
-    expect(events.emit).toHaveBeenCalledWith('venue.status_changed', expect.anything());
+    expect(events.emit).toHaveBeenCalledWith(
+      'venue.status_changed',
+      expect.anything(),
+    );
   });
 });

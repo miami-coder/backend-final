@@ -23,14 +23,23 @@ export class UsersController {
         email: user.email,
         emailVerified: user.emailVerified,
         roles: current.roles,
-        profile: { firstname: profile.firstname, lastname: profile.lastname, age: profile.age, phone: profile.phone, avatarUrl: profile.avatarUrl },
+        profile: {
+          firstname: profile.firstname,
+          lastname: profile.lastname,
+          age: profile.age,
+          phone: profile.phone,
+          avatarUrl: profile.avatarUrl,
+        },
       },
     };
   }
 
   @Patch('profile')
   @Permissions() // no specific perm required, just auth
-  async updateProfile(@CurrentUser() current: JwtUser, @Body() dto: UpdateProfileDto) {
+  async updateProfile(
+    @CurrentUser() current: JwtUser,
+    @Body() dto: UpdateProfileDto,
+  ) {
     const profile = await this.users.updateProfile(current.sub, dto);
     return { data: profile };
   }

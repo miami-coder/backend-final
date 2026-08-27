@@ -8,6 +8,10 @@ export class RolePermission {
   @PrimaryColumn('uuid') permissionId: string;
   @Column({ type: 'timestamptz', default: () => 'NOW()' }) grantedAt: Date;
 
-  @ManyToOne(() => Role, { onDelete: 'CASCADE' }) @JoinColumn({ name: 'roleId' }) role: Role;
-  @ManyToOne(() => Permission, { onDelete: 'CASCADE' }) @JoinColumn({ name: 'permissionId' }) permission: Permission;
+  @ManyToOne(() => Role, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'roleId' })
+  role: Role;
+  @ManyToOne(() => Permission, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'permissionId' })
+  permission: Permission;
 }

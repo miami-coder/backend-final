@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './services/auth.service';
@@ -49,7 +57,9 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   me(@CurrentUser() current: JwtUser) {
-    return { data: { id: current.sub, email: current.email, roles: current.roles } };
+    return {
+      data: { id: current.sub, email: current.email, roles: current.roles },
+    };
   }
 
   // OAuth: Google

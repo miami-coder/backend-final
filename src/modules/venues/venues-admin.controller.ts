@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
@@ -24,13 +32,17 @@ export class VenuesAdminController {
   @Post(':id/approve')
   @Permissions('venue:moderate')
   approve(@Param('id') id: string) {
-    return this.venues.changeStatus(id, VenueStatus.Approved).then(v => ({ data: v }));
+    return this.venues
+      .changeStatus(id, VenueStatus.Approved)
+      .then((v) => ({ data: v }));
   }
 
   @Post(':id/reject')
   @Permissions('venue:moderate')
   reject(@Param('id') id: string, @Body() dto: ChangeStatusDto) {
-    return this.venues.changeStatus(id, VenueStatus.Rejected).then(v => ({ data: v }));
+    return this.venues
+      .changeStatus(id, VenueStatus.Rejected)
+      .then((v) => ({ data: v }));
   }
 
   @Post(':id/assign-owner')

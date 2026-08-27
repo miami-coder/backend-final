@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
@@ -28,7 +39,7 @@ export class VenuesController {
   @Public()
   @Get(':id')
   get(@Param('id') id: string) {
-    return this.venues.findOnePublic(id).then(async v => ({
+    return this.venues.findOnePublic(id).then(async (v) => ({
       data: v,
     }));
   }
@@ -37,14 +48,18 @@ export class VenuesController {
   @Post()
   @Permissions('venue:create')
   create(@CurrentUser() u: JwtUser, @Body() dto: CreateVenueDto) {
-    return this.venues.create(u.sub, dto).then(v => ({ data: v }));
+    return this.venues.create(u.sub, dto).then((v) => ({ data: v }));
   }
 
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Patch(':id')
   @Permissions('venue:edit:own', 'venue:edit:any')
-  update(@CurrentUser() u: JwtUser, @Param('id') id: string, @Body() dto: UpdateVenueDto) {
-    return this.venues.update(u.sub, id, dto).then(v => ({ data: v }));
+  update(
+    @CurrentUser() u: JwtUser,
+    @Param('id') id: string,
+    @Body() dto: UpdateVenueDto,
+  ) {
+    return this.venues.update(u.sub, id, dto).then((v) => ({ data: v }));
   }
 
   @UseGuards(JwtAuthGuard, PermissionsGuard)
@@ -57,7 +72,7 @@ export class VenuesController {
     @UploadedFile() file: Express.Multer.File,
   ) {
     const venue = await this.venues.findOneOrThrow(id);
-    await this.venues.update(u.sub, id, {} as any); // noop, just assert edit
+    await this.venues.update(u.sub, id, {}); // noop, just assert edit
     const stored = await this.storage.save(`venues/${id}`, {
       originalname: file.originalname,
       mimetype: file.mimetype,

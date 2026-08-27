@@ -25,11 +25,17 @@ export class Venues1700000001000 implements MigrationInterface {
         "updatedAt" timestamptz NOT NULL DEFAULT NOW()
       )
     `);
-    await queryRunner.query(`CREATE INDEX "idx_venues_status" ON "venues"("status")`);
+    await queryRunner.query(
+      `CREATE INDEX "idx_venues_status" ON "venues"("status")`,
+    );
 
     // PostGIS location column populated by trigger
-    await queryRunner.query(`ALTER TABLE "venues" ADD COLUMN "location" geography(POINT, 4326)`);
-    await queryRunner.query(`CREATE INDEX "idx_venues_location" ON "venues" USING GIST ("location")`);
+    await queryRunner.query(
+      `ALTER TABLE "venues" ADD COLUMN "location" geography(POINT, 4326)`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_venues_location" ON "venues" USING GIST ("location")`,
+    );
     await queryRunner.query(`
       CREATE OR REPLACE FUNCTION venues_set_location() RETURNS TRIGGER AS $$
       BEGIN
@@ -128,14 +134,20 @@ export class Venues1700000001000 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TRIGGER IF EXISTS trg_venues_location ON "venues"`);
+    await queryRunner.query(
+      `DROP TRIGGER IF EXISTS trg_venues_location ON "venues"`,
+    );
     await queryRunner.query(`DROP FUNCTION IF EXISTS venues_set_location()`);
     await queryRunner.query(`ALTER TABLE "venues" DROP COLUMN "location"`);
-    await queryRunner.query(`DROP TABLE IF EXISTS "venue_type_assignments" CASCADE`);
+    await queryRunner.query(
+      `DROP TABLE IF EXISTS "venue_type_assignments" CASCADE`,
+    );
     await queryRunner.query(`DROP TABLE IF EXISTS "venue_types" CASCADE`);
     await queryRunner.query(`DROP TABLE IF EXISTS "venue_tags" CASCADE`);
     await queryRunner.query(`DROP TABLE IF EXISTS "tags" CASCADE`);
-    await queryRunner.query(`DROP TABLE IF EXISTS "venue_feature_assignments" CASCADE`);
+    await queryRunner.query(
+      `DROP TABLE IF EXISTS "venue_feature_assignments" CASCADE`,
+    );
     await queryRunner.query(`DROP TABLE IF EXISTS "venue_features" CASCADE`);
     await queryRunner.query(`DROP TABLE IF EXISTS "venue_photos" CASCADE`);
     await queryRunner.query(`DROP TABLE IF EXISTS "venues" CASCADE`);

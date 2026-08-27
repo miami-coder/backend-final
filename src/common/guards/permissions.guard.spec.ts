@@ -2,10 +2,14 @@ import { ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PermissionsGuard } from './permissions.guard';
 
-function makeCtx(user: any, handler: any, classMeta: any[] = []): ExecutionContext {
+function makeCtx(
+  user: any,
+  handler: any,
+  classMeta: any[] = [],
+): ExecutionContext {
   return {
     getHandler: () => handler,
-    getClass: () => classMeta.length ? { prototype: {} } : function () {},
+    getClass: () => (classMeta.length ? { prototype: {} } : function () {}),
     switchToHttp: () => ({ getRequest: () => ({ user }) }),
   } as unknown as ExecutionContext;
 }
@@ -25,17 +29,29 @@ describe('PermissionsGuard', () => {
   });
 
   it('throws when user not authenticated', () => {
-    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['venue:create']);
-    expect(() => guard.canActivate(makeCtx(undefined, () => {}))).toThrow(ForbiddenException);
+    jest
+      .spyOn(reflector, 'getAllAndOverride')
+      .mockReturnValue(['venue:create']);
+    expect(() => guard.canActivate(makeCtx(undefined, () => {}))).toThrow(
+      ForbiddenException,
+    );
   });
 
   it('throws when user has no roles', () => {
-    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['venue:create']);
-    expect(() => guard.canActivate(makeCtx({ roles: [] }, () => {}))).toThrow(ForbiddenException);
+    jest
+      .spyOn(reflector, 'getAllAndOverride')
+      .mockReturnValue(['venue:create']);
+    expect(() => guard.canActivate(makeCtx({ roles: [] }, () => {}))).toThrow(
+      ForbiddenException,
+    );
   });
 
   it('passes when user has roles (detailed check is in service)', () => {
-    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['venue:create']);
-    expect(guard.canActivate(makeCtx({ roles: ['user'] }, () => {}))).toBe(true);
+    jest
+      .spyOn(reflector, 'getAllAndOverride')
+      .mockReturnValue(['venue:create']);
+    expect(guard.canActivate(makeCtx({ roles: ['user'] }, () => {}))).toBe(
+      true,
+    );
   });
 });

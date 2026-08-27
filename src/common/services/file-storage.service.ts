@@ -10,7 +10,12 @@ const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 export class FileStorageService {
   async save(
     folder: string,
-    file: { originalname: string; mimetype: string; size: number; buffer: Buffer },
+    file: {
+      originalname: string;
+      mimetype: string;
+      size: number;
+      buffer: Buffer;
+    },
   ): Promise<{ url: string; filename: string; size: number }> {
     if (!ALLOWED_MIME.has(file.mimetype)) {
       throw new Error(`Unsupported mime type: ${file.mimetype}`);
@@ -18,7 +23,9 @@ export class FileStorageService {
     if (file.size > MAX_BYTES) {
       throw new Error(`File too large: ${file.size} bytes (max ${MAX_BYTES})`);
     }
-    const ext = extname(file.originalname).toLowerCase() || this.extFromMime(file.mimetype);
+    const ext =
+      extname(file.originalname).toLowerCase() ||
+      this.extFromMime(file.mimetype);
     const filename = `${randomUUID()}${ext}`;
     const dir = join(this.uploadsRoot, folder);
     await fs.mkdir(dir, { recursive: true });

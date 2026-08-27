@@ -11,7 +11,9 @@ describe('CacheService', () => {
     // deterministically, regardless of whether a real Redis is running.
     process.env.REDIS_HOST = '127.0.0.1';
     process.env.REDIS_PORT = '1';
-    const module = await Test.createTestingModule({ providers: [CacheService] }).compile();
+    const module = await Test.createTestingModule({
+      providers: [CacheService],
+    }).compile();
     service = module.get(CacheService);
   });
 

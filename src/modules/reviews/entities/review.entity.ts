@@ -1,4 +1,14 @@
-import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  Unique,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Venue } from '../../venues/entities/venue.entity';
 import { User } from '../../users/entities/user.entity';
 
@@ -16,6 +26,10 @@ export class Review {
   @CreateDateColumn() createdAt: Date;
   @UpdateDateColumn() updatedAt: Date;
 
-  @ManyToOne(() => Venue, { onDelete: 'CASCADE' }) @JoinColumn({ name: 'venueId' }) venue: Venue;
-  @ManyToOne(() => User, { onDelete: 'CASCADE' }) @JoinColumn({ name: 'userId' }) user: User;
+  @ManyToOne(() => Venue, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'venueId' })
+  venue: Venue;
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'userId' })
+  user: User;
 }

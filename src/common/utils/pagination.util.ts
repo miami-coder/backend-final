@@ -13,9 +13,14 @@ export const DEFAULT_PAGE = 1;
 export const DEFAULT_LIMIT = 20;
 export const MAX_LIMIT = 100;
 
-export function normalizePagination(params: PaginationParams): NormalizedPagination {
+export function normalizePagination(
+  params: PaginationParams,
+): NormalizedPagination {
   const page = Math.max(1, Number(params.page) || DEFAULT_PAGE);
-  const limit = Math.min(MAX_LIMIT, Math.max(1, Number(params.limit ?? DEFAULT_LIMIT)));
+  const limit = Math.min(
+    MAX_LIMIT,
+    Math.max(1, Number(params.limit ?? DEFAULT_LIMIT)),
+  );
   return { page, limit, offset: (page - 1) * limit };
 }
 

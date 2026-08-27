@@ -8,6 +8,10 @@ export class RatingRecalcListener {
   private readonly logger = new Logger(RatingRecalcListener.name);
   constructor(private readonly venues: VenuesService) {}
 
-  @OnEvent(REVIEW_CREATED) @OnEvent(REVIEW_UPDATED) @OnEvent(REVIEW_DELETED)
-  async invalidate() { await this.venues.invalidateListCache(); }
+  @OnEvent(REVIEW_CREATED)
+  @OnEvent(REVIEW_UPDATED)
+  @OnEvent(REVIEW_DELETED)
+  async invalidate() {
+    await this.venues.invalidateListCache();
+  }
 }

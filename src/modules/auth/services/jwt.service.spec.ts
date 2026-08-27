@@ -18,7 +18,11 @@ describe('TokenService', () => {
   });
 
   it('signs and verifies access token', () => {
-    const t = service.signAccess({ sub: 'u1', email: 'a@b.com', roles: ['user'] });
+    const t = service.signAccess({
+      sub: 'u1',
+      email: 'a@b.com',
+      roles: ['user'],
+    });
     const payload = service.verifyAccess(t);
     expect(payload.sub).toBe('u1');
     expect(payload.roles).toEqual(['user']);
@@ -31,7 +35,10 @@ describe('TokenService', () => {
   });
 
   it('rejects access token signed with wrong secret', () => {
-    const t = raw.sign({ sub: 'u1' }, { secret: 'wrong_secret_min_32_chars_xxxxx' });
+    const t = raw.sign(
+      { sub: 'u1' },
+      { secret: 'wrong_secret_min_32_chars_xxxxx' },
+    );
     expect(() => service.verifyAccess(t)).toThrow();
   });
 });

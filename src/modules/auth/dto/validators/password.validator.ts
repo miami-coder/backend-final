@@ -1,4 +1,7 @@
-import { ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
+import {
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+} from 'class-validator';
 
 @ValidatorConstraint({ name: 'IsStrongPassword', async: false })
 export class IsStrongPasswordConstraint implements ValidatorConstraintInterface {

@@ -13,7 +13,11 @@ describe('JwtStrategy', () => {
   });
 
   it('validate returns user from token payload', async () => {
-    const user = await strategy.validate({ sub: 'u1', email: 'a@b.com', roles: ['user'] });
+    const user = await strategy.validate({
+      sub: 'u1',
+      email: 'a@b.com',
+      roles: ['user'],
+    });
     expect(user.sub).toBe('u1');
     expect(user.roles).toEqual(['user']);
   });

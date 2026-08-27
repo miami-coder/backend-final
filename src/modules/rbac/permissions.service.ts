@@ -10,7 +10,8 @@ export class PermissionsService {
   private readonly TTL = 300;
 
   constructor(
-    @InjectRepository(UserRole) private readonly userRoles: Repository<UserRole>,
+    @InjectRepository(UserRole)
+    private readonly userRoles: Repository<UserRole>,
     private readonly cache: CacheService,
   ) {}
 
@@ -28,7 +29,7 @@ export class PermissionsService {
       .select('DISTINCT p.code', 'code')
       .getRawMany<{ code: string }>();
 
-    const codes = rows.map(r => r.code);
+    const codes = rows.map((r) => r.code);
     await this.cache.set(cacheKey, codes, this.TTL);
     return new Set(codes);
   }
@@ -38,9 +39,12 @@ export class PermissionsService {
     return perms.has(permission);
   }
 
-  async hasAnyPermission(userId: string, permissions: string[]): Promise<boolean> {
+  async hasAnyPermission(
+    userId: string,
+    permissions: string[],
+  ): Promise<boolean> {
     const perms = await this.getUserPermissions(userId);
-    return permissions.some(p => perms.has(p));
+    return permissions.some((p) => perms.has(p));
   }
 
   async invalidate(userId: string): Promise<void> {

@@ -75,6 +75,8 @@ describe('FileStorageService', () => {
     const filepath = join(TMP, 'test', saved.filename);
     await service.remove('test', saved.filename);
     await expect(fs.stat(filepath)).rejects.toThrow(/ENOENT/);
-    await expect(service.remove('test', saved.filename)).resolves.toBeUndefined();
+    await expect(
+      service.remove('test', saved.filename),
+    ).resolves.toBeUndefined();
   });
 });

@@ -9,7 +9,11 @@ import { RbacModule } from '../rbac/rbac.module';
 import { VenuesModule } from '../venues/venues.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Review, Venue]), RbacModule, VenuesModule],
+  imports: [
+    TypeOrmModule.forFeature([Review, Venue]),
+    RbacModule,
+    VenuesModule,
+  ],
   controllers: [ReviewsController],
   providers: [ReviewsService, RatingRecalcListener],
   exports: [ReviewsService],

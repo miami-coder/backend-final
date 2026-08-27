@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ReviewsService } from './reviews.service';
 import { CreateReviewDto } from './dto/create-review.dto';
@@ -13,7 +25,10 @@ import { FileStorageService } from '../../common/services/file-storage.service';
 
 @Controller()
 export class ReviewsController {
-  constructor(private readonly reviews: ReviewsService, private readonly storage: FileStorageService) {}
+  constructor(
+    private readonly reviews: ReviewsService,
+    private readonly storage: FileStorageService,
+  ) {}
 
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Post('venues/:venueId/reviews')
@@ -27,30 +42,47 @@ export class ReviewsController {
   ) {
     let checkPhotoUrl: string | undefined;
     if (file) {
-      const stored = await this.storage.save(`reviews/${venueId}`, { originalname: file.originalname, mimetype: file.mimetype, size: file.size, buffer: file.buffer });
+      const stored = await this.storage.save(`reviews/${venueId}`, {
+        originalname: file.originalname,
+        mimetype: file.mimetype,
+        size: file.size,
+        buffer: file.buffer,
+      });
       checkPhotoUrl = stored.url;
     }
-    const review = await this.reviews.create(u.sub, venueId, { ...dto, checkPhotoUrl });
+    const review = await this.reviews.create(u.sub, venueId, {
+      ...dto,
+      checkPhotoUrl,
+    });
     return { data: review };
   }
 
   @Public()
   @Get('venues/:venueId/reviews')
-  list(@Param('venueId') venueId: string, @Query('page') page: number, @Query('limit') limit: number, @Query('sort') sort?: 'newest' | 'oldest' | 'highest' | 'lowest') {
+  list(
+    @Param('venueId') venueId: string,
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+    @Query('sort') sort?: 'newest' | 'oldest' | 'highest' | 'lowest',
+  ) {
     return this.reviews.listForVenue(venueId, page, limit, sort);
   }
 
   @Public()
   @Get('reviews/:id')
   get(@Param('id') id: string) {
-    return this.reviews.findOneOrThrow(id).then(data => ({ data }));
+    return this.reviews.findOneOrThrow(id).then((data) => ({ data }));
   }
 
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Patch('reviews/:id')
   @Permissions('review:edit:own', 'review:edit:any')
-  update(@CurrentUser() u: JwtUser, @Param('id') id: string, @Body() dto: UpdateReviewDto) {
-    return this.reviews.update(u.sub, id, dto).then(data => ({ data }));
+  update(
+    @CurrentUser() u: JwtUser,
+    @Param('id') id: string,
+    @Body() dto: UpdateReviewDto,
+  ) {
+    return this.reviews.update(u.sub, id, dto).then((data) => ({ data }));
   }
 
   @UseGuards(JwtAuthGuard, PermissionsGuard)
@@ -64,12 +96,12 @@ export class ReviewsController {
   @Post('reviews/:id/feature')
   @Permissions('review:feature')
   feature(@Param('id') id: string) {
-    return this.reviews.feature(id).then(data => ({ data }));
+    return this.reviews.feature(id).then((data) => ({ data }));
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('me/reviews')
   myReviews(@CurrentUser() u: JwtUser) {
-    return this.reviews.listForUser(u.sub).then(data => ({ data }));
+    return this.reviews.listForUser(u.sub).then((data) => ({ data }));
   }
 }

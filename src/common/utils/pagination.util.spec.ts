@@ -18,17 +18,27 @@ describe('normalizePagination', () => {
   });
 
   it('computes offset', () => {
-    expect(normalizePagination({ page: 3, limit: 10 })).toEqual({ page: 3, limit: 10, offset: 20 });
+    expect(normalizePagination({ page: 3, limit: 10 })).toEqual({
+      page: 3,
+      limit: 10,
+      offset: 20,
+    });
   });
 });
 
 describe('buildMeta', () => {
   it('flags hasMore correctly', () => {
     expect(buildMeta({ page: 1, limit: 20, offset: 0 }, 50)).toEqual({
-      page: 1, limit: 20, total: 50, hasMore: true,
+      page: 1,
+      limit: 20,
+      total: 50,
+      hasMore: true,
     });
     expect(buildMeta({ page: 3, limit: 20, offset: 40 }, 50)).toEqual({
-      page: 3, limit: 20, total: 50, hasMore: false,
+      page: 3,
+      limit: 20,
+      total: 50,
+      hasMore: false,
     });
   });
 });

@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, In, Repository } from 'typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -15,21 +19,37 @@ import { UpdateVenueDto } from './dto/update-venue.dto';
 import { QueryVenuesDto, VenueSort } from './dto/query-venues.dto';
 import { PermissionsService } from '../rbac/permissions.service';
 import { CacheService } from '../../common/services/cache.service';
-import { buildMeta, normalizePagination } from '../../common/utils/pagination.util';
+import {
+  buildMeta,
+  normalizePagination,
+} from '../../common/utils/pagination.util';
 import { createHash } from 'crypto';
-import { VENUE_CREATED, VENUE_STATUS_CHANGED, VENUE_UPDATED, VenueCreatedEvent, VenueStatusChangedEvent, VenueUpdatedEvent } from './events';
+import {
+  VENUE_CREATED,
+  VENUE_STATUS_CHANGED,
+  VENUE_UPDATED,
+  VenueCreatedEvent,
+  VenueStatusChangedEvent,
+  VenueUpdatedEvent,
+} from './events';
 
 @Injectable()
 export class VenuesService {
   constructor(
     @InjectRepository(Venue) private readonly venues: Repository<Venue>,
-    @InjectRepository(VenuePhoto) private readonly photos: Repository<VenuePhoto>,
-    @InjectRepository(VenueFeature) private readonly features: Repository<VenueFeature>,
-    @InjectRepository(VenueFeatureAssignment) private readonly featureAssignments: Repository<VenueFeatureAssignment>,
+    @InjectRepository(VenuePhoto)
+    private readonly photos: Repository<VenuePhoto>,
+    @InjectRepository(VenueFeature)
+    private readonly features: Repository<VenueFeature>,
+    @InjectRepository(VenueFeatureAssignment)
+    private readonly featureAssignments: Repository<VenueFeatureAssignment>,
     @InjectRepository(Tag) private readonly tags: Repository<Tag>,
-    @InjectRepository(VenueTag) private readonly venueTags: Repository<VenueTag>,
-    @InjectRepository(VenueType) private readonly venueTypes: Repository<VenueType>,
-    @InjectRepository(VenueTypeAssignment) private readonly venueTypeAssignments: Repository<VenueTypeAssignment>,
+    @InjectRepository(VenueTag)
+    private readonly venueTags: Repository<VenueTag>,
+    @InjectRepository(VenueType)
+    private readonly venueTypes: Repository<VenueType>,
+    @InjectRepository(VenueTypeAssignment)
+    private readonly venueTypeAssignments: Repository<VenueTypeAssignment>,
     private readonly perms: PermissionsService,
     private readonly cache: CacheService,
     private readonly events: EventEmitter2,
@@ -50,22 +70,38 @@ export class VenuesService {
     });
     await this.venues.save(venue);
     if (dto.featureCodes?.length) {
-      const features = await this.features.find({ where: { code: In(dto.featureCodes) } });
-      await this.featureAssignments.save(features.map(f => ({ venueId: venue.id, featureId: f.id })));
+      const features = await this.features.find({
+        where: { code: In(dto.featureCodes) },
+      });
+      await this.featureAssignments.save(
+        features.map((f) => ({ venueId: venue.id, featureId: f.id })),
+      );
     }
     if (dto.tagSlugs?.length) {
       const tags = await this.tags.find({ where: { slug: In(dto.tagSlugs) } });
-      await this.venueTags.save(tags.map(t => ({ venueId: venue.id, tagId: t.id })));
+      await this.venueTags.save(
+        tags.map((t) => ({ venueId: venue.id, tagId: t.id })),
+      );
     }
     if (dto.typeSlug) {
-      const type = await this.venueTypes.findOne({ where: { slug: dto.typeSlug } });
-      if (type) await this.venueTypeAssignments.save({ venueId: venue.id, typeId: type.id });
+      const type = await this.venueTypes.findOne({
+        where: { slug: dto.typeSlug },
+      });
+      if (type)
+        await this.venueTypeAssignments.save({
+          venueId: venue.id,
+          typeId: type.id,
+        });
     }
     this.events.emit(VENUE_CREATED, new VenueCreatedEvent(venue.id));
     return venue;
   }
 
-  async update(userId: string, venueId: string, dto: UpdateVenueDto): Promise<Venue> {
+  async update(
+    userId: string,
+    venueId: string,
+    dto: UpdateVenueDto,
+  ): Promise<Venue> {
     const venue = await this.findOneOrThrow(venueId);
     await this.assertCanEdit(userId, venue);
     Object.assign(venue, {
@@ -88,7 +124,10 @@ export class VenuesService {
     await this.assertCanEdit(userId, venue);
     venue.status = VenueStatus.Archived;
     await this.venues.save(venue);
-    this.events.emit(VENUE_STATUS_CHANGED, new VenueStatusChangedEvent(venue.id, 'approved', 'archived'));
+    this.events.emit(
+      VENUE_STATUS_CHANGED,
+      new VenueStatusChangedEvent(venue.id, 'approved', 'archived'),
+    );
   }
 
   async findOneOrThrow(id: string): Promise<Venue> {
@@ -112,48 +151,83 @@ export class VenuesService {
   async search(query: QueryVenuesDto) {
     const { page, limit, offset } = normalizePagination(query);
     const cacheKey = `venues:list:${this.hashQuery(query)}`;
-    const cached = await this.cache.get<{ data: any[]; total: number }>(cacheKey);
+    const cached = await this.cache.get<{ data: any[]; total: number }>(
+      cacheKey,
+    );
     if (cached) {
-      return { data: cached.data.slice(offset, offset + limit), meta: buildMeta({ page, limit, offset }, cached.total) };
+      return {
+        data: cached.data.slice(offset, offset + limit),
+        meta: buildMeta({ page, limit, offset }, cached.total),
+      };
     }
 
-    const qb = this.venues.createQueryBuilder('v')
+    const qb = this.venues
+      .createQueryBuilder('v')
       .leftJoinAndSelect('v.photos', 'photo')
-      .leftJoin('v.featureAssignments', 'fa').leftJoinAndSelect('fa.feature', 'f')
-      .leftJoin('v.venueTags', 'vt').leftJoinAndSelect('vt.tag', 't')
-      .leftJoin('v.venueTypeAssignments', 'vta').leftJoinAndSelect('vta.type', 'ty')
+      .leftJoin('v.featureAssignments', 'fa')
+      .leftJoinAndSelect('fa.feature', 'f')
+      .leftJoin('v.venueTags', 'vt')
+      .leftJoinAndSelect('vt.tag', 't')
+      .leftJoin('v.venueTypeAssignments', 'vta')
+      .leftJoinAndSelect('vta.type', 'ty')
       .where('v.status = :status', { status: VenueStatus.Approved });
 
     if (query.q) {
-      qb.andWhere(new Brackets(b => b
-        .where('v.name ILIKE :q', { q: `%${query.q}%` })
-        .orWhere('v.address ILIKE :q', { q: `%${query.q}%` }),
-      ));
+      qb.andWhere(
+        new Brackets((b) =>
+          b
+            .where('v.name ILIKE :q', { q: `%${query.q}%` })
+            .orWhere('v.address ILIKE :q', { q: `%${query.q}%` }),
+        ),
+      );
     }
-    if (query.minRating != null) qb.andWhere('v.ratingAvg >= :minRating', { minRating: query.minRating });
-    if (query.minCheck != null) qb.andWhere('v.averageCheck >= :minCheck', { minCheck: query.minCheck });
-    if (query.maxCheck != null) qb.andWhere('v.averageCheck <= :maxCheck', { maxCheck: query.maxCheck });
-    if (query.feature) qb.andWhere('f.code IN (:...features)', { features: query.feature.split(',') });
-    if (query.tag) qb.andWhere('t.slug IN (:...tags)', { tags: query.tag.split(',') });
+    if (query.minRating != null)
+      qb.andWhere('v.ratingAvg >= :minRating', { minRating: query.minRating });
+    if (query.minCheck != null)
+      qb.andWhere('v.averageCheck >= :minCheck', { minCheck: query.minCheck });
+    if (query.maxCheck != null)
+      qb.andWhere('v.averageCheck <= :maxCheck', { maxCheck: query.maxCheck });
+    if (query.feature)
+      qb.andWhere('f.code IN (:...features)', {
+        features: query.feature.split(','),
+      });
+    if (query.tag)
+      qb.andWhere('t.slug IN (:...tags)', { tags: query.tag.split(',') });
     if (query.type) qb.andWhere('ty.slug = :type', { type: query.type });
     if (query.lat != null && query.lng != null && query.radiusKm != null) {
-      qb.andWhere(`ST_DWithin(v.location, ST_MakePoint(:lng, :lat)::geography, :meters)`,
-        { lng: query.lng, lat: query.lat, meters: query.radiusKm * 1000 });
+      qb.andWhere(
+        `ST_DWithin(v.location, ST_MakePoint(:lng, :lat)::geography, :meters)`,
+        { lng: query.lng, lat: query.lat, meters: query.radiusKm * 1000 },
+      );
     }
 
     const sort: VenueSort = query.sort ?? 'newest';
     switch (sort) {
-      case 'rating': qb.orderBy('v.ratingAvg', 'DESC', 'NULLS LAST').addOrderBy('v.ratingCount', 'DESC'); break;
-      case 'check': qb.orderBy('v.averageCheck', 'ASC', 'NULLS LAST'); break;
-      case 'name': qb.orderBy('v.name', 'ASC'); break;
+      case 'rating':
+        qb.orderBy('v.ratingAvg', 'DESC', 'NULLS LAST').addOrderBy(
+          'v.ratingCount',
+          'DESC',
+        );
+        break;
+      case 'check':
+        qb.orderBy('v.averageCheck', 'ASC', 'NULLS LAST');
+        break;
+      case 'name':
+        qb.orderBy('v.name', 'ASC');
+        break;
       case 'distance':
         if (query.lat != null && query.lng != null) {
-          qb.addSelect(`ST_Distance(v.location, ST_MakePoint(:lng, :lat)::geography)`, 'distance')
-            .orderBy('distance', 'ASC');
-        } else { qb.orderBy('v.createdAt', 'DESC'); }
+          qb.addSelect(
+            `ST_Distance(v.location, ST_MakePoint(:lng, :lat)::geography)`,
+            'distance',
+          ).orderBy('distance', 'ASC');
+        } else {
+          qb.orderBy('v.createdAt', 'DESC');
+        }
         break;
       case 'newest':
-      default: qb.orderBy('v.createdAt', 'DESC');
+      default:
+        qb.orderBy('v.createdAt', 'DESC');
     }
     qb.skip(offset).take(limit);
 
@@ -167,7 +241,8 @@ export class VenuesService {
     const [rows, total] = await this.venues.findAndCount({
       where: { status: VenueStatus.Pending },
       order: { createdAt: 'ASC' },
-      skip: offset, take: limit,
+      skip: offset,
+      take: limit,
     });
     return { data: rows, meta: buildMeta({ page, limit, offset }, total) };
   }
@@ -177,7 +252,10 @@ export class VenuesService {
     const from = venue.status;
     venue.status = to;
     await this.venues.save(venue);
-    this.events.emit(VENUE_STATUS_CHANGED, new VenueStatusChangedEvent(venueId, from, to));
+    this.events.emit(
+      VENUE_STATUS_CHANGED,
+      new VenueStatusChangedEvent(venueId, from, to),
+    );
     return venue;
   }
 

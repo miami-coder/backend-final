@@ -9,18 +9,32 @@ describe('ReviewsController', () => {
   let storage: any;
 
   beforeEach(async () => {
-    reviews = { create: jest.fn(), listForVenue: jest.fn(), findOneOrThrow: jest.fn(), update: jest.fn(), softDelete: jest.fn(), feature: jest.fn(), listForUser: jest.fn() };
+    reviews = {
+      create: jest.fn(),
+      listForVenue: jest.fn(),
+      findOneOrThrow: jest.fn(),
+      update: jest.fn(),
+      softDelete: jest.fn(),
+      feature: jest.fn(),
+      listForUser: jest.fn(),
+    };
     storage = { save: jest.fn() };
     const module = await Test.createTestingModule({
       controllers: [ReviewsController],
-      providers: [{ provide: ReviewsService, useValue: reviews }, { provide: FileStorageService, useValue: storage }],
+      providers: [
+        { provide: ReviewsService, useValue: reviews },
+        { provide: FileStorageService, useValue: storage },
+      ],
     }).compile();
     controller = module.get(ReviewsController);
   });
 
   it('create delegates', async () => {
     reviews.create.mockResolvedValue({ id: 'r1' });
-    const res = await controller.create({ sub: 'u1' } as any, 'v1', { rating: 5, text: 'Чудово! Все сподобалось' } as any);
+    const res = await controller.create({ sub: 'u1' } as any, 'v1', {
+      rating: 5,
+      text: 'Чудово! Все сподобалось',
+    });
     expect(res.data.id).toBe('r1');
   });
 

@@ -14,5 +14,9 @@ export class VenueUpdatedEvent {
 
 export class VenueStatusChangedEvent {
   static readonly event = VENUE_STATUS_CHANGED;
-  constructor(public readonly venueId: string, public readonly from: string, public readonly to: string) {}
+  constructor(
+    public readonly venueId: string,
+    public readonly from: string,
+    public readonly to: string,
+  ) {}
 }

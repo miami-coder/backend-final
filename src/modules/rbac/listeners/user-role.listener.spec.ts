@@ -1,5 +1,9 @@
 import { Test } from '@nestjs/testing';
-import { UserRoleListener, USER_ROLE_ADDED, USER_ROLE_REMOVED } from './user-role.listener';
+import {
+  UserRoleListener,
+  USER_ROLE_ADDED,
+  USER_ROLE_REMOVED,
+} from './user-role.listener';
 import { PermissionsService } from '../permissions.service';
 
 describe('UserRoleListener', () => {
@@ -9,7 +13,10 @@ describe('UserRoleListener', () => {
   beforeEach(async () => {
     perms = { invalidate: jest.fn().mockResolvedValue(undefined) };
     const module = await Test.createTestingModule({
-      providers: [UserRoleListener, { provide: PermissionsService, useValue: perms }],
+      providers: [
+        UserRoleListener,
+        { provide: PermissionsService, useValue: perms },
+      ],
     }).compile();
     listener = module.get(UserRoleListener);
   });

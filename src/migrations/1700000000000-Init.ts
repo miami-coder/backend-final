@@ -41,7 +41,9 @@ export class Init1700000000000 implements MigrationInterface {
         UNIQUE("provider", "providerUserId")
       )
     `);
-    await queryRunner.query(`CREATE INDEX "idx_oauth_userId" ON "oauth_accounts" ("userId")`);
+    await queryRunner.query(
+      `CREATE INDEX "idx_oauth_userId" ON "oauth_accounts" ("userId")`,
+    );
 
     await queryRunner.query(`
       CREATE TABLE "roles" (
@@ -80,29 +82,49 @@ export class Init1700000000000 implements MigrationInterface {
         PRIMARY KEY ("userId", "roleId")
       )
     `);
-    await queryRunner.query(`CREATE INDEX "idx_user_roles_userId" ON "user_roles" ("userId")`);
+    await queryRunner.query(
+      `CREATE INDEX "idx_user_roles_userId" ON "user_roles" ("userId")`,
+    );
 
     // Seed: 4 roles
-    const userRoleId = (await queryRunner.query(
-      `INSERT INTO "roles"("code","name","description") VALUES ('user','Користувач','Базовий акаунт') RETURNING "id"`,
-    ))[0].id;
-    const venueAdminId = (await queryRunner.query(
-      `INSERT INTO "roles"("code","name","description") VALUES ('venue_admin','Адмін закладу','Представник закладу') RETURNING "id"`,
-    ))[0].id;
-    const superAdminId = (await queryRunner.query(
-      `INSERT INTO "roles"("code","name","description") VALUES ('super_admin','Супер-адмін','Повний доступ') RETURNING "id"`,
-    ))[0].id;
-    const criticId = (await queryRunner.query(
-      `INSERT INTO "roles"("code","name","description") VALUES ('critic','Критик','Позначений критик') RETURNING "id"`,
-    ))[0].id;
+    const userRoleId = (
+      await queryRunner.query(
+        `INSERT INTO "roles"("code","name","description") VALUES ('user','Користувач','Базовий акаунт') RETURNING "id"`,
+      )
+    )[0].id;
+    const venueAdminId = (
+      await queryRunner.query(
+        `INSERT INTO "roles"("code","name","description") VALUES ('venue_admin','Адмін закладу','Представник закладу') RETURNING "id"`,
+      )
+    )[0].id;
+    const superAdminId = (
+      await queryRunner.query(
+        `INSERT INTO "roles"("code","name","description") VALUES ('super_admin','Супер-адмін','Повний доступ') RETURNING "id"`,
+      )
+    )[0].id;
+    const criticId = (
+      await queryRunner.query(
+        `INSERT INTO "roles"("code","name","description") VALUES ('critic','Критик','Позначений критик') RETURNING "id"`,
+      )
+    )[0].id;
 
     // Seed: 15 permissions
     const permCodes = [
-      'venue:create', 'venue:edit:own', 'venue:edit:any', 'venue:moderate',
-      'review:create', 'review:edit:own', 'review:edit:any', 'review:feature',
-      'hangout:create', 'news:manage:own', 'news:manage:any',
-      'complaint:manage', 'user:manage',
-      'analytics:view:own', 'analytics:view:all',
+      'venue:create',
+      'venue:edit:own',
+      'venue:edit:any',
+      'venue:moderate',
+      'review:create',
+      'review:edit:own',
+      'review:edit:any',
+      'review:feature',
+      'hangout:create',
+      'news:manage:own',
+      'news:manage:any',
+      'complaint:manage',
+      'user:manage',
+      'analytics:view:own',
+      'analytics:view:all',
     ];
     const permIds: Record<string, string> = {};
     for (const code of permCodes) {
@@ -114,22 +136,44 @@ export class Init1700000000000 implements MigrationInterface {
     }
 
     // Map role -> permissions
-    const userPerms = ['venue:create', 'review:create', 'review:edit:own', 'hangout:create', 'news:manage:own'];
-    const venueAdminPerms = [...userPerms, 'venue:edit:own', 'analytics:view:own'];
+    const userPerms = [
+      'venue:create',
+      'review:create',
+      'review:edit:own',
+      'hangout:create',
+      'news:manage:own',
+    ];
+    const venueAdminPerms = [
+      ...userPerms,
+      'venue:edit:own',
+      'analytics:view:own',
+    ];
     const superAdminPerms = permCodes;
     const criticPerms = [...userPerms, 'review:feature'];
 
     for (const p of userPerms) {
-      await queryRunner.query(`INSERT INTO "role_permissions"("roleId","permissionId") VALUES ($1,$2)`, [userRoleId, permIds[p]]);
+      await queryRunner.query(
+        `INSERT INTO "role_permissions"("roleId","permissionId") VALUES ($1,$2)`,
+        [userRoleId, permIds[p]],
+      );
     }
     for (const p of venueAdminPerms) {
-      await queryRunner.query(`INSERT INTO "role_permissions"("roleId","permissionId") VALUES ($1,$2)`, [venueAdminId, permIds[p]]);
+      await queryRunner.query(
+        `INSERT INTO "role_permissions"("roleId","permissionId") VALUES ($1,$2)`,
+        [venueAdminId, permIds[p]],
+      );
     }
     for (const p of superAdminPerms) {
-      await queryRunner.query(`INSERT INTO "role_permissions"("roleId","permissionId") VALUES ($1,$2)`, [superAdminId, permIds[p]]);
+      await queryRunner.query(
+        `INSERT INTO "role_permissions"("roleId","permissionId") VALUES ($1,$2)`,
+        [superAdminId, permIds[p]],
+      );
     }
     for (const p of criticPerms) {
-      await queryRunner.query(`INSERT INTO "role_permissions"("roleId","permissionId") VALUES ($1,$2)`, [criticId, permIds[p]]);
+      await queryRunner.query(
+        `INSERT INTO "role_permissions"("roleId","permissionId") VALUES ($1,$2)`,
+        [criticId, permIds[p]],
+      );
     }
   }
 

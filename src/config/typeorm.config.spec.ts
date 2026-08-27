@@ -2,7 +2,9 @@ import { typeOrmAsyncConfig } from './typeorm.config';
 import { ConfigService } from '@nestjs/config';
 
 function mockConfig(vars: Record<string, string>): ConfigService {
-  return { get: <K = string>(key: string) => vars[key] as K } as unknown as ConfigService;
+  return {
+    get: <K = string>(key: string) => vars[key] as K,
+  } as unknown as ConfigService;
 }
 
 describe('typeOrmAsyncConfig', () => {
@@ -34,7 +36,14 @@ describe('typeOrmAsyncConfig', () => {
 
   it('disables logging outside development', () => {
     const cfg = (typeOrmAsyncConfig.useFactory as (c: ConfigService) => object)(
-      mockConfig({ DATABASE_HOST: 'h', DATABASE_PORT: '5432', DATABASE_USER: 'x', DATABASE_PASS: 'y', DATABASE_NAME: 'z', NODE_ENV: 'production' }),
+      mockConfig({
+        DATABASE_HOST: 'h',
+        DATABASE_PORT: '5432',
+        DATABASE_USER: 'x',
+        DATABASE_PASS: 'y',
+        DATABASE_NAME: 'z',
+        NODE_ENV: 'production',
+      }),
     );
     expect((cfg as { logging: unknown }).logging).toBe(false);
   });
