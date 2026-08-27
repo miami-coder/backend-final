@@ -13,6 +13,7 @@ import { RbacModule } from './modules/rbac/rbac.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { VenuesModule } from './modules/venues/venues.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { VenuesModule } from './modules/venues/venues.module';
     AuthModule,
     UsersModule,
     VenuesModule,
+    ReviewsModule,
   ],
 })
 export class AppModule {}
