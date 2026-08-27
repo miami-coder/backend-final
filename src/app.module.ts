@@ -18,6 +18,7 @@ import { FavoritesModule } from './modules/favorites/favorites.module';
 import { NewsModule } from './modules/news/news.module';
 import { ComplaintsModule } from './modules/complaints/complaints.module';
 import { HangoutsModule } from './modules/hangouts/hangouts.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { HangoutsModule } from './modules/hangouts/hangouts.module';
     NewsModule,
     ComplaintsModule,
     HangoutsModule,
+    AnalyticsModule,
   ],
 })
 export class AppModule {}
