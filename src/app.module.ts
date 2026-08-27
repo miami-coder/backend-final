@@ -17,6 +17,7 @@ import { ReviewsModule } from './modules/reviews/reviews.module';
 import { FavoritesModule } from './modules/favorites/favorites.module';
 import { NewsModule } from './modules/news/news.module';
 import { ComplaintsModule } from './modules/complaints/complaints.module';
+import { HangoutsModule } from './modules/hangouts/hangouts.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { ComplaintsModule } from './modules/complaints/complaints.module';
     FavoritesModule,
     NewsModule,
     ComplaintsModule,
+    HangoutsModule,
   ],
 })
 export class AppModule {}
