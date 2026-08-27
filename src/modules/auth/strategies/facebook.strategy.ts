@@ -5,7 +5,9 @@ import { UsersService } from '../../users/users.service';
 
 @Injectable()
 export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
-  constructor(private readonly users: UsersService) {
+  private readonly users: UsersService;
+
+  constructor(users: UsersService) {
     if (!process.env.FACEBOOK_APP_ID || !process.env.FACEBOOK_APP_SECRET) {
       super({
         clientID: 'placeholder',
@@ -21,6 +23,7 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
         profileFields: ['id', 'emails', 'name', 'displayName'],
       });
     }
+    this.users = users;
   }
 
   async validate(accessToken: string, refreshToken: string, profile: Profile, done: (err: any, user: any) => void) {

@@ -5,7 +5,9 @@ import { UsersService } from '../../users/users.service';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
-  constructor(private readonly users: UsersService) {
+  private readonly users: UsersService;
+
+  constructor(users: UsersService) {
     if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
       // Skip registration if not configured
       super({
@@ -22,6 +24,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         scope: ['email', 'profile'],
       });
     }
+    this.users = users;
   }
 
   async validate(accessToken: string, refreshToken: string, profile: any, done: VerifyCallback) {
