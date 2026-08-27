@@ -14,6 +14,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { VenuesModule } from './modules/venues/venues.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
+import { FavoritesModule } from './modules/favorites/favorites.module';
 
 @Module({
   imports: [
@@ -25,7 +26,10 @@ import { ReviewsModule } from './modules/reviews/reviews.module';
     LoggerModule.forRoot({
       pinoHttp: {
         level: process.env.LOG_LEVEL ?? 'debug',
-        transport: process.env.NODE_ENV === 'production' ? undefined : { target: 'pino-pretty' },
+        transport:
+          process.env.NODE_ENV === 'production'
+            ? undefined
+            : { target: 'pino-pretty' },
       },
     }),
     CommonModule,
@@ -35,6 +39,7 @@ import { ReviewsModule } from './modules/reviews/reviews.module';
     UsersModule,
     VenuesModule,
     ReviewsModule,
+    FavoritesModule,
   ],
 })
 export class AppModule {}
