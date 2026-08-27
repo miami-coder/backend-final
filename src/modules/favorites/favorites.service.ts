@@ -1,20 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Favorite } from './entities/favorite.entity';
 import { Venue } from '../venues/entities/venue.entity';
 import {
   buildMeta,
   normalizePagination,
 } from '../../common/utils/pagination.util';
-
-interface FavoriteVenueRow {
-  v_id: string | null;
-  v_name: string | null;
-  v_address: string | null;
-  v_ratingAvg: string | null;
-  v_mainPhotoUrl: string | null;
-}
 
 @Injectable()
 export class FavoritesService {
@@ -39,28 +31,34 @@ export class FavoritesService {
 
   async list(userId: string, page = 1, limit = 20) {
     const { offset } = normalizePagination({ page, limit });
-    const { raw } = await this.favorites
-      .createQueryBuilder('f')
-      .innerJoinAndSelect('venues', 'v', 'v.id = f."venueId"')
-      .where('f."userId" = :userId', { userId })
-      .orderBy('f."createdAt"', 'DESC')
-      .skip(offset)
-      .take(limit)
-      .getRawAndEntities();
-    const total = await this.favorites.count({ where: { userId } });
-    const rows = raw as FavoriteVenueRow[];
-    return {
-      data: rows
-        .filter((d) => d.v_id)
-        .map((d) => ({
-          id: d.v_id,
-          name: d.v_name,
-          address: d.v_address,
-          ratingAvg: d.v_ratingAvg,
-          mainPhotoUrl: d.v_mainPhotoUrl,
-        })),
-      meta: buildMeta({ page, limit, offset }, total),
-    };
+    const [favs, total] = await this.favorites.findAndCount({
+      where: { userId },
+      order: { createdAt: 'DESC' },
+      skip: offset,
+      take: limit,
+    });
+    const venueIds = favs.map((f) => f.venueId);
+    if (venueIds.length === 0) {
+      return { data: [], meta: buildMeta({ page, limit, offset }, total) };
+    }
+    const venues = await this.venues.find({
+      where: { id: In(venueIds) },
+    });
+    const byId = new Map(venues.map((v) => [v.id, v]));
+    const data = favs
+      .map((f) => {
+        const v = byId.get(f.venueId);
+        if (!v) return null;
+        return {
+          id: v.id,
+          name: v.name,
+          address: v.address,
+          ratingAvg: v.ratingAvg,
+          mainPhotoUrl: v.mainPhotoUrl,
+        };
+      })
+      .filter((d): d is NonNullable<typeof d> => d !== null);
+    return { data, meta: buildMeta({ page, limit, offset }, total) };
   }
 
   private async assertVenue(venueId: string) {
