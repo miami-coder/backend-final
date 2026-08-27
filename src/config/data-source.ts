@@ -25,6 +25,9 @@ import { News } from '../modules/news/entities/news.entity';
 import { News1700000004000 } from '../migrations/1700000004000-News';
 import { Complaint } from '../modules/complaints/entities/complaint.entity';
 import { Complaints1700000005000 } from '../migrations/1700000005000-Complaints';
+import { Hangout } from '../modules/hangouts/entities/hangout.entity';
+import { HangoutParticipant } from '../modules/hangouts/entities/hangout-participant.entity';
+import { Hangouts1700000006000 } from '../migrations/1700000006000-Hangouts';
 
 loadEnv();
 
@@ -55,6 +58,8 @@ export default new DataSource({
     Favorite,
     News,
     Complaint,
+    Hangout,
+    HangoutParticipant,
   ],
   migrations: [
     Init1700000000000,
@@ -63,6 +68,7 @@ export default new DataSource({
     Favorites1700000003000,
     News1700000004000,
     Complaints1700000005000,
+    Hangouts1700000006000,
   ],
   synchronize: false,
 });
