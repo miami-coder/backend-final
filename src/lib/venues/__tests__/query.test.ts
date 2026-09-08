@@ -22,6 +22,16 @@ describe('parseCatalogQuery', () => {
   it('сміттєві числа ігноруються', () => {
     expect(parseCatalogQuery({ minCheck: 'abc', page: '-3' })).toEqual(DEFAULT_CATALOG_QUERY)
   })
+  it('порожні lat/lng — як відсутні (не 0;0)', () => {
+    const q = parseCatalogQuery({ lat: '', lng: '' })
+    expect(q.lat).toBeUndefined()
+    expect(q.lng).toBeUndefined()
+    expect(toSearch(q)).not.toContain('lat=')
+    expect(toSearch(q)).not.toContain('lng=')
+  })
+  it('sort=distance з порожніми lat/lng → newest', () => {
+    expect(parseCatalogQuery({ sort: 'distance', lat: '', lng: '' }).sort).toBe('newest')
+  })
 })
 
 describe('toSearch', () => {

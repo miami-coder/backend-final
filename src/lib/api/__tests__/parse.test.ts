@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ApiError, parseData, parseList, parseRaw } from '@/lib/api/parse'
+import { parseData, parseList, parseRaw } from '@/lib/api/parse'
 
 const jsonRes = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
@@ -17,7 +17,10 @@ describe('parseData', () => {
   })
   it('кидає ApiError INTERNAL_ERROR при несподіваному тілі', async () => {
     const res = jsonRes({ smth: 'wrong' })
-    await expect(parseData(res)).rejects.toBeInstanceOf(ApiError)
+    // тіло 2xx-відповіді вже прочитане — помилка конструюється без повторного res.json()
+    await expect(parseData(res)).rejects.toMatchObject({
+      status: 200, code: 'INTERNAL_ERROR', message: 'Сервіс тимчасово недоступний', details: null,
+    })
   })
 })
 

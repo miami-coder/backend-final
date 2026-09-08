@@ -21,7 +21,7 @@ export function Header() {
           onSubmit={(e) => {
             e.preventDefault()
             const q = new FormData(e.currentTarget).get('q')
-            router.push(`/venues?q=${encodeURIComponent(String(q ?? ''))}`)
+            router.push(`/?q=${encodeURIComponent(String(q ?? ''))}`)
           }}
         >
           <input
@@ -37,7 +37,14 @@ export function Header() {
             <Button variant="secondary" size="sm" onClick={() => logout()}>Вийти</Button>
           </div>
         ) : (
-          <Link href="/auth/login"><Button size="sm">Увійти</Button></Link>
+          // Посилання, а не Link>Button: <button> всередині <a> — невалідний HTML.
+          // Класи ті самі, що в Button (primary + sm).
+          <Link
+            href="/auth/login"
+            className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-brand-500 px-2.5 py-1 text-sm font-medium text-white transition-colors hover:bg-brand-600"
+          >
+            Увійти
+          </Link>
         )}
       </div>
     </header>

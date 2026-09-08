@@ -44,6 +44,14 @@ async function passthrough(res: Response, newTokens?: string): Promise<NextRespo
 
 async function handle(req: NextRequest, ctx: Ctx): Promise<NextResponse> {
   const { path } = await ctx.params
+  // Next декодує catch-all-сегменти: %2e%2e стає '..'. Такий шлях після
+  // нормалізації міг би вирватися за межі /api/v1 — відхиляємо без проксування
+  if (path.some((seg) => seg === '.' || seg === '..')) {
+    return NextResponse.json(
+      { error: { code: 'BAD_REQUEST', message: 'Некоректний запит', details: null } },
+      { status: 400 },
+    )
+  }
   const tokens = await getSessionTokens()
 
   // Буферуємо тіло один раз: ReadableStream одноразовий, а повторний запит після refresh мусить нести ті самі дані

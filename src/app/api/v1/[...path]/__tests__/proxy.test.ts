@@ -86,6 +86,16 @@ describe('проксі /api/v1', () => {
     expect(res.status).toBe(401)
   })
 
+  it('dot-сегмент у шляху → 400 BAD_REQUEST, до бекенда не доходить', async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+    // Next декодує %2e%2e у '..' — саме такий масив сегментів і прийде в params
+    const res = await proxyGet(new Request('http://l/api/v1/%2e%2e/health') as never, makeCtx(['..', 'health']) as never)
+    expect(res.status).toBe(400)
+    expect(await res.json()).toEqual({ error: { code: 'BAD_REQUEST', message: 'Некоректний запит', details: null } })
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
   it('без сесії не додає Authorization', async () => {
     cookieStore.value = undefined
     const fetchMock = vi.fn(async (_url: string, init?: RequestInit) => {

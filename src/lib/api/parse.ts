@@ -27,7 +27,11 @@ async function errorFromResponse(res: Response): Promise<ApiError> {
 export async function parseData<T>(res: Response): Promise<T> {
   if (!res.ok) throw await errorFromResponse(res)
   const body = (await res.json()) as { data?: T }
-  if (!('data' in body)) throw await errorFromResponse(res)
+  // Тіло вже прочитане вище — errorFromResponse знову робив би res.json()
+  // на вичерпаному стрімі (TypeError), тому конструюємо помилку напряму
+  if (!('data' in body)) {
+    throw new ApiError(res.status, 'INTERNAL_ERROR', 'Сервіс тимчасово недоступний')
+  }
   return body.data as T
 }
 

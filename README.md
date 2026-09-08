@@ -48,6 +48,7 @@ BACKEND_URL=http://localhost:3000
 
 - Усі клієнтські запити йдуть на `/api/v1/*`, які переспрямовуються на `${BACKEND_URL}/api/v1` (маршрут `src/app/api/v1/[...path]/route.ts`).
 - Пара JWT-токенів (access + refresh) зберігається в httpOnly-cookie `piyachok_session` — токени недоступні з JS (`document.cookie` їх не містить), refresh виконується на сервері.
+- Оновлення access-токена відбувається автоматично всередині проксі `/api/v1`: отримавши 401, він сам викликає `/auth/refresh` на бекенді й ротує cookie на сервері, тому окремого BFF-хендлера `/api/auth/refresh` навмисно немає.
 - OAuth (Google/Facebook) — кнопки ведуть на бекенд; колбек `?access&refresh` обробляє `src/app/auth/callback` і встановлює ту саму cookie.
 - Каталог закладів рендериться SSR: фільтри/сортування/пагінація зберігаються в URL.
 

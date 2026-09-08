@@ -21,9 +21,10 @@ export const DEFAULT_CATALOG_QUERY: CatalogQuery = { feature: [], tag: [], sort:
 // Допустимі значення сортування
 const SORTS = ['rating', 'check', 'newest', 'name', 'distance'] as const
 
-// Число з рядка; масиви та сміття ігноруємо
+// Число з рядка; масиви та сміття ігноруємо; порожній рядок — як відсутній параметр
+// (інакше Number('') === 0 і ?lat=&lng= давало б координати 0;0)
 function num(v: string | string[] | undefined): number | undefined {
-  if (typeof v !== 'string') return undefined
+  if (typeof v !== 'string' || v === '') return undefined
   const n = Number(v)
   return Number.isFinite(n) ? n : undefined
 }

@@ -17,7 +17,8 @@ export const registerSchema = z.object({
   password: z
     .string()
     .min(8, 'Мінімум 8 символів')
-    .regex(/[A-ZА-ЯЁЇІЄҐ]/, 'Потрібна хоча б одна велика літера')
+    // Бекенд (password.validator.ts) вимагає саме ЛАТИНСЬКУ велику літеру — кирилицю не приймає
+    .regex(/[A-Z]/, 'Потрібна хоча б одна велика латинська літера')
     .regex(/\d/, 'Потрібна хоча б одна цифра'),
   age: z.coerce.number().int().min(18, 'Мінімум 18 років').optional(),
   phone: z.string().optional(),

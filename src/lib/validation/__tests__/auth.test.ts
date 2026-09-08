@@ -24,6 +24,9 @@ describe('registerSchema', () => {
   it('пароль без великої літери відхиляється', () => {
     expect(registerSchema.safeParse({ ...valid, password: 'password1' }).success).toBe(false)
   })
+  it('кирилична велика літера не замінює латинську (як на бекенді)', () => {
+    expect(registerSchema.safeParse({ ...valid, password: 'Пароль1' }).success).toBe(false)
+  })
   it('age < 18 відхиляється', () => {
     expect(registerSchema.safeParse({ ...valid, age: 17 }).success).toBe(false)
   })
