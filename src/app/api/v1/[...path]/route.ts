@@ -45,8 +45,12 @@ async function passthrough(res: Response, newTokens?: string): Promise<NextRespo
 async function handle(req: NextRequest, ctx: Ctx): Promise<NextResponse> {
   const { path } = await ctx.params
   // Next декодує catch-all-сегменти: %2e%2e стає '..'. Такий шлях після
-  // нормалізації міг би вирватися за межі /api/v1 — відхиляємо без проксування
-  if (path.some((seg) => seg === '.' || seg === '..')) {
+  // нормалізації міг би вирватися за межі /api/v1 — відхиляємо без проксування.
+  // Next спочатку розбиває захоплення на '/', потім декодує КОЖЕН сегмент:
+  // `..%2fhealth` доходить як ОДИН сегмент '../health', який проходить перевірку
+  // seg === '..', а fetch() далі нормалізує '/'. Тому відкидаємо будь-який
+  // сегмент із '/' або '\' усередині (плюс самі '.' та '..').
+  if (path.some((seg) => seg === '.' || seg === '..' || seg.includes('/') || seg.includes('\\'))) {
     return NextResponse.json(
       { error: { code: 'BAD_REQUEST', message: 'Некоректний запит', details: null } },
       { status: 400 },

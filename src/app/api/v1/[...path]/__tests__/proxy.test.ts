@@ -96,6 +96,24 @@ describe('проксі /api/v1', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
+  it('сегмент з вбудованим %2f (обхід через ../) → 400 BAD_REQUEST, до бекенда не доходить', async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+    // Тестовий харнес передає сегменти прямо в params (без декодування URL),
+    // тому подаємо той вигляд, який у проді дістається хендлеру: Next розбиває
+    // catch-all на '/' ДО декодування, тож '..%2fhealth' і '..%2f..%2fsecret'
+    // приходять як ОДИН сегмент '../health' / '../../secret'
+    const res1 = await proxyGet(new Request('http://l/api/v1/..%2fhealth') as never, makeCtx(['../health']) as never)
+    expect(res1.status).toBe(400)
+    expect(await res1.json()).toEqual({ error: { code: 'BAD_REQUEST', message: 'Некоректний запит', details: null } })
+    const res2 = await proxyGet(new Request('http://l/api/v1/..%2f..%2fsecret') as never, makeCtx(['../../secret']) as never)
+    expect(res2.status).toBe(400)
+    // backslash-варіант теж відкидається
+    const res3 = await proxyGet(new Request('http://l/api/v1/x') as never, makeCtx(['..\\secret']) as never)
+    expect(res3.status).toBe(400)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
   it('без сесії не додає Authorization', async () => {
     cookieStore.value = undefined
     const fetchMock = vi.fn(async (_url: string, init?: RequestInit) => {

@@ -25,7 +25,8 @@ describe('registerSchema', () => {
     expect(registerSchema.safeParse({ ...valid, password: 'password1' }).success).toBe(false)
   })
   it('кирилична велика літера не замінює латинську (як на бекенді)', () => {
-    expect(registerSchema.safeParse({ ...valid, password: 'Пароль1' }).success).toBe(false)
+    // 8+ символів: min(8) не має відхилити пароль раніше за regex — пінуємо саме regex
+    expect(registerSchema.safeParse({ ...valid, password: 'Парольк1' }).success).toBe(false)
   })
   it('age < 18 відхиляється', () => {
     expect(registerSchema.safeParse({ ...valid, age: 17 }).success).toBe(false)
