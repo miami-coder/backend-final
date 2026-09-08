@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Локальні worktree-ізоляції та SDD-скретч (не є частиною коду проєкту):
+    ".claude/**",
+    ".superpowers/**",
   ]),
 ]);
 
