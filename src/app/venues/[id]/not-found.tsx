@@ -1,13 +1,13 @@
 import Link from 'next/link'
 
-// Заготовка 404 для сторінки закладу (План 2): спрацьовує на notFound() всередині /venues/[id]
+// 404 сторінки закладу: спрацьовує на notFound() у page.tsx
+// (бекенд віддає 404 для не-approved/неіснуючого закладу)
 export default function NotFound() {
   return (
     <div className="py-16 text-center">
-      <p className="text-6xl">🍺</p>
-      <h1 className="mt-4 text-2xl font-bold">Сторінку не знайдено</h1>
-      <p className="mt-2 text-stone-500">Можливо, посилання застаріло або сторінку видалено.</p>
-      <Link className="mt-6 inline-block rounded-lg bg-brand-500 px-4 py-2 text-white hover:bg-brand-600" href="/">
+      <h1 className="text-2xl font-bold">Заклад не знайдено</h1>
+      <p className="mt-2 text-stone-500">Заклад не знайдено або видалений.</p>
+      <Link className="mt-6 inline-block text-brand-600 hover:underline" href="/">
         До каталогу
       </Link>
     </div>
