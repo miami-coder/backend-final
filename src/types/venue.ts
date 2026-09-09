@@ -19,10 +19,12 @@ export interface RawVenue {
   viewCount: number
   createdAt: string
   updatedAt: string
-  photos: { id: string; venueId: string; url: string; sortOrder: number }[]
-  featureAssignments: { venueId: string; featureId: string; feature: { id: string; code: string; name: string; icon: string | null } }[]
-  venueTags: { venueId: string; tagId: string; tag: { id: string; name: string; slug: string } }[]
-  venueTypeAssignments: { venueId: string; typeId: string; type: { id: string; name: string; slug: string } }[]
+  // Відносини Є лише у елементах GET /venues (list); GET /venues/:id
+  // повертає лише owner+profile — тому всі відносини optional
+  photos?: { id: string; venueId: string; url: string; sortOrder: number }[]
+  featureAssignments?: { venueId: string; featureId: string; feature: { id: string; code: string; name: string; icon: string | null } }[]
+  venueTags?: { venueId: string; tagId: string; tag: { id: string; name: string; slug: string } }[]
+  venueTypeAssignments?: { venueId: string; typeId: string; type: { id: string; name: string; slug: string } }[]
 }
 
 // --- Типи після парсингу (для UI) ---
