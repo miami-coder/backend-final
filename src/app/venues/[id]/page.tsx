@@ -7,6 +7,7 @@ import { RouteButton } from '@/components/features/venues/route-button'
 import { ViewRecorder } from '@/components/features/venues/view-recorder'
 import { WorkingHours } from '@/components/features/venues/working-hours'
 import { getSessionTokens } from '@/lib/auth/session'
+import { ComplaintButton } from '@/components/features/complaints/complaint-button'
 import { FavoriteButton } from '@/components/features/venues/favorite-button'
 import { ReviewForm } from '@/components/features/venues/review-form'
 import { ReviewList } from '@/components/features/venues/review-list'
@@ -111,7 +112,8 @@ export default async function VenuePage({ params, searchParams }: Props) {
       <div className="flex flex-wrap gap-3">
         <FavoriteButton venueId={venue.id} initialFavorite={initialFavorite} />
         <RouteButton venue={venue} />
-        {/* Точка монтування: ComplaintButton (Task 12), HangoutButton (Task 13) */}
+        {/* Точка монтування: HangoutButton (Task 13) */}
+        <ComplaintButton target={{ venueId: venue.id }} loginNext={`/venues/${venue.id}`} />
       </div>
 
       {venue.tags.length > 0 && (
