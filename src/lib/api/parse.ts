@@ -35,9 +35,20 @@ export async function parseData<T>(res: Response): Promise<T> {
   return body.data as T
 }
 
+// Бекенд іноді повертає числову meta рядками — коерцюємо, щоб UI не рахував ділення на рядках
 export async function parseList<T>(res: Response): Promise<{ data: T[]; meta?: PaginatedMeta }> {
   if (!res.ok) throw await errorFromResponse(res)
-  return (await res.json()) as { data: T[]; meta?: PaginatedMeta }
+  const body = (await res.json()) as { data?: T[]; meta?: Partial<PaginatedMeta> }
+  const rawMeta = body.meta
+  const meta: PaginatedMeta | undefined = rawMeta
+    ? {
+        page: Number(rawMeta.page),
+        limit: Number(rawMeta.limit),
+        total: Number(rawMeta.total),
+        hasMore: Boolean(rawMeta.hasMore),
+      }
+    : undefined
+  return { data: body.data ?? [], meta }
 }
 
 export async function parseRaw<T>(res: Response): Promise<T> {

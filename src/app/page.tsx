@@ -2,7 +2,7 @@
 
 import { serverFetchList } from '@/lib/api/server-client'
 import { parseVenue, type RawVenue } from '@/types/venue'
-import { parseCatalogQuery, toSearch, type CatalogQuery } from '@/lib/venues/query'
+import { parseCatalogQuery, catalogHref, toSearch, type CatalogQuery } from '@/lib/venues/query'
 import { VenueCard } from '@/components/features/venues/venue-card'
 import { VenueFilters } from '@/components/features/venues/venue-filters'
 import { Pagination } from '@/components/ui/pagination'
@@ -42,10 +42,7 @@ export default async function CatalogPage({ searchParams }: PageProps) {
         <Pagination
           page={query.page}
           totalPages={totalPages}
-          hrefFor={(p) => {
-            const qs = toSearch({ ...query, page: p })
-            return `/?${qs}`
-          }}
+          hrefFor={(p) => catalogHref({ ...query, page: p })}
         />
       </div>
     </div>

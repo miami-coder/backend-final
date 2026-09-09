@@ -19,6 +19,7 @@ export function VenueFilters({ initial }: { initial: CatalogQuery }) {
   const [minCheck, setMinCheck] = useState(initial.minCheck?.toString() ?? '')
   const [maxCheck, setMaxCheck] = useState(initial.maxCheck?.toString() ?? '')
   const [minRating, setMinRating] = useState(initial.minRating?.toString() ?? '')
+  const [radiusKm, setRadiusKm] = useState(initial.radiusKm?.toString() ?? '5')
   const [geo, setGeo] = useState<{ lat: number; lng: number } | null>(
     initial.lat !== undefined && initial.lng !== undefined ? { lat: initial.lat, lng: initial.lng } : null,
   )
@@ -38,7 +39,7 @@ export function VenueFilters({ initial }: { initial: CatalogQuery }) {
     if (geo) {
       p.set('lat', String(geo.lat))
       p.set('lng', String(geo.lng))
-      p.set('radiusKm', '5')
+      p.set('radiusKm', radiusKm)
     }
     router.push(`/?${p.toString()}`)
   }
@@ -95,11 +96,15 @@ export function VenueFilters({ initial }: { initial: CatalogQuery }) {
           Рейтинг від
           <Input type="number" min="0" max="5" step="0.5" value={minRating} onChange={(e) => setMinRating(e.target.value)} />
         </label>
+        <label className="text-sm">
+          Радіус (км)
+          <Input type="number" min="0.1" max="100" step="0.5" value={radiusKm} onChange={(e) => setRadiusKm(e.target.value)} />
+        </label>
       </div>
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <Button type="submit">Застосувати</Button>
         <Button type="button" variant="secondary" onClick={nearMe}>📍 Поблизу</Button>
-        {geo && <span className="text-sm text-stone-500">Радіус 5 км</span>}
+        {geo && <span className="text-sm text-stone-500">Поблизу, радіус {radiusKm} км</span>}
         <Button type="button" variant="ghost" onClick={() => router.push('/')}>Скинути</Button>
       </div>
       {geoError && <p role="alert" className="mt-2 text-sm text-red-600">{geoError}</p>}

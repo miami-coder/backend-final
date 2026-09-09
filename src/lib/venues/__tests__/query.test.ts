@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_CATALOG_QUERY, parseCatalogQuery, toSearch } from '@/lib/venues/query'
+import { DEFAULT_CATALOG_QUERY, catalogHref, parseCatalogQuery, toSearch } from '@/lib/venues/query'
 
 describe('parseCatalogQuery', () => {
   it('дефолти без параметрів', () => {
@@ -31,6 +31,29 @@ describe('parseCatalogQuery', () => {
   })
   it('sort=distance з порожніми lat/lng → newest', () => {
     expect(parseCatalogQuery({ sort: 'distance', lat: '', lng: '' }).sort).toBe('newest')
+  })
+})
+
+describe('sanitize каталогу', () => {
+  it('відʼємні minCheck/maxCheck ігноруються', () => {
+    expect(parseCatalogQuery({ minCheck: '-50', maxCheck: '-1' }).minCheck).toBeUndefined()
+    expect(parseCatalogQuery({ minCheck: '-50' }).maxCheck).toBeUndefined()
+  })
+  it('minRating поза 0..5 ігнорується', () => {
+    expect(parseCatalogQuery({ minRating: '6' }).minRating).toBeUndefined()
+    expect(parseCatalogQuery({ minRating: '-1' }).minRating).toBeUndefined()
+    expect(parseCatalogQuery({ minRating: '4.5' }).minRating).toBe(4.5)
+  })
+  it('radiusKm поза 0.1..100 ігнорується', () => {
+    expect(parseCatalogQuery({ radiusKm: '0' }).radiusKm).toBeUndefined()
+    expect(parseCatalogQuery({ radiusKm: '200' }).radiusKm).toBeUndefined()
+    expect(parseCatalogQuery({ radiusKm: '5' }).radiusKm).toBe(5)
+  })
+})
+
+describe('catalogHref', () => {
+  it('будує /?… для пагінації', () => {
+    expect(catalogHref({ ...DEFAULT_CATALOG_QUERY, page: 2 })).toBe('/?sort=newest&page=2&limit=20')
   })
 })
 

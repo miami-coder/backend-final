@@ -34,6 +34,12 @@ function str(v: string | string[] | undefined): string | undefined {
   return typeof v === 'string' && v !== '' ? v : undefined
 }
 
+// Бекенд (QueryVenuesDto): minCheck/maxCheck >= 0, minRating 0..5, radiusKm 0.1..100, limit <= 100.
+// Невалідні значення відкидаємо (undefined), інакше бекенд відповість 400.
+function inRange(v: number | undefined, min: number, max: number): number | undefined {
+  return v !== undefined && v >= min && v <= max ? v : undefined
+}
+
 export function parseCatalogQuery(sp: Record<string, string | string[] | undefined>): CatalogQuery {
   const lat = num(sp.lat)
   const lng = num(sp.lng)
@@ -48,12 +54,12 @@ export function parseCatalogQuery(sp: Record<string, string | string[] | undefin
     type: str(sp.type),
     feature: str(sp.feature)?.split(',').filter(Boolean) ?? [],
     tag: str(sp.tag)?.split(',').filter(Boolean) ?? [],
-    minCheck: num(sp.minCheck),
-    maxCheck: num(sp.maxCheck),
-    minRating: num(sp.minRating),
+    minCheck: inRange(num(sp.minCheck), 0, Number.MAX_SAFE_INTEGER),
+    maxCheck: inRange(num(sp.maxCheck), 0, Number.MAX_SAFE_INTEGER),
+    minRating: inRange(num(sp.minRating), 0, 5),
     lat,
     lng,
-    radiusKm: num(sp.radiusKm),
+    radiusKm: inRange(num(sp.radiusKm), 0.1, 100),
     // «distance» без координат не має сенсу — повертаємося до «newest»
     sort: sort === 'distance' && !hasGeo ? 'newest' : sort,
     page: page !== undefined && page >= 1 ? Math.floor(page) : 1,
@@ -78,4 +84,9 @@ export function toSearch(q: CatalogQuery): string {
   p.set('page', String(q.page))
   p.set('limit', String(q.limit))
   return p.toString()
+}
+
+// Готовий href каталогу — спільний для пагінації та фільтрів
+export function catalogHref(query: CatalogQuery): string {
+  return `/?${toSearch(query)}`
 }

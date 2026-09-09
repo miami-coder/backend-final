@@ -32,6 +32,13 @@ describe('parseList', () => {
       meta: { page: 1, limit: 20, total: 1, hasMore: false },
     })
   })
+  it('meta з рядкових значень коерціюється в числа', async () => {
+    const res = jsonRes({ data: [1], meta: { page: '2', limit: '20', total: '40', hasMore: 1 } })
+    expect(await parseList<number>(res)).toEqual({
+      data: [1],
+      meta: { page: 2, limit: 20, total: 40, hasMore: true },
+    })
+  })
 })
 
 describe('parseRaw', () => {
