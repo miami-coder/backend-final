@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getSessionTokens } from '@/lib/auth/session'
 import { serverFetch } from '@/lib/api/server-client'
 import { UserProvider } from '@/components/providers/user-provider'
+import { ToastProvider } from '@/components/ui/toast'
 import { AppShell } from '@/components/layout/app-shell'
 import type { SessionUser } from '@/types/user'
 import './globals.css'
@@ -27,7 +28,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="uk">
       <body>
         <UserProvider initialUser={user}>
-          <AppShell>{children}</AppShell>
+          <ToastProvider>
+            <AppShell>{children}</AppShell>
+          </ToastProvider>
         </UserProvider>
       </body>
     </html>

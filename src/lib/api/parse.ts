@@ -51,6 +51,19 @@ export async function parseList<T>(res: Response): Promise<{ data: T[]; meta?: P
   return { data: body.data ?? [], meta }
 }
 
+// Запити без тіла у відповіді (наприклад, DELETE → 200 з порожнім тілом):
+// розгортає data, якщо JSON-конверт є, інакше — undefined
+export async function parseEmpty<T>(res: Response): Promise<T | undefined> {
+  if (!res.ok) throw await errorFromResponse(res)
+  const text = await res.text()
+  if (!text.trim()) return undefined
+  const body = JSON.parse(text) as { data?: T }
+  if (!('data' in body)) {
+    throw new ApiError(res.status, 'INTERNAL_ERROR', 'Сервіс тимчасово недоступний')
+  }
+  return body.data as T
+}
+
 export async function parseRaw<T>(res: Response): Promise<T> {
   if (!res.ok) throw await errorFromResponse(res)
   return (await res.json()) as T

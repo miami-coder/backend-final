@@ -45,6 +45,11 @@ describe('api: edge-кейси', () => {
     await expect(api('/me')).rejects.toBeInstanceOf(ApiError)
     vi.stubGlobal('window', originalWindow)
   })
+
+  it('DELETE → 200 з порожнім тілом → undefined без кидка (відкат не спрацьовує на успіху)', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('', { status: 200 })))
+    expect(await api('/me/favorites/v1', { method: 'DELETE' })).toBeUndefined()
+  })
 })
 
 describe('apiList', () => {

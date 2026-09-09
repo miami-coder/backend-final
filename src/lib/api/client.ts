@@ -1,4 +1,4 @@
-import { ApiError, parseData, parseList } from '@/lib/api/parse'
+import { ApiError, parseEmpty, parseList } from '@/lib/api/parse'
 import type { PaginatedMeta } from '@/types/api'
 
 export interface ClientListResult<T> {
@@ -22,7 +22,9 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
     // проксі вже спробував refresh — сесія мертва
     redirectToLogin()
   }
-  return parseData<T>(res)
+  // DELETE → 200 з порожнім тілом: parseData очікував би JSON-конверт
+  // і кинув би на res.json() — відкат відбувся б і на успіху
+  return (await parseEmpty<T>(res)) as T
 }
 
 export async function apiList<T>(path: string, init?: RequestInit): Promise<ClientListResult<T>> {

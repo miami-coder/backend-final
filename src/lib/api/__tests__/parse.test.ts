@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseData, parseList, parseRaw } from '@/lib/api/parse'
+import { parseData, parseEmpty, parseList, parseRaw } from '@/lib/api/parse'
 
 const jsonRes = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
@@ -44,6 +44,17 @@ describe('parseList', () => {
       data: [1],
       meta: { page: 2, limit: 20, total: 40, hasMore: true },
     })
+  })
+})
+
+describe('parseEmpty', () => {
+  it('порожнє тіло (DELETE → 200) → undefined, без кидка', async () => {
+    const res = new Response('', { status: 200 })
+    expect(await parseEmpty(res)).toBeUndefined()
+  })
+  it('JSON-конверт з data — розгортає, як parseData', async () => {
+    const res = jsonRes({ data: { venueId: 'v1' } }, 201)
+    expect(await parseEmpty<{ venueId: string }>(res)).toEqual({ venueId: 'v1' })
   })
 })
 

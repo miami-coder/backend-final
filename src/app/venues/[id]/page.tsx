@@ -6,6 +6,8 @@ import { PhotoGallery } from '@/components/features/venues/photo-gallery'
 import { RouteButton } from '@/components/features/venues/route-button'
 import { ViewRecorder } from '@/components/features/venues/view-recorder'
 import { WorkingHours } from '@/components/features/venues/working-hours'
+import { getSessionTokens } from '@/lib/auth/session'
+import { FavoriteButton } from '@/components/features/venues/favorite-button'
 import { serverFetch, serverFetchList } from '@/lib/api/server-client'
 import { formatMoney } from '@/lib/utils/format'
 import { parseVenue, type RawVenue } from '@/types/venue'
@@ -46,6 +48,22 @@ export default async function VenuePage({ params }: Props) {
   const venue = await getVenue(id)
   if (!venue) notFound()
 
+  // Початковий стан обраного: ендпоінту «чи в обраному» на бекенді немає —
+  // визначаємо за list-проекцією /me/favorites
+  const tokens = await getSessionTokens()
+  let initialFavorite = false
+  if (tokens) {
+    try {
+      const favs = await serverFetchList<{ id: string }>('/me/favorites?limit=100', {
+        tokens,
+        revalidate: 0,
+      })
+      initialFavorite = favs.data.some((f) => f.id === id)
+    } catch {
+      initialFavorite = false
+    }
+  }
+
   return (
     <div className="mx-auto max-w-4xl space-y-8 py-8">
       <ViewRecorder venueId={venue.id} />
@@ -69,8 +87,9 @@ export default async function VenuePage({ params }: Props) {
       </header>
 
       <div className="flex flex-wrap gap-3">
+        <FavoriteButton venueId={venue.id} initialFavorite={initialFavorite} />
         <RouteButton venue={venue} />
-        {/* Точка монтування: FavoriteButton (Task 10), ComplaintButton (Task 12), HangoutButton (Task 13) */}
+        {/* Точка монтування: ComplaintButton (Task 12), HangoutButton (Task 13) */}
       </div>
 
       {venue.tags.length > 0 && (
