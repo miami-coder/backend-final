@@ -9,6 +9,7 @@ import { WorkingHours } from '@/components/features/venues/working-hours'
 import { getSessionTokens } from '@/lib/auth/session'
 import { ComplaintButton } from '@/components/features/complaints/complaint-button'
 import { FavoriteButton } from '@/components/features/venues/favorite-button'
+import { HangoutButton } from '@/components/features/hangouts/hangout-button'
 import { ReviewForm } from '@/components/features/venues/review-form'
 import { ReviewList } from '@/components/features/venues/review-list'
 import { serverFetch, serverFetchList } from '@/lib/api/server-client'
@@ -112,7 +113,7 @@ export default async function VenuePage({ params, searchParams }: Props) {
       <div className="flex flex-wrap gap-3">
         <FavoriteButton venueId={venue.id} initialFavorite={initialFavorite} />
         <RouteButton venue={venue} />
-        {/* Точка монтування: HangoutButton (Task 13) */}
+        <HangoutButton venueId={venue.id} loginNext={`/venues/${venue.id}`} />
         <ComplaintButton target={{ venueId: venue.id }} loginNext={`/venues/${venue.id}`} />
       </div>
 
