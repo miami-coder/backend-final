@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { api, apiList, authApiError } from '@/lib/api/client'
+import { api, apiList, apiVoid, authApiError } from '@/lib/api/client'
 import { ApiError } from '@/lib/api/parse'
 
 afterEach(() => vi.unstubAllGlobals())
@@ -49,6 +49,35 @@ describe('api: edge-кейси', () => {
   it('DELETE → 200 з порожнім тілом → undefined без кидка (відкат не спрацьовує на успіху)', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => new Response('', { status: 200 })))
     expect(await api('/me/favorites/v1', { method: 'DELETE' })).toBeUndefined()
+  })
+})
+
+describe('apiVoid', () => {
+  it('DELETE 200 порожнє тіло → резолвиться void (без parse JSON)', async () => {
+    vi.stubGlobal('window', { location: { pathname: '/venues/v1', assign: vi.fn() } })
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(null, { status: 200 })))
+    await expect(apiVoid('/reviews/r1', { method: 'DELETE' })).resolves.toBeUndefined()
+  })
+
+  it('!ok (403) → кидає ApiError з тіла, БЕЗ редіректу', async () => {
+    const assign = vi.fn()
+    vi.stubGlobal('window', { location: { pathname: '/venues/v1', assign } })
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(
+      JSON.stringify({ error: { code: 'FORBIDDEN', message: 'Не ваш відгук', details: null } }),
+      { status: 403, headers: { 'content-type': 'application/json' } },
+    )))
+    await expect(apiVoid('/reviews/r1', { method: 'DELETE' })).rejects.toMatchObject({
+      status: 403, message: 'Не ваш відгук',
+    })
+    expect(assign).not.toHaveBeenCalled()
+  })
+
+  it('401 → redirectToLogin + ApiError', async () => {
+    const assign = vi.fn()
+    vi.stubGlobal('window', { location: { pathname: '/venues/v1', assign } })
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(null, { status: 401 })))
+    await expect(apiVoid('/reviews/r1', { method: 'DELETE' })).rejects.toBeInstanceOf(ApiError)
+    expect(assign).toHaveBeenCalledWith('/auth/login?next=' + encodeURIComponent('/venues/v1'))
   })
 })
 

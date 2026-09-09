@@ -33,6 +33,18 @@ export async function apiList<T>(path: string, init?: RequestInit): Promise<Clie
   return parseList<T>(res)
 }
 
+// Запити, у яких тіло відповіді не потрібне (DELETE /reviews/:id → 200 з ПОРОЖНІМ тілом).
+// Від api() відрізняється лише семантикою результату: нічого не повертає,
+// а на 401 одразу кидає ApiError після редіректу (відновлювати нічого — тіла немає).
+export async function apiVoid(path: string, init?: RequestInit): Promise<void> {
+  const res = await fetch(`/api/v1${path}`, init)
+  if (res.status === 401) {
+    redirectToLogin()
+    throw new ApiError(401, 'UNAUTHORIZED', 'Сесія завершена')
+  }
+  await parseEmpty(res)
+}
+
 export function authApiError(e: unknown): string | null {
   if (e instanceof ApiError) return e.message
   return null

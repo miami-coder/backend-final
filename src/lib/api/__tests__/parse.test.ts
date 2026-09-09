@@ -56,6 +56,14 @@ describe('parseEmpty', () => {
     const res = jsonRes({ data: { venueId: 'v1' } }, 201)
     expect(await parseEmpty<{ venueId: string }>(res)).toEqual({ venueId: 'v1' })
   })
+  it('ok → void, !ok → ApiError', async () => {
+    await expect(parseEmpty(new Response(null, { status: 200 }))).resolves.toBeUndefined()
+    const res403 = new Response(
+      JSON.stringify({ error: { code: 'FORBIDDEN', message: 'Не ваш відгук', details: null } }),
+      { status: 403, headers: { 'content-type': 'application/json' } },
+    )
+    await expect(parseEmpty(res403)).rejects.toMatchObject({ status: 403, message: 'Не ваш відгук' })
+  })
 })
 
 describe('parseRaw', () => {

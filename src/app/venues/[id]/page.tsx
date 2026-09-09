@@ -8,12 +8,15 @@ import { ViewRecorder } from '@/components/features/venues/view-recorder'
 import { WorkingHours } from '@/components/features/venues/working-hours'
 import { getSessionTokens } from '@/lib/auth/session'
 import { FavoriteButton } from '@/components/features/venues/favorite-button'
+import { ReviewForm } from '@/components/features/venues/review-form'
+import { ReviewList } from '@/components/features/venues/review-list'
 import { serverFetch, serverFetchList } from '@/lib/api/server-client'
 import { formatMoney } from '@/lib/utils/format'
 import { parseVenue, type RawVenue } from '@/types/venue'
 
 interface Props {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ sort?: string; page?: string }>
 }
 
 async function getVenue(id: string) {
@@ -43,10 +46,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: venue ? `${venue.name} — Пиячок` : 'Заклад — Пиячок' }
 }
 
-export default async function VenuePage({ params }: Props) {
+export default async function VenuePage({ params, searchParams }: Props) {
   const { id } = await params
   const venue = await getVenue(id)
   if (!venue) notFound()
+
+  const sp = await searchParams
+  const sort = sp?.sort ?? 'newest'
+  const page = Math.max(1, Number(sp?.page ?? 1) || 1)
 
   // Початковий стан обраного: ендпоінту «чи в обраному» на бекенді немає —
   // визначаємо за list-проекцією /me/favorites
@@ -61,6 +68,21 @@ export default async function VenuePage({ params }: Props) {
       initialFavorite = favs.data.some((f) => f.id === id)
     } catch {
       initialFavorite = false
+    }
+  }
+
+  // мій відгук на цей заклад (ендпоінту «мій відгук на X» немає — шукаємо в /me/reviews)
+  let myReview: { id: string; rating: number; text: string } | null = null
+  if (tokens) {
+    try {
+      const mine = await serverFetchList<{ id: string; venueId: string; rating: number; text: string }>(
+        '/me/reviews?limit=100',
+        { tokens, revalidate: 0 },
+      )
+      const found = mine.data.find((r) => r.venueId === id)
+      if (found) myReview = { id: found.id, rating: found.rating, text: found.text }
+    } catch {
+      myReview = null
     }
   }
 
@@ -143,7 +165,11 @@ export default async function VenuePage({ params }: Props) {
         </section>
       )}
 
-      {/* Точка монтування: ReviewList + ReviewForm (Task 11) */}
+      <section aria-label="Відгуки" className="space-y-4">
+        <h2 className="text-xl font-semibold">Відгуки</h2>
+        <ReviewForm venueId={venue.id} myReview={myReview} />
+        <ReviewList venueId={venue.id} sort={sort} page={page} />
+      </section>
     </div>
   )
 }
