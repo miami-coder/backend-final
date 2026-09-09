@@ -2,9 +2,7 @@ import type { Metadata } from 'next'
 import { getSessionTokens } from '@/lib/auth/session'
 import { serverFetch } from '@/lib/api/server-client'
 import { UserProvider } from '@/components/providers/user-provider'
-import { Header } from '@/components/layout/header'
-import { Footer } from '@/components/layout/footer'
-import { AgeGate } from '@/components/layout/age-gate'
+import { AppShell } from '@/components/layout/app-shell'
 import type { SessionUser } from '@/types/user'
 import './globals.css'
 
@@ -29,10 +27,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="uk">
       <body>
         <UserProvider initialUser={user}>
-          <AgeGate />
-          <Header />
-          <main className="mx-auto min-h-[70vh] max-w-6xl px-4 py-6">{children}</main>
-          <Footer />
+          <AppShell>{children}</AppShell>
         </UserProvider>
       </body>
     </html>

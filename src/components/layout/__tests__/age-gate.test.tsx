@@ -23,4 +23,11 @@ describe('AgeGate', () => {
     expect(screen.getByText(/Вийдіть із застосунку/i)).toBeInTheDocument()
     expect(sessionStorage.getItem('age-confirmed')).toBeNull()
   })
+  it('зі стану відмови можна повернутися до підтвердження', () => {
+    render(<AgeGate />)
+    fireEvent.click(screen.getByRole('button', { name: /Мені немає 18/ }))
+    expect(screen.getByText(/Вийдіть із застосунку/i)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /Повернутися/ }))
+    expect(screen.getByText(/18 років/)).toBeInTheDocument()
+  })
 })

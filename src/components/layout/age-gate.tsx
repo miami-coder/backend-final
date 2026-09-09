@@ -22,8 +22,12 @@ function getServerSnapshot() {
   return true
 }
 
+export function useAgeConfirmed(): boolean {
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
+}
+
 export function AgeGate() {
-  const confirmed = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
+  const confirmed = useAgeConfirmed()
   const [denied, setDenied] = useState(false)
 
   const confirm = useCallback(() => {
@@ -37,7 +41,10 @@ export function AgeGate() {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true">
       <div className="max-w-md rounded-2xl bg-white p-6 text-center shadow-xl">
         {denied ? (
-          <p className="text-lg font-medium">Вийдіть із застосунку. Доступ лише для повнолітніх.</p>
+          <>
+            <p className="text-lg font-medium">Вийдіть із застосунку. Доступ лише для повнолітніх.</p>
+            <Button variant="ghost" className="mt-3" onClick={() => setDenied(false)}>Повернутися</Button>
+          </>
         ) : (
           <>
             <h1 className="text-xl font-semibold">Вікове обмеження</h1>
