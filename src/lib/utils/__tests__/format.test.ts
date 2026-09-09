@@ -9,6 +9,10 @@ describe('formatMoney', () => {
   it('null → —', () => {
     expect(formatMoney(null)).toBe('—')
   })
+  it('Infinity/NaN → — (Intl дав би «∞ ₴»)', () => {
+    expect(formatMoney(Infinity)).toBe('—')
+    expect(formatMoney(NaN)).toBe('—')
+  })
 })
 
 describe('formatDate', () => {

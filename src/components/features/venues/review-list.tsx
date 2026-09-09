@@ -25,8 +25,10 @@ export async function ReviewList({ venueId, sort, page }: { venueId: string; sor
   // meta опціональна за типом serverFetchList — дефолт без неї: одна порожня сторінка
   const totalPages = Math.max(1, Math.ceil((raw.meta?.total ?? 0) / (raw.meta?.limit || REVIEW_LIMIT)))
 
+  // Лендмарк «Відгуки» — зовнішня <section> на сторінці закладу (page.tsx):
+  // тут вкладений section з тим самим accessible name дублював би його
   return (
-    <section aria-label="Відгуки" className="space-y-4">
+    <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
         {SORTS.map((s) => (
           <Link
@@ -79,6 +81,6 @@ export async function ReviewList({ venueId, sort, page }: { venueId: string; sor
       {totalPages > 1 && (
         <Pagination page={page} totalPages={totalPages} hrefFor={(p) => `/venues/${venueId}?sort=${safeSort}&page=${p}`} />
       )}
-    </section>
+    </div>
   )
 }

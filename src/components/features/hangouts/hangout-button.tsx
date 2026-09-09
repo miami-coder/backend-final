@@ -66,6 +66,20 @@ export function HangoutButton({ venueId, loginNext }: { venueId: string; loginNe
     setAck(true)
   }
 
+  // Закриття модалки (Скасувати, Escape/фон/«×», успіх): скидаємо помилку
+  // і поля — наступне відкриття не показає застарілу помилку чи prefilled-форму
+  function close() {
+    setOpen(false)
+    setError(null)
+    setDate('')
+    setTime('')
+    setPurpose('')
+    setGender('any')
+    setGroupSize('2')
+    setPayer('me')
+    setDesiredBudget('')
+  }
+
   async function submit() {
     setError(null)
     const parsed = hangoutFormSchema.safeParse({
@@ -90,7 +104,7 @@ export function HangoutButton({ venueId, loginNext }: { venueId: string; loginNe
         body: JSON.stringify(parsed.data),
       })
       toast('Пиячок створено! Очікуйте на компанію.')
-      setOpen(false)
+      close()
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Сервіс тимчасово недоступний')
     } finally {
@@ -104,7 +118,7 @@ export function HangoutButton({ venueId, loginNext }: { venueId: string; loginNe
         🍻 Знайти пиячку
       </Button>
 
-      <Modal open={open} onClose={() => setOpen(false)} title="Знайти пиячку">
+      <Modal open={open} onClose={close} title="Знайти пиячку">
         {!ack ? (
           // Спека §5: ПЕРШИЙ крок модалки — попередження про безпеку
           <div className="space-y-4">
@@ -216,7 +230,7 @@ export function HangoutButton({ venueId, loginNext }: { venueId: string; loginNe
             {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
 
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
+              <Button type="button" variant="secondary" onClick={close}>
                 Скасувати
               </Button>
               <Button type="button" variant="primary" onClick={submit} disabled={sending}>

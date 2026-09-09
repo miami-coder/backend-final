@@ -16,7 +16,12 @@ function redirectToLogin() {
   window.location.assign('/auth/login?next=' + encodeURIComponent(next))
 }
 
-export async function api<T>(path: string, init?: RequestInit): Promise<T> {
+// DELETE → 200 з ПОРОЖНІМ тілом: parseEmpty повертає undefined (каст as T
+// брехав би). Перевантаження чесно розділяє семантику: звичайний запит
+// має JSON-конверт із data, запит із method:'DELETE' може дати undefined.
+export function api<T>(path: string, init: RequestInit & { method: 'DELETE' }): Promise<T | undefined>
+export function api<T>(path: string, init?: RequestInit): Promise<T>
+export async function api<T>(path: string, init?: RequestInit): Promise<T | undefined> {
   const res = await fetch(`/api/v1${path}`, init)
   if (res.status === 401) {
     // проксі вже спробував refresh — сесія мертва
@@ -24,7 +29,7 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
   }
   // DELETE → 200 з порожнім тілом: parseData очікував би JSON-конверт
   // і кинув би на res.json() — відкат відбувся б і на успіху
-  return (await parseEmpty<T>(res)) as T
+  return await parseEmpty<T>(res)
 }
 
 export async function apiList<T>(path: string, init?: RequestInit): Promise<ClientListResult<T>> {

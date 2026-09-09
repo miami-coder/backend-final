@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 
 interface ToastItem { id: number; message: string; tone: 'success' | 'error' }
 
@@ -13,14 +13,23 @@ const ToastContext = createContext<ToastApi | null>(null)
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<ToastItem[]>([])
   const nextId = useRef(1)
+  // таймери auto-hide: тримаємо, щоб на unmount провайдера їх погасити
+  const timers = useRef(new Set<ReturnType<typeof setTimeout>>())
 
   const toast = useCallback((message: string, tone: 'success' | 'error' = 'success') => {
     const id = nextId.current++
     setItems((prev) => [...prev, { id, message, tone }])
     // авто-приховування: таймер на кожен toast окремо
-    setTimeout(() => {
+    const timer = setTimeout(() => {
+      timers.current.delete(timer)
       setItems((prev) => prev.filter((t) => t.id !== id))
     }, 4000)
+    timers.current.add(timer)
+  }, [])
+
+  // unmount: clearTimeout — інакше «пізній» setState летить у розмонтоване дерево
+  useEffect(() => () => {
+    for (const t of timers.current) clearTimeout(t)
   }, [])
 
   const api = useMemo(() => ({ toast }), [toast])

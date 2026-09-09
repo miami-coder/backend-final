@@ -117,4 +117,25 @@ describe('HangoutButton', () => {
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(/створено/i))
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
   })
+
+  it('провал запиту → помилка; закриття і повторне відкриття — чиста форма', async () => {
+    const fetchMock = authAwareMock(() => new Response(
+      JSON.stringify({ error: { code: 'INTERNAL_ERROR', message: 'Сервіс тимчасово недоступний', details: null } }),
+      { status: 500, headers: jsonHeaders },
+    ))
+    vi.stubGlobal('fetch', fetchMock)
+    window.localStorage.setItem('hangout-safety-ack', '1')
+    renderWithProviders(<HangoutButton venueId="v1" loginNext="/venues/v1" />, testUser)
+    fireEvent.click(screen.getByRole('button', { name: /пиячку/i }))
+    fillForm()
+    fireEvent.click(screen.getByRole('button', { name: /Створити/i }))
+    expect(await screen.findByText(/Сервіс тимчасово недоступний/i)).toBeInTheDocument()
+    // закриття (Скасувати) → повторне відкриття: помилка не повертається
+    fireEvent.click(screen.getByRole('button', { name: /Скасувати/i }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /пиячку/i }))
+    expect(screen.queryByText(/Сервіс тимчасово недоступний/i)).not.toBeInTheDocument()
+    // поля теж скинуті
+    expect(screen.getByLabelText(/Мета/i)).toHaveValue('')
+  })
 })

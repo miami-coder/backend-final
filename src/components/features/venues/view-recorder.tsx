@@ -16,12 +16,18 @@ export function ViewRecorder({ venueId }: { venueId: string }) {
     sent.current = true
 
     const sentKey = `view-sent-${venueId}`
-    let sessionId: string
+    // sessionStorage і localStorage — окремі try: збій одного сховища
+    // не мусить позбавляти стабільний sessionId з іншого
     try {
       if (sessionStorage.getItem(sentKey)) return
+    } catch {
+      // немає sessionStorage — ref-гuard усе одно захищає цей інстанс
+    }
+    let sessionId: string
+    try {
       sessionId = localStorage.getItem(KEY) ?? ''
     } catch {
-      sessionId = ''
+      sessionId = '' // приватний режим — нижче згенеруємо нову сесію
     }
     if (!sessionId) {
       sessionId = (crypto.randomUUID?.() ?? `s-${Date.now()}-${Math.random()}`).slice(0, 64)

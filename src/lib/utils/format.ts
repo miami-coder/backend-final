@@ -2,7 +2,9 @@
 // Виведення Intl нормалізуємо до звичайних пробілів (Intl для uk-UA
 // ставить нерозривний пробіл U+00A0 перед «₴» — у UI/тестах хочемо U+0020).
 function normalize(s: string): string {
-  return s.replace(/ /g, ' ')
+  // U+00A0 прописано явно як escape \u00A0: невидимий литеральний
+  // символ у regex легко пошкодити при редагуванні/копіюванні
+  return s.replace(/\u00A0/gu, ' ')
 }
 
 const money = new Intl.NumberFormat('uk-UA', {
@@ -12,7 +14,8 @@ const money = new Intl.NumberFormat('uk-UA', {
 })
 
 export function formatMoney(v: number | null): string {
-  if (v === null || Number.isNaN(v)) return '—'
+  // null / NaN / ±Infinity: форматувати нічого (Intl дав би «∞ ₴»)
+  if (v === null || !Number.isFinite(v)) return '—'
   return normalize(money.format(v))
 }
 

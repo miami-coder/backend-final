@@ -12,6 +12,10 @@ export function FavoriteButton({ venueId, initialFavorite }: { venueId: string; 
   const { toast } = useToast()
   const router = useRouter()
   const [favorite, setFavorite] = useState(initialFavorite)
+  // in-flight прапорець: disabled={pending} покриває лише router.refresh(),
+  // а вікно await api() лишало кнопку активною — подвійний клік надсилав би
+  // протилежний запит (POST після POST / DELETE після DELETE)
+  const [busy, setBusy] = useState(false)
   const [pending, startTransition] = useTransition()
 
   if (!user) {
@@ -26,7 +30,9 @@ export function FavoriteButton({ venueId, initialFavorite }: { venueId: string; 
   }
 
   async function toggle() {
+    if (busy) return // другий клік у тому самому тіку: disabled ще не доїхав
     const was = favorite
+    setBusy(true)
     setFavorite(!was) // оптимістично
     try {
       if (!was) {
@@ -39,6 +45,8 @@ export function FavoriteButton({ venueId, initialFavorite }: { venueId: string; 
     } catch {
       setFavorite(was) // відкат
       toast('Не вдалося оновити обране. Спробуйте ще раз.', 'error')
+    } finally {
+      setBusy(false)
     }
   }
 
@@ -46,7 +54,7 @@ export function FavoriteButton({ venueId, initialFavorite }: { venueId: string; 
     <button
       type="button"
       onClick={toggle}
-      disabled={pending}
+      disabled={busy || pending}
       aria-pressed={favorite}
       className="inline-flex items-center rounded-lg border border-stone-300 px-4 py-2 text-sm hover:bg-stone-100"
     >
