@@ -22,6 +22,12 @@ describe('parseData', () => {
       status: 200, code: 'INTERNAL_ERROR', message: 'Сервіс тимчасово недоступний', details: null,
     })
   })
+  it('не-JSON error-тіло (HTML 502) → ApiError INTERNAL_ERROR', async () => {
+    const res = new Response('<html>Bad Gateway</html>', { status: 502, headers: { 'content-type': 'text/html' } })
+    await expect(parseData(res)).rejects.toMatchObject({
+      status: 502, code: 'INTERNAL_ERROR', message: 'Сервіс тимчасово недоступний',
+    })
+  })
 })
 
 describe('parseList', () => {

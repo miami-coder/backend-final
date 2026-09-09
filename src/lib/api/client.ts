@@ -7,7 +7,10 @@ export interface ClientListResult<T> {
 }
 
 function redirectToLogin() {
-  const next = typeof window !== 'undefined' ? window.location.pathname : '/'
+  // SSR (window відсутній): редірект неможливий — проксі повернув 401,
+  // server-скрипт просто отримає ApiError від виклику
+  if (typeof window === 'undefined' || !window.location) return
+  const next = window.location.pathname
   // Свідомо повне перезавантаження: сесія мертва, стан застосунку невалідний
   // eslint-disable-next-line @next/next/no-location-assign-relative-destination
   window.location.assign('/auth/login?next=' + encodeURIComponent(next))

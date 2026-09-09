@@ -34,4 +34,10 @@ describe('registerSchema', () => {
   it('acceptEula false відхиляється', () => {
     expect(registerSchema.safeParse({ ...valid, acceptEula: false }).success).toBe(false)
   })
+  it('межі полів реєстрації', () => {
+    expect(registerSchema.safeParse({ ...valid, firstname: 'О' }).success).toBe(false)   // 1 символ
+    expect(registerSchema.safeParse({ ...valid, lastname: 'К' }).success).toBe(false)   // 1 символ
+    expect(registerSchema.safeParse({ ...valid, age: 18 }).success).toBe(true)          // межа 18 включно
+    expect(registerSchema.safeParse({ ...valid, age: '20' }).success).toBe(true)        // coerce рядок
+  })
 })
