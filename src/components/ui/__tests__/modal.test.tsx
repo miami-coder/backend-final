@@ -39,4 +39,27 @@ describe('Modal (a11y)', () => {
     fireEvent.keyDown(document, { key: 'Tab' })
     expect(document.activeElement).toBe(first.previousElementSibling)
   })
+
+  it('ре-рендер з новою inline-ідентичністю onClose не скидає фокус', () => {
+    // Фокус усередині діалогу (не на першому елементі) має переживати
+    // ре-рендер батька з новим inline-колбеком onClose: ефект Escape/фокусу
+    // залежить лише від open, а не від ідентичності onClose.
+    const { rerender } = render(
+      <Modal open onClose={() => {}} title="Тест">
+        <button>Один</button>
+        <button>Два</button>
+      </Modal>,
+    )
+    const second = screen.getByRole('button', { name: 'Два' })
+    second.focus()
+    expect(document.activeElement).toBe(second)
+    rerender(
+      <Modal open onClose={() => {}} title="Тест">
+        <button>Один</button>
+        <button>Два</button>
+      </Modal>,
+    )
+    // фокус НЕ стрибнув (ефект не перезапускався)
+    expect(document.activeElement).toBe(second)
+  })
 })

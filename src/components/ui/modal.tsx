@@ -13,6 +13,13 @@ export function Modal({ open, onClose, title, children }: {
 }) {
   const panelRef = useRef<HTMLDivElement>(null)
   const closeRef = useRef<HTMLButtonElement>(null)
+  // onClose через ref: споживачі передають inline-колбекі, чиї ідентичності
+  // змінюються на кожному ре-рендері батька — без ref це перезапускало б
+  // ефект Escape/фокусу (фокус стрибав на тригер і повертався на перший елемент).
+  const onCloseRef = useRef(onClose)
+  useEffect(() => {
+    onCloseRef.current = onClose
+  }, [onClose])
 
   useEffect(() => {
     if (!open) return
@@ -27,7 +34,7 @@ export function Modal({ open, onClose, title, children }: {
 
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') {
-        onClose()
+        onCloseRef.current()
         return
       }
       if (e.key !== 'Tab' || !panelRef.current) return
@@ -49,7 +56,9 @@ export function Modal({ open, onClose, title, children }: {
       document.removeEventListener('keydown', onKeyDown)
       previouslyFocused?.focus()
     }
-  }, [open, onClose])
+    // лише open: onClose іде через ref, щоб нова inline-ідентичність
+    // колбека не перезапускала цей ефект під час життя діалогу
+  }, [open])
 
   if (!open) return null
   return (
