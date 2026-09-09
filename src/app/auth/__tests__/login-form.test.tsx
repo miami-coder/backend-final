@@ -1,8 +1,12 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+// Хойстимо моки router, щоб кейси могли перевіряти виклики push/refresh
+// (фабрика vi.mock підіймається вище оголошень, тому звичайні const не видно)
+const { push, refresh } = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn() }))
 
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+  useRouter: () => ({ push, refresh }),
   useSearchParams: () => new URLSearchParams(),
 }))
 
@@ -16,6 +20,12 @@ vi.mock('@/components/providers/user-provider', () => ({
 import { LoginForm } from '@/app/auth/login/login-form'
 
 describe('LoginForm', () => {
+  beforeEach(() => {
+    push.mockClear()
+    refresh.mockClear()
+    vi.unstubAllGlobals()
+  })
+
   it('показує помилку бекенда при 401', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => new Response(
       JSON.stringify({ error: { code: 'UNAUTHORIZED', message: 'Невірний email або пароль', details: null } }),
@@ -37,5 +47,20 @@ describe('LoginForm', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Увійти' }))
     await waitFor(() => expect(screen.getByText('Некоректний email')).toBeInTheDocument())
     expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('успішний логін + падіння /auth/me — все одно редірект (сесія встановлена)', async () => {
+    // login → 200 ok; /auth/me → мережева помилка
+    vi.stubGlobal('fetch', vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ ok: true }), { status: 200 }))
+      .mockRejectedValueOnce(new TypeError('network')))
+    render(<LoginForm />)
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.c' } })
+    fireEvent.change(screen.getByLabelText('Пароль'), { target: { value: 'Password1' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Увійти' }))
+    // Сесія ВЖЕ встановлена (login повернув 200) — редірект не блокується падінням /auth/me
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/'))
+    // Загальний catch не мав спрацювати — «Сервіс тимчасово недоступний» не показуємо
+    expect(screen.queryByText('Сервіс тимчасово недоступний')).not.toBeInTheDocument()
   })
 })

@@ -1,8 +1,9 @@
 'use client'
 
 // Форма реєстрації: та сама схема, що LoginForm — клієнтська валідація через
-// registerSchema (помилки показуємо над відповідними полями), POST на BFF-хендлер
-// /api/auth/register, після успіху — /auth/me → setUser → редірект.
+// registerSchema (помилки полів рендеримо окремо від label і прив'язуємо
+// aria-describedby), POST на BFF-хендлер /api/auth/register, після успіху —
+// /auth/me → setUser → редірект.
 
 import { useState, type FormEvent } from 'react'
 import Link from 'next/link'
@@ -85,36 +86,102 @@ export function RegisterForm() {
     <form noValidate onSubmit={submit} className="mx-auto max-w-sm space-y-4 rounded-2xl border border-stone-200 bg-white p-6">
       <h1 className="text-xl font-bold">Реєстрація</h1>
       {error && <p role="alert" className="rounded-lg bg-red-50 p-2 text-sm text-red-700">{error}</p>}
-      <label className="block text-sm">
-        Ім&apos;я
-        {fieldErrors.firstname && <span role="alert" className="block text-red-600">{fieldErrors.firstname}</span>}
-        <Input value={firstname} autoComplete="given-name" onChange={(e) => setFirstname(e.target.value)} />
-      </label>
-      <label className="block text-sm">
-        Прізвище
-        {fieldErrors.lastname && <span role="alert" className="block text-red-600">{fieldErrors.lastname}</span>}
-        <Input value={lastname} autoComplete="family-name" onChange={(e) => setLastname(e.target.value)} />
-      </label>
-      <label className="block text-sm">
-        Email
-        {fieldErrors.email && <span role="alert" className="block text-red-600">{fieldErrors.email}</span>}
-        <Input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-      </label>
-      <label className="block text-sm">
-        Пароль
-        {fieldErrors.password && <span role="alert" className="block text-red-600">{fieldErrors.password}</span>}
-        <Input type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />
-      </label>
-      <label className="block text-sm">
-        Вік (необов&apos;язково)
-        {fieldErrors.age && <span role="alert" className="block text-red-600">{fieldErrors.age}</span>}
-        <Input type="number" min={18} value={age} onChange={(e) => setAge(e.target.value)} />
-      </label>
-      <label className="block text-sm">
-        Телефон (необов&apos;язково)
-        {fieldErrors.phone && <span role="alert" className="block text-red-600">{fieldErrors.phone}</span>}
-        <Input type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
-      </label>
+      {/* Помилка — сусід label, а не вкладена в нього: не забруднює accessible name;
+          зв'язок через aria-describedby */}
+      <div className="text-sm">
+        <label htmlFor="reg-firstname">
+          Ім&apos;я
+        </label>
+        <Input
+          id="reg-firstname"
+          aria-describedby={fieldErrors.firstname ? 'reg-firstname-error' : undefined}
+          value={firstname}
+          autoComplete="given-name"
+          onChange={(e) => setFirstname(e.target.value)}
+        />
+        {fieldErrors.firstname && (
+          <span id="reg-firstname-error" role="alert" className="mt-1 block text-red-600">{fieldErrors.firstname}</span>
+        )}
+      </div>
+      <div className="text-sm">
+        <label htmlFor="reg-lastname">
+          Прізвище
+        </label>
+        <Input
+          id="reg-lastname"
+          aria-describedby={fieldErrors.lastname ? 'reg-lastname-error' : undefined}
+          value={lastname}
+          autoComplete="family-name"
+          onChange={(e) => setLastname(e.target.value)}
+        />
+        {fieldErrors.lastname && (
+          <span id="reg-lastname-error" role="alert" className="mt-1 block text-red-600">{fieldErrors.lastname}</span>
+        )}
+      </div>
+      <div className="text-sm">
+        <label htmlFor="reg-email">
+          Email
+        </label>
+        <Input
+          id="reg-email"
+          type="email"
+          aria-describedby={fieldErrors.email ? 'reg-email-error' : undefined}
+          autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        {fieldErrors.email && (
+          <span id="reg-email-error" role="alert" className="mt-1 block text-red-600">{fieldErrors.email}</span>
+        )}
+      </div>
+      <div className="text-sm">
+        <label htmlFor="reg-password">
+          Пароль
+        </label>
+        <Input
+          id="reg-password"
+          type="password"
+          aria-describedby={fieldErrors.password ? 'reg-password-error' : undefined}
+          autoComplete="new-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        {fieldErrors.password && (
+          <span id="reg-password-error" role="alert" className="mt-1 block text-red-600">{fieldErrors.password}</span>
+        )}
+      </div>
+      <div className="text-sm">
+        <label htmlFor="reg-age">
+          Вік (необов&apos;язково)
+        </label>
+        <Input
+          id="reg-age"
+          type="number"
+          min={18}
+          aria-describedby={fieldErrors.age ? 'reg-age-error' : undefined}
+          value={age}
+          onChange={(e) => setAge(e.target.value)}
+        />
+        {fieldErrors.age && (
+          <span id="reg-age-error" role="alert" className="mt-1 block text-red-600">{fieldErrors.age}</span>
+        )}
+      </div>
+      <div className="text-sm">
+        <label htmlFor="reg-phone">
+          Телефон (необов&apos;язково)
+        </label>
+        <Input
+          id="reg-phone"
+          type="tel"
+          aria-describedby={fieldErrors.phone ? 'reg-phone-error' : undefined}
+          autoComplete="tel"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+        />
+        {fieldErrors.phone && (
+          <span id="reg-phone-error" role="alert" className="mt-1 block text-red-600">{fieldErrors.phone}</span>
+        )}
+      </div>
       <label className="flex items-start gap-2 text-sm">
         <input
           type="checkbox"

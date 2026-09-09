@@ -1,7 +1,8 @@
 'use client'
 
 // Форма входу: клієнтська валідація (zod) + POST на BFF-хендлер /api/auth/login,
-// який ставить httpOnly-сесійний cookie. Після успіху — /auth/me → setUser → редірект.
+// який ставить httpOnly-сесійний cookie. Після успіху — редірект; /auth/me → setUser
+// лише найкращим зусиллям (його падіння не блокує редірект — сесія вже встановлена).
 
 import { useState, type FormEvent } from 'react'
 import Link from 'next/link'
@@ -38,8 +39,14 @@ export function LoginForm() {
         body: JSON.stringify(parsed.data),
       })
       if (res.ok) {
-        const me = await fetch('/api/v1/auth/me').then((r) => (r.ok ? r.json() : null))
-        if (me?.data) setUser(me.data as SessionUser)
+        // Сесія ВЖЕ встановлена — /auth/me лише для UI-стану; його падіння
+        // не повинно блокувати редірект (інакше «Сервіс недоступний» при живій сесії)
+        try {
+          const me = await fetch('/api/v1/auth/me').then((r) => (r.ok ? r.json() : null))
+          if (me?.data) setUser(me.data as SessionUser)
+        } catch {
+          // пропускаємо — router.refresh() добуде користувача в layout
+        }
         // Редірект лише на внутрішні шляхи — захист від open-redirect
         const next = searchParams.get('next')
         const safeNext = next && next.startsWith('/') && !next.startsWith('//') ? next : '/'

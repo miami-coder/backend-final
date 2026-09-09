@@ -1,9 +1,16 @@
 'use client'
 
+import { useEffect } from 'react'
+
 // Глобальна межа помилок рендерингу (конвенція файлів Next.js — error.tsx у корені app).
 // retry() повторно запитує RSC-пейлоад і лише потім скидає стан межі — на відміну від
 // reset(), який рендерить уже отриманий (помилковий) пейлоад і миттєво знову «падає»
-export default function GlobalError({ retry }: { error: Error & { digest?: string }; retry: () => void }) {
+export default function GlobalError({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
+  // reporting-hook: поки немає Sentry/сервісу — консоль; digest попередньо виводимо
+  useEffect(() => {
+    console.error('[GlobalError]', error?.digest ?? '', error)
+  }, [error])
+
   return (
     <div className="py-16 text-center">
       <h1 className="text-2xl font-bold">Щось пішло не так</h1>
