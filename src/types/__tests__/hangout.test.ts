@@ -4,7 +4,7 @@ import { parseHangout, type RawHangout } from '@/types/hangout'
 const raw: RawHangout = {
   id: 'h1',
   venueId: 'v1',
-  userId: 'u1',
+  creatorId: 'u1',
   date: '2026-09-10',
   time: '19:30',
   purpose: 'Пошук компанії на дегустацію',
