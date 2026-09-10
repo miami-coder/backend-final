@@ -156,6 +156,21 @@ export class VenuesService {
     });
   }
 
+  async findOneForOwnerQuery(id: string): Promise<Venue | null> {
+    // Те саме насичення, що в search(): photos + features + tags + types
+    return this.venues
+      .createQueryBuilder('v')
+      .leftJoinAndSelect('v.photos', 'photo')
+      .leftJoin('v.featureAssignments', 'fa')
+      .leftJoinAndSelect('fa.feature', 'f')
+      .leftJoin('v.venueTags', 'vt')
+      .leftJoinAndSelect('vt.tag', 't')
+      .leftJoin('v.venueTypeAssignments', 'vta')
+      .leftJoinAndSelect('vta.type', 'ty')
+      .where('v.id = :id', { id })
+      .getOne();
+  }
+
   async search(query: QueryVenuesDto) {
     const { page, limit, offset } = normalizePagination(query);
     const cacheKey = `venues:list:${this.hashQuery(query)}`;
