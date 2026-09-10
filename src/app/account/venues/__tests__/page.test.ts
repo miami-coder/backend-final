@@ -43,4 +43,16 @@ describe('/account/venues', () => {
     // компонента («Закладів поки немає.») — перевіряємо спільну частину
     expect(html).toContain('поки немає')
   })
+
+  it('created=1 → банер «Заклад подано на модерацію»', async () => {
+    const html = renderToStaticMarkup(
+      await MyVenuesPage({ searchParams: Promise.resolve({ created: '1' }) }),
+    )
+    expect(html).toContain('Заклад подано на модерацію')
+  })
+
+  it('без created → банера немає', async () => {
+    const html = renderToStaticMarkup(await MyVenuesPage())
+    expect(html).not.toContain('Заклад подано на модерацію')
+  })
 })

@@ -11,14 +11,23 @@ const STATUS_LABELS: Record<Venue['status'], string> = {
   archived: 'Заархівовано',
 }
 
-export default async function MyVenuesPage() {
+export default async function MyVenuesPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ created?: string }>
+} = {}) {
   const tokens = await getSessionTokens()
   if (!tokens) redirect('/auth/login?next=/account/venues')
+  // searchParams опційний: у тестах компонент викликається без пропсів
+  const { created } = (await searchParams) ?? {}
   const raw = await serverFetch<RawVenue[]>('/me/venues', { tokens, revalidate: 0 })
   const venues = raw.map(parseVenue)
 
   return (
     <section>
+      {created === '1' && (
+        <p role="status" className="mb-4 rounded-xl bg-green-50 p-3 text-green-700">Заклад подано на модерацію.</p>
+      )}
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold">Мої заклади</h2>
         <Link className="text-brand-600 hover:underline" href="/venues/new">Додати заклад</Link>
