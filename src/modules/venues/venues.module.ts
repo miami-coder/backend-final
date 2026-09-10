@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Venue } from './entities/venue.entity';
 import { VenuePhoto } from './entities/venue-photo.entity';
 import { VenueFeature } from './entities/venue-feature.entity';
@@ -15,6 +14,7 @@ import { UsersModule } from '../users/users.module';
 import { VenueCacheListener } from './listeners/venue-cache.listener';
 import { VenuesController } from './venues.controller';
 import { VenuesAdminController } from './venues-admin.controller';
+import { MeVenuesController } from './me-venues.controller';
 
 @Module({
   imports: [
@@ -31,7 +31,7 @@ import { VenuesAdminController } from './venues-admin.controller';
     RbacModule,
     UsersModule,
   ],
-  controllers: [VenuesController, VenuesAdminController],
+  controllers: [VenuesController, VenuesAdminController, MeVenuesController],
   providers: [VenuesService, VenueCacheListener],
   exports: [VenuesService, TypeOrmModule],
 })

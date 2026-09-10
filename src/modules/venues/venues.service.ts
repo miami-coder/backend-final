@@ -148,6 +148,14 @@ export class VenuesService {
     return venue;
   }
 
+  async listMineForUser(userId: string): Promise<Venue[]> {
+    return this.venues.find({
+      where: { ownerId: userId },
+      order: { createdAt: 'DESC' },
+      relations: { photos: true },
+    });
+  }
+
   async search(query: QueryVenuesDto) {
     const { page, limit, offset } = normalizePagination(query);
     const cacheKey = `venues:list:${this.hashQuery(query)}`;
