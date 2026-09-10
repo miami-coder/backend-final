@@ -22,6 +22,9 @@ export default async function AccountLayout({ children }: { children: React.Reac
         <Link className="text-brand-600 hover:underline" href="/account/favorites">
           Обране
         </Link>
+        <Link className="text-brand-600 hover:underline" href="/account/reviews">
+          Відгуки
+        </Link>
       </nav>
       <div className="mt-6">{children}</div>
     </div>
