@@ -28,6 +28,9 @@ export default async function AccountLayout({ children }: { children: React.Reac
         <Link className="text-brand-600 hover:underline" href="/account/hangouts">
           Пиячки
         </Link>
+        <Link className="text-brand-600 hover:underline" href="/account/venues">
+          Заклади
+        </Link>
       </nav>
       <div className="mt-6">{children}</div>
     </div>
