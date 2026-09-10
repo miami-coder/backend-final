@@ -8,19 +8,28 @@ import { Modal } from '@/components/ui/modal'
 import { RatingStars } from '@/components/ui/rating-stars'
 import { ReviewForm } from '@/components/features/venues/review-form'
 import { apiVoid } from '@/lib/api/client'
+import { ApiError } from '@/lib/api/parse'
 import { formatDate } from '@/lib/utils/format'
+import { useToast } from '@/components/ui/toast'
 import type { Review } from '@/types/review'
 
 export function MyReviewItem({ review, venueName }: { review: Review; venueName: string | null }) {
   const router = useRouter()
+  const { toast } = useToast()
   const [editing, setEditing] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
   async function remove() {
-    // DELETE → 200 з порожнім тілом (apiVoid), далі оновлюємо серверні дані
-    await apiVoid(`/reviews/${review.id}`, { method: 'DELETE' })
-    setDeleting(false)
-    router.refresh()
+    try {
+      // DELETE → 200 з порожнім тілом (apiVoid), далі оновлюємо серверні дані
+      await apiVoid(`/reviews/${review.id}`, { method: 'DELETE' })
+      // закриваємо лише за успіху: при помилці модалка лишається — можна повторити/скасувати
+      setDeleting(false)
+      router.refresh()
+    } catch (e) {
+      // як у ReviewForm: ApiError → message з бекенда, інакше — загальний текст
+      toast(e instanceof ApiError ? e.message : 'Не вдалося видалити відгук', 'error')
+    }
   }
 
   return (

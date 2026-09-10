@@ -53,6 +53,23 @@ describe('MyReviewItem', () => {
     expect(String(del?.[0])).toBe('/api/v1/reviews/r1')
   })
 
+  it('видалення з помилкою: DELETE 500 → toast-помилка, модалка відкрита, без refresh', async () => {
+    // DELETE → 500 з не-JSON тілом → ApiError «Сервіс тимчасово недоступний»
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+      if (String(input).endsWith('/auth/me')) {
+        return new Response(JSON.stringify({ data: testUser }), { status: 200, headers: { 'content-type': 'application/json' } })
+      }
+      return new Response(null, { status: 500 })
+    }))
+    renderWithProviders(<MyReviewItem review={review} venueName={null} />)
+    fireEvent.click(screen.getByRole('button', { name: /Видалити/i }))
+    fireEvent.click(await screen.findByRole('button', { name: /^Так, видалити$/i }))
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(/недоступний/i))
+    // модалка лишається відкритою (закриваємо лише за успіху) — користувач може повторити/скасувати
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(refresh).not.toHaveBeenCalled()
+  })
+
   it('редагування: відкриває форму з моїм відгуком', async () => {
     vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
       if (String(input).endsWith('/auth/me')) {
