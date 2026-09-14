@@ -1,0 +1,68 @@
+// /news — публічний список новин: вкладки категорій, пагінація, протерміновано 60с
+
+import Link from 'next/link'
+import { Pagination } from '@/components/ui/pagination'
+import { serverFetchList } from '@/lib/api/server-client'
+import { NEWS_CATEGORIES } from '@/lib/validation/news'
+import { parseNews, type RawNews } from '@/types/news'
+import { formatDate } from '@/lib/utils/format'
+
+const LIMIT = 12
+
+interface Props {
+  searchParams: Promise<{ category?: string; page?: string }>
+}
+
+export const revalidate = 60
+
+export default async function NewsPage({ searchParams }: Props) {
+  const sp = await searchParams
+  const page = Math.max(1, Number(sp?.page ?? 1) || 1)
+  const category = NEWS_CATEGORIES.some((c) => c.value === sp?.category) ? sp!.category : undefined
+
+  const raw = await serverFetchList<RawNews>(`/news?page=${page}&limit=${LIMIT}${category ? `&category=${category}` : ''}`, { revalidate: 60 })
+  const news = raw.data.map(parseNews)
+  const totalPages = Math.max(1, Math.ceil((raw.meta?.total ?? 0) / (raw.meta?.limit || LIMIT)))
+
+  return (
+    <div className="mx-auto max-w-4xl py-8">
+      <h1 className="text-2xl font-bold">Новини</h1>
+      <nav className="mt-4 flex gap-3 text-sm" aria-label="Категорії новин">
+        <Link href="/news" className={!category ? 'font-semibold text-brand-600' : 'text-stone-600 hover:text-brand-600'}>Усі</Link>
+        {NEWS_CATEGORIES.map((c) => (
+          <Link key={c.value} href={`/news?category=${c.value}`}
+            className={category === c.value ? 'font-semibold text-brand-600' : 'text-stone-600 hover:text-brand-600'}>
+            {c.label}
+          </Link>
+        ))}
+      </nav>
+      {news.length === 0 ? (
+        <div className="mt-6 rounded-xl bg-stone-50 p-8 text-center">
+          <p className="text-stone-500">Новин ще немає.</p>
+        </div>
+      ) : (
+        <ul className="mt-6 grid gap-4 sm:grid-cols-2">
+          {news.map((n) => (
+            <li key={n.id} className="overflow-hidden rounded-2xl border border-stone-200 bg-white">
+              <Link href={`/news/${n.id}`} className="block">
+                {n.imageUrl && (
+                  /* eslint-disable-next-line @next/next/no-img-element -- зовнішній URL з бекенда */
+                  <img src={n.imageUrl} alt="" loading="lazy" className="h-40 w-full object-cover" />
+                )}
+                <div className="p-4">
+                  {n.isPromoted && <span className="mr-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">Промо</span>}
+                  <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600">
+                    {NEWS_CATEGORIES.find((c) => c.value === n.category)?.label}
+                  </span>
+                  <h2 className="mt-2 font-semibold">{n.title}</h2>
+                  {n.publishedAt && <p className="mt-1 text-sm text-stone-500">{formatDate(n.publishedAt)}</p>}
+                </div>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+      {totalPages > 1 && <Pagination page={page} totalPages={totalPages} hrefFor={(p) => `/news?${category ? `category=${category}&` : ''}page=${p}`} />}
+    </div>
+  )
+}
