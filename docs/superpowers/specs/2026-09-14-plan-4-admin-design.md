@@ -10,7 +10,7 @@
 
 - Пошук/фільтр користувачів (бекенд `GET /admin/users` має лише page/limit) — пагінація вистачає; пошук — кандидат у наступний план.
 - Audit-лог у UI (бекенд пише audit, але read-гепа немає).
-- Бекенд-зміни — **єдиний виняток**: геп фільтра статусу для `admin/news` (див. 4.5); інших бекенд-змін немає (гейти ролей/permissions вже в Guards).
+- Бекенд-зміни — **два винятки**: геп фільтра статусу для `admin/news` (див. 4.5) і геп `roles` у відповідях `admin/users` (див. 4.3); інших бекенд-змін немає (гейти ролей/permissions вже в Guards).
 
 ## 3. Архітектура
 
@@ -36,8 +36,9 @@ Server-сторінка. Паралельно: `GET /admin/analytics/overview` (
 
 ### 4.3 «Користувачі» (`/admin/users` + `/admin/users/[id]`)
 
-- Список: `serverFetchList<User>('/admin/users', …)` (relations profile включно). Рядок: email, імʼя з profile, бейджі ролей, дата реєстрації. Клік → `/admin/users/[id]`.
-- Деталі: `serverFetch<{ data: User }>`-через-`serverFetchList`-симетрія: бекенд `GET /admin/users/:id` віддає `{ data }` → використати `serverFetch<{ data: User }>` з деструктуризацією (симетрично до news-деталей Плану 3).
+- **Бекенд-геп (другий у Плані 4):** `admin/users` (список і деталі) повертає лише `profile` — ролі недоступні ніде (єдине джерело — `/auth/me` тільки для себе). Геп: `@OneToMany(() => UserRole, …) userRoles` на User-сутності; `relations: { profile: true, userRoles: { role: true } }` у list/get; у відповідь мапиться `roles: string[]` (role.code). Unit-тест на мапінг.
+- Список: `serverFetchList<User>('/admin/users', …)` (relations profile + roles). Рядок: email, імʼя з profile, бейджі ролей, дата реєстрації. Клік → `/admin/users/[id]`.
+- Деталі: бекенд `GET /admin/users/:id` віддає `{ data: User }` (конверт) → `serverFetch<{ data: User }>` з деструктуризацією (симетрично до news-деталей Плану 3).
 - Профіль: форма з тими самими полями, що кабінетний профіль (`ProfileFields`), PATCH `admin/users/:id` (бекенд аплає до Profile).
 - Ролі: POST `admin/users/:id/roles` `{ roleCode, action: 'add' | 'remove' }`; UI — бейдж-чипи поточних ролей + селект додавання і кнопка зняття; додавання/зняття `super_admin` — модалка підтвердження.
 - Видалення: DELETE `admin/users/:id` (мʼяке) — модалка з введенням email користувача для підтвердження (деструктивна дія); після успіху — toast + redirect на `/admin/users`.
