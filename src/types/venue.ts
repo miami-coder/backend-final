@@ -90,3 +90,11 @@ export function parseVenue(raw: RawVenue): Venue {
 }
 
 export type VenueList = { data: Venue[]; meta?: PaginatedMeta }
+
+// Лейбли статусів — спільні для кабінетних сторінок (список + оболонка закладу)
+export const VENUE_STATUS_LABELS: Record<string, string> = {
+  pending: 'На модерації',
+  approved: 'Схвалений',
+  rejected: 'Відхилено',
+  archived: 'Заархівовано',
+}

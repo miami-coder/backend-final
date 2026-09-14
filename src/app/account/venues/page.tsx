@@ -2,14 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { serverFetch } from '@/lib/api/server-client'
 import { getSessionTokens } from '@/lib/auth/session'
-import { parseVenue, type RawVenue, type Venue } from '@/types/venue'
-
-const STATUS_LABELS: Record<Venue['status'], string> = {
-  pending: 'На модерації',
-  approved: 'Схвалений',
-  rejected: 'Відхилено',
-  archived: 'Заархівовано',
-}
+import { parseVenue, VENUE_STATUS_LABELS, type RawVenue } from '@/types/venue'
 
 export default async function MyVenuesPage({
   searchParams,
@@ -45,7 +38,7 @@ export default async function MyVenuesPage({
                 <Link className="font-medium hover:underline" href={`/account/venues/${v.id}`}>{v.name}</Link>
                 <p className="truncate text-sm text-stone-500">{v.address}</p>
               </div>
-              <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600">{STATUS_LABELS[v.status]}</span>
+              <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600">{VENUE_STATUS_LABELS[v.status]}</span>
             </li>
           ))}
         </ul>
