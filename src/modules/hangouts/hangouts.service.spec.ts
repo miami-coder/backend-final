@@ -137,4 +137,21 @@ describe('HangoutsService', () => {
       ForbiddenException,
     );
   });
+
+  it('getForUser loads venue relation for participant', async () => {
+    hangouts.findOne.mockResolvedValueOnce({
+      id: 'h1',
+      status: HangoutStatus.Open,
+      participants: [{ userId: 'u1' }],
+      venue: { id: 'v1' },
+    });
+    const h = await service.getForUser('u1', 'h1');
+    expect(hangouts.findOne).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'h1' },
+        relations: { participants: true, venue: true },
+      }),
+    );
+    expect(h.venue).toEqual({ id: 'v1' });
+  });
 });

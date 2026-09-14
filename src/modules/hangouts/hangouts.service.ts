@@ -159,7 +159,7 @@ export class HangoutsService {
   async getForUser(userId: string, hangoutId: string): Promise<Hangout> {
     const h = await this.hangouts.findOne({
       where: { id: hangoutId },
-      relations: { participants: true },
+      relations: { participants: true, venue: true },
     });
     if (!h) throw new NotFoundException('Заявку не знайдено');
     const isParticipant = h.participants.some((p) => p.userId === userId);
