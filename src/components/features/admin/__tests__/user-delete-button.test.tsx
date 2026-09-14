@@ -11,9 +11,12 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ push, refresh }) }))
 
 type FetchFn = (url: RequestInfo | URL, init?: RequestInit) => Promise<Response>
 
-// DELETE → 200 з ПОРОЖНІМ тілом (як у бекенда)
+// DELETE → 200 з конвертом { data: { id } } (як у бекенда); parseEmpty розгортає конверт
 function okResponse() {
-  return new Response(null, { status: 200 })
+  return new Response(JSON.stringify({ data: { id: 'u1' } }), {
+    status: 200,
+    headers: { 'content-type': 'application/json' },
+  })
 }
 
 function forbiddenResponse() {
