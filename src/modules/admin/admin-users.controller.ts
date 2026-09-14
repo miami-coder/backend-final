@@ -65,9 +65,9 @@ export class AdminUsersController {
     private readonly events: EventEmitter2,
   ) {}
 
-  // Мапить користувача до DTO: прибирає userRoles, додає roles (коди ролей)
+  // Мапить користувача до DTO: прибирає passwordHash і userRoles, додає roles (коди ролей)
   private toDto(u: User) {
-    const { userRoles, ...rest } = u;
+    const { passwordHash: _passwordHash, userRoles, ...rest } = u;
     return { ...rest, roles: (userRoles ?? []).map((ur) => ur.role.code) };
   }
 
