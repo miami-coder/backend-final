@@ -1,5 +1,14 @@
 export type NewsCategory = 'general' | 'promo' | 'event'
 
+export type NewsStatus = RawNews['status']
+
+// Лейбли статусів для адмінських бейджів (draft/published/archived)
+export const NEWS_STATUS_LABELS: Record<NewsStatus, string> = {
+  draft: 'Чернетка',
+  published: 'Опубліковано',
+  archived: 'Заархівовано',
+}
+
 export interface RawNews {
   id: string
   venueId: string | null

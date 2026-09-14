@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { newsFormSchema, NEWS_CATEGORIES } from '@/lib/validation/news'
+import { newsFormSchema, adminNewsFormSchema, NEWS_CATEGORIES } from '@/lib/validation/news'
 
 describe('newsFormSchema', () => {
   it('title <5 → помилка', () => {
@@ -16,5 +16,31 @@ describe('newsFormSchema', () => {
   })
   it('3 категорії', () => {
     expect(NEWS_CATEGORIES.map((c) => c.value)).toEqual(['general', 'promo', 'event'])
+  })
+})
+
+describe('adminNewsFormSchema', () => {
+  const validBase = { category: 'promo', title: 'Заголовок', content: 'Текст якого достатньо' }
+
+  it('захисний тест: публічна newsFormSchema недоторкана — без status/isPromoted у виході', () => {
+    const parsed = newsFormSchema.safeParse(validBase)
+    expect(parsed.success).toBe(true)
+    if (parsed.success) {
+      expect(Object.keys(parsed.data).sort()).toEqual(['category', 'content', 'title'])
+    }
+  })
+
+  it('дефолти: status=published, isPromoted=false', () => {
+    const parsed = adminNewsFormSchema.safeParse(validBase)
+    expect(parsed.success).toBe(true)
+    if (parsed.success) {
+      expect(parsed.data.status).toBe('published')
+      expect(parsed.data.isPromoted).toBe(false)
+    }
+  })
+
+  it('status=draft|published приймаються, archived — ні', () => {
+    expect(adminNewsFormSchema.safeParse({ ...validBase, status: 'draft', isPromoted: true }).success).toBe(true)
+    expect(adminNewsFormSchema.safeParse({ ...validBase, status: 'archived' }).success).toBe(false)
   })
 })
