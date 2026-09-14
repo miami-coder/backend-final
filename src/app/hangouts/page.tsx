@@ -69,7 +69,9 @@ export default async function HangoutsPage({ searchParams }: Props) {
           {hangouts.map((h) => (
             <li key={h.id} className="rounded-2xl border border-stone-200 bg-white p-4">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="font-medium">{h.date} · {h.time}</span>
+                {/* Produces-контракт брифа: картка кліком веде на /hangouts/[id] —
+                    клікабельний заголовок-рядок (дата/час); без вкладених лінків */}
+                <Link className="font-medium hover:underline" href={`/hangouts/${h.id}`}>{h.date} · {h.time}</Link>
                 <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600">{HANGOUT_STATUS_LABELS[h.status]}</span>
                 {h.venue && (
                   <Link className="text-sm text-brand-600 hover:underline" href={`/venues/${h.venue.id}`}>{h.venue.name}</Link>

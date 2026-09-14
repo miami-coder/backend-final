@@ -38,6 +38,9 @@ describe('/hangouts', () => {
     expect(html).toContain('2026-09-20')
     expect(html).toContain('Кварцяна Лузга')
     expect(html).toContain('/hangouts/h1')
+    // Produces-контракт брифа: картка кліком веде на /hangouts/[id] —
+    // рядок дата/час обгорнуто лінком на деталі зустрічі
+    expect(html).toContain('<a class="font-medium hover:underline" href="/hangouts/h1">2026-09-20 · 19:00</a>')
     // meta total 13 / limit 12 → пагінація зі збереженим фільтром статусу
     // (& екранується renderToStaticMarkup у href)
     expect(html).toContain('/hangouts?page=2&amp;status=open')
