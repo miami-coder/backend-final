@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ForbiddenException } from '@nestjs/common';
 import { NewsService } from './news.service';
-import { News, NewsCategory } from './entities/news.entity';
+import { News, NewsCategory, NewsStatus } from './entities/news.entity';
 import { VenuesService } from '../venues/venues.service';
 import { PermissionsService } from '../rbac/permissions.service';
 
@@ -69,5 +69,19 @@ describe('NewsService', () => {
       content: 'Щось сталось у місті',
     });
     expect(r.venueId).toBeNull();
+  });
+
+  it('listAdmin без status не фільтрує статус', async () => {
+    const qb = news.createQueryBuilder();
+    await service.listAdmin({ page: 1, limit: 20 });
+    expect(qb.where).not.toHaveBeenCalled();
+  });
+
+  it('listAdmin зі status фільтрує ним', async () => {
+    const qb = news.createQueryBuilder();
+    await service.listAdmin({ page: 1, limit: 20, status: NewsStatus.Draft });
+    expect(qb.where).toHaveBeenCalledWith('n.status = :status', {
+      status: NewsStatus.Draft,
+    });
   });
 });

@@ -76,6 +76,31 @@ export class NewsService {
     return { data, meta: buildMeta({ page, limit, offset }, total) };
   }
 
+  /** Список новин для адмінки: без status — усі статуси, зі status — фільтр за ним. */
+  async listAdmin(opts: {
+    category?: string;
+    venueId?: string;
+    page?: number;
+    limit?: number;
+    isPromoted?: boolean;
+    status?: NewsStatus;
+  }) {
+    const { page, limit, offset } = normalizePagination(opts);
+    const qb = this.news.createQueryBuilder('n');
+    if (opts.status) qb.where('n.status = :status', { status: opts.status });
+    if (opts.category)
+      qb.andWhere('n.category = :category', { category: opts.category });
+    if (opts.venueId)
+      qb.andWhere('n.venueId = :venueId', { venueId: opts.venueId });
+    if (opts.isPromoted) qb.andWhere('n.isPromoted = true');
+    qb.orderBy('n.isPromoted', 'DESC')
+      .addOrderBy('n.publishedAt', 'DESC')
+      .skip(offset)
+      .take(limit);
+    const [data, total] = await qb.getManyAndCount();
+    return { data, meta: buildMeta({ page, limit, offset }, total) };
+  }
+
   async get(id: string) {
     const n = await this.news.findOne({ where: { id } });
     if (!n) throw new NotFoundException('Новину не знайдено');

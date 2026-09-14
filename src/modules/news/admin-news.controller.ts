@@ -13,7 +13,7 @@ import { Permissions } from '../../common/decorators/permissions.decorator';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { NewsService } from './news.service';
 import { CreateNewsDto } from './dto/create-news.dto';
-import { News } from './entities/news.entity';
+import { News, NewsStatus } from './entities/news.entity';
 import {
   ApiDataResponse,
   ApiPaginatedResponse,
@@ -63,6 +63,12 @@ export class AdminNewsController {
     type: String,
     description: "'true' — лише промотовані",
   })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    enum: NewsStatus,
+    description: 'Фільтр за статусом; без параметра — усі статуси',
+  })
   @ApiUnauthorizedResponse({ description: 'Не авторизований' })
   @ApiForbiddenResponse({ description: 'Немає дозволу news:manage:any' })
   list(
@@ -73,10 +79,15 @@ export class AdminNewsController {
       page?: number;
       limit?: number;
       isPromoted?: string;
+      status?: string;
     },
   ) {
-    return this.news.listPublic({
+    const status = ['draft', 'published', 'archived'].includes(q.status ?? '')
+      ? (q.status as NewsStatus)
+      : undefined;
+    return this.news.listAdmin({
       ...q,
+      status,
       isPromoted: q.isPromoted === 'true' ? true : undefined,
     });
   }
