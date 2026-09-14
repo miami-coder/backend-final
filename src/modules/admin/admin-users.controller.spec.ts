@@ -80,14 +80,15 @@ describe('AdminUsersController', () => {
       );
     });
 
-    it('мапить role.code → roles і прибирає userRoles', async () => {
+    it('мапить role.code → roles і прибирає userRoles та passwordHash', async () => {
       users.findAndCount.mockResolvedValueOnce([
         [
           {
             id: 'u1',
             email: 'a@b.c',
+            passwordHash: 'secret-hash',
             deletedAt: null,
-            profile: null,
+            profile: { id: 'p1' },
             userRoles: [
               { role: { code: 'super_admin' } },
               { role: { code: 'user' } },
@@ -98,7 +99,11 @@ describe('AdminUsersController', () => {
       ]);
       const res = await controller.list(undefined as any, undefined as any);
       expect(res.data[0].roles).toEqual(['super_admin', 'user']);
+      // Чутливі/службові поля не витікають у відповідь
+      expect(res.data[0]).not.toHaveProperty('passwordHash');
       expect(res.data[0]).not.toHaveProperty('userRoles');
+      expect(res.data[0]).toHaveProperty('profile');
+      expect(res.data[0].email).toBe('a@b.c');
       expect(users.findAndCount).toHaveBeenCalledWith(
         expect.objectContaining({
           relations: { profile: true, userRoles: { role: true } },
@@ -137,15 +142,21 @@ describe('AdminUsersController', () => {
     it('returns { data: user } with roles when found', async () => {
       users.findOne.mockResolvedValue({
         id: 'u1',
+        email: 'a@b.c',
+        passwordHash: 'secret-hash',
         profile: { id: 'p1' },
         userRoles: [{ role: { code: 'venue_admin' } }],
       });
       const res = await controller.get('u1');
       expect(res.data).toEqual({
         id: 'u1',
+        email: 'a@b.c',
         profile: { id: 'p1' },
         roles: ['venue_admin'],
       });
+      // passwordHash не витікає у відповідь get
+      expect(res.data).not.toHaveProperty('passwordHash');
+      expect(res.data).not.toHaveProperty('userRoles');
       expect(users.findOne).toHaveBeenCalledWith(
         expect.objectContaining({
           relations: { profile: true, userRoles: { role: true } },
