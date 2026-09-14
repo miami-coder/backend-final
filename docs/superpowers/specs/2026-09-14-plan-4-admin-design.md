@@ -10,7 +10,7 @@
 
 - Пошук/фільтр користувачів (бекенд `GET /admin/users` має лише page/limit) — пагінація вистачає; пошук — кандидат у наступний план.
 - Audit-лог у UI (бекенд пише audit, але read-гепа немає).
-- Бекенд-зміни будь-якого роду (гейти ролей/permissions вже в Guards).
+- Бекенд-зміни — **єдиний виняток**: геп фільтра статусу для `admin/news` (див. 4.5); інших бекенд-змін немає (гейти ролей/permissions вже в Guards).
 
 ## 3. Архітектура
 
@@ -49,8 +49,9 @@ Server-сторінка. Паралельно: `GET /admin/analytics/overview` (
 
 ### 4.5 «Новини» (`/admin/news`)
 
-- Список: `serverFetchList<News>('/admin/news', …)` — усі статуси, пагінація. Рядок: статус-бейдж, категорія, title, дата; лінк на публічну `/news/[id]` (published-only гард уже в коді; не-published — без лінка).
-- Форма глобального створення (острів): category, title, content, imageUrl, isPromoted (чекбокс), status → POST `admin/news`. Патерн VenueNewsManager Плану 3 (схема, валідація, помилки inline).
+- **Бекенд-геп (єдиний у Плані 4):** `GET /admin/news` делегує в `news.listPublic()`, який хардкодить `status = Published` — draft-новини невидимі ніде. Геп: admin-контролер приймає `?status=` (draft|published|archived); без параметра — `all` (без фільтру статусу). Публічний `GET /news` не змінюється (хардкод Published лишається для нього). Unit-тест на обидві гілки.
+- Список: `serverFetchList<News>('/admin/news', …)` + статус-таби `?status=` (Усі → без параметра, Опубліковані/Чернетки/Заархівовані → значення; невідоме значення → «Усі»). Рядок: статус-бейдж, категорія, title, дата; лінк на публічну `/news/[id]` (published-only гард уже в коді; не-published — без лінка).
+- Форма глобального створення (острів): category, title, content, imageUrl, isPromoted (чекбокс), status (draft/published) → POST `admin/news`. Патерн VenueNewsManager Плану 3 (схема, валідація, помилки inline).
 
 ## 5. Обробка помилок
 
