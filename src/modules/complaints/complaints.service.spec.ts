@@ -1,6 +1,10 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { ComplaintsService } from './complaints.service';
 import {
   Complaint,
@@ -71,5 +75,28 @@ describe('ComplaintsService', () => {
     await expect(
       service.resolve('c1', 'admin1', { status: ComplaintStatus.Resolved }),
     ).rejects.toThrow(NotFoundException);
+  });
+
+  // §4.4: повторний resolve не перезаписує чуже рішення
+  it('resolve throws 409 when complaint already Resolved (save не викликається)', async () => {
+    complaints.findOne.mockResolvedValueOnce({
+      id: 'c1',
+      status: ComplaintStatus.Resolved,
+    });
+    await expect(
+      service.resolve('c1', 'admin2', { status: ComplaintStatus.Rejected }),
+    ).rejects.toBeInstanceOf(ConflictException);
+    expect(complaints.save).not.toHaveBeenCalled();
+  });
+
+  it('resolve throws 409 when complaint already Rejected', async () => {
+    complaints.findOne.mockResolvedValueOnce({
+      id: 'c2',
+      status: ComplaintStatus.Rejected,
+    });
+    await expect(
+      service.resolve('c2', 'admin2', { status: ComplaintStatus.Resolved }),
+    ).rejects.toBeInstanceOf(ConflictException);
+    expect(complaints.save).not.toHaveBeenCalled();
   });
 });
