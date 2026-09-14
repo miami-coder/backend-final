@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -51,6 +52,13 @@ export class ComplaintsService {
   async resolve(id: string, adminUserId: string, dto: ResolveComplaintDto) {
     const c = await this.complaints.findOne({ where: { id } });
     if (!c) throw new NotFoundException('Скаргу не знайдено');
+    // §4.4: повторний resolve не перезаписує чуже рішення
+    if (
+      c.status === ComplaintStatus.Resolved ||
+      c.status === ComplaintStatus.Rejected
+    ) {
+      throw new ConflictException('Скаргу вже вирішено');
+    }
     c.status = dto.status;
     c.resolvedBy = adminUserId;
     c.resolvedAt = new Date();
