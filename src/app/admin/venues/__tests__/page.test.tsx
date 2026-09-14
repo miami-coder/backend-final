@@ -25,6 +25,9 @@ vi.mock('@/components/features/admin/venue-approve-button', async () => ({
 vi.mock('@/components/features/admin/venue-reject-button', async () => ({
   VenueRejectButton: ({ venueId }: { venueId: string }) => createElement('span', null, `reject:${venueId}`),
 }))
+vi.mock('@/components/features/admin/venue-assign-owner-button', async () => ({
+  VenueAssignOwnerButton: ({ venueId }: { venueId: string }) => createElement('span', null, `assign-owner:${venueId}`),
+}))
 
 import AdminVenuesPage from '@/app/admin/venues/page'
 import { getSessionTokens } from '@/lib/auth/session'
@@ -84,6 +87,7 @@ describe('/admin/venues — черга модерації', () => {
     expect(html).toContain('вересня')
     expect(html).toContain('approve:v1')
     expect(html).toContain('reject:v2')
+    expect(html).toContain('assign-owner:v1')
     // pending-рядки — без посилань на публічний заклад
     expect(html).not.toContain('href="/venues/')
   })

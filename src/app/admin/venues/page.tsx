@@ -5,6 +5,7 @@ import { formatDate } from '@/lib/utils/format'
 import { Pagination } from '@/components/ui/pagination'
 import { VenueApproveButton } from '@/components/features/admin/venue-approve-button'
 import { VenueRejectButton } from '@/components/features/admin/venue-reject-button'
+import { VenueAssignOwnerButton } from '@/components/features/admin/venue-assign-owner-button'
 
 export const revalidate = 0
 
@@ -46,7 +47,7 @@ export default async function AdminVenuesPage({ searchParams }: Props) {
               <div className="flex shrink-0 gap-2">
                 <VenueApproveButton venueId={v.id} />
                 <VenueRejectButton venueId={v.id} />
-                {/* Task 6: тут зʼявиться <VenueAssignOwnerButton venueId={v.id} /> */}
+                <VenueAssignOwnerButton venueId={v.id} />
               </div>
             </li>
           ))}
