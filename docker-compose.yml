@@ -23,6 +23,18 @@ services:
       - redisdata:/data
     command: ["redis-server", "--appendonly", "yes"]
 
+  migrate:
+    build: .
+    command: pnpm migration:run
+    env_file: .env
+    environment:
+      DATABASE_HOST: postgres
+    volumes:
+      - ./src:/app/src
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   backend:
     build: .
     command: pnpm run start:dev
@@ -40,6 +52,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+      migrate:
+        condition: service_completed_successfully
 
 volumes:
   pgdata: {}
