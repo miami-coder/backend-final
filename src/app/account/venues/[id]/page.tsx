@@ -1,9 +1,11 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { VenueEditForm } from '@/components/features/account/venue-edit-form'
+import { VenueNewsManager } from '@/components/features/account/venue-news-manager'
 import { VenuePhotoManager } from '@/components/features/account/venue-photo-manager'
-import { serverFetch } from '@/lib/api/server-client'
+import { serverFetch, serverFetchList } from '@/lib/api/server-client'
 import { getSessionTokens } from '@/lib/auth/session'
+import { parseNews, type RawNews } from '@/types/news'
 import { parseVenue, VENUE_STATUS_LABELS, type RawVenue } from '@/types/venue'
 
 interface Props {
@@ -32,6 +34,11 @@ export default async function ManageVenuePage({ params, searchParams }: Props) {
 
   const sp = await searchParams
   const tab: TabKey = TABS.some((t) => t.key === sp?.tab) ? (sp.tab as TabKey) : 'edit'
+  // Публічний список /news?venueId= → only published (заархівовані зникають):
+  // serverFetchList повертає {data, meta?}-конверт (на відміну від serverFetch)
+  const news = tab === 'news'
+    ? (await serverFetchList<RawNews>(`/news?venueId=${venue.id}`, { tokens, revalidate: 0 })).data.map(parseNews)
+    : []
 
   return (
     <div>
@@ -56,8 +63,9 @@ export default async function ManageVenuePage({ params, searchParams }: Props) {
       </nav>
       {tab === 'edit' && <VenueEditForm venue={venue} />}
       {tab === 'photos' && <VenuePhotoManager venueId={venue.id} photos={venue.photos} />}
-      {/* новини/аналітика — Task 11–12 підключать свої компоненти сюди */}
-      {(tab === 'news' || tab === 'analytics') && (
+      {tab === 'news' && <VenueNewsManager venueId={venue.id} news={news} />}
+      {/* аналітика — Task 12 підключить свій компонент сюди */}
+      {tab === 'analytics' && (
         <p className="rounded-xl bg-stone-50 p-8 text-center text-stone-500">Розділ у розробці</p>
       )}
     </div>
