@@ -31,6 +31,12 @@ describe('/news/[id]', () => {
     await expect(NewsPage({ params: Promise.resolve({ id: 'nope' }) })).rejects.toThrow('NOT_FOUND')
   })
 
+  // Бекенд віддає архівну новину зі статусом 200 — публічна деталка ховає її (notFound)
+  it('заархівована новина → notFound', async () => {
+    serverFetch.mockResolvedValue({ ...rawNews, status: 'archived' })
+    await expect(NewsPage({ params: Promise.resolve({ id: 'n1' }) })).rejects.toThrow('NOT_FOUND')
+  })
+
   it('метадата містить заголовок', async () => {
     serverFetch.mockImplementation(async (path: string) => (path.startsWith('/news/') ? rawNews : null))
     const meta = await (await import('@/app/news/[id]/page')).generateMetadata({ params: Promise.resolve({ id: 'n1' }) })

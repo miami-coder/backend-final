@@ -17,7 +17,9 @@ export const revalidate = 60
 
 async function getNews(id: string) {
   const raw = await serverFetch<RawNews>(`/news/${id}`, { revalidate: 60 }).catch(() => null)
-  return raw ? parseNews(raw) : null
+  // Бекенд (news.service.get, @Public() GET /news/:id) віддає і draft/archived
+  // зі статусом 200 — публічна деталка мусить показувати лише published
+  return raw && raw.status === 'published' ? parseNews(raw) : null
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
