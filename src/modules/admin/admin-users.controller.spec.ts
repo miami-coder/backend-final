@@ -1,6 +1,11 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  NotFoundException,
+  RequestMethod,
+} from '@nestjs/common';
+import { PATH_METADATA, METHOD_METADATA } from '@nestjs/common/constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AdminUsersController } from './admin-users.controller';
 import { AuditService } from './audit.service';
@@ -50,10 +55,16 @@ describe('AdminUsersController', () => {
 
   describe('list', () => {
     it('returns paginated data from users.findAndCount', async () => {
-      const user = { id: 'u1', profile: { id: 'p1' } };
+      const user = {
+        id: 'u1',
+        profile: { id: 'p1' },
+        userRoles: [{ role: { code: 'user' } }],
+      };
       users.findAndCount.mockResolvedValue([[user], 1]);
       const res = await controller.list(1, 20);
-      expect(res.data).toEqual([user]);
+      expect(res.data).toEqual([
+        { id: 'u1', profile: { id: 'p1' }, roles: ['user'] },
+      ]);
       expect(res.meta).toEqual({
         page: 1,
         limit: 20,
@@ -64,9 +75,51 @@ describe('AdminUsersController', () => {
         expect.objectContaining({
           skip: 0,
           take: 20,
-          relations: { profile: true },
+          relations: { profile: true, userRoles: { role: true } },
         }),
       );
+    });
+
+    it('мапить role.code → roles і прибирає userRoles', async () => {
+      users.findAndCount.mockResolvedValueOnce([
+        [
+          {
+            id: 'u1',
+            email: 'a@b.c',
+            deletedAt: null,
+            profile: null,
+            userRoles: [
+              { role: { code: 'super_admin' } },
+              { role: { code: 'user' } },
+            ],
+          },
+        ],
+        1,
+      ]);
+      const res = await controller.list(undefined as any, undefined as any);
+      expect(res.data[0].roles).toEqual(['super_admin', 'user']);
+      expect(res.data[0]).not.toHaveProperty('userRoles');
+      expect(users.findAndCount).toHaveBeenCalledWith(
+        expect.objectContaining({
+          relations: { profile: true, userRoles: { role: true } },
+        }),
+      );
+    });
+
+    it('повертає roles: [] коли userRoles не завантажені', async () => {
+      users.findAndCount.mockResolvedValueOnce([[{ id: 'u2' }], 1]);
+      const res = await controller.list(1, 20);
+      expect(res.data[0]).toEqual({ id: 'u2', roles: [] });
+    });
+
+    // Регресія: приватний мапер не має «вкрасти» декоратори маршруту в list
+    it('декоратори GET-маршруту лишаються на list, а не на toDto', () => {
+      const proto = AdminUsersController.prototype as any;
+      expect(Reflect.getMetadata(PATH_METADATA, proto.list)).toBeDefined();
+      expect(Reflect.getMetadata(METHOD_METADATA, proto.list)).toBe(
+        RequestMethod.GET,
+      );
+      expect(Reflect.getMetadata(PATH_METADATA, proto.toDto)).toBeUndefined();
     });
 
     it('defaults page/limit when undefined', async () => {
@@ -81,10 +134,23 @@ describe('AdminUsersController', () => {
   });
 
   describe('get', () => {
-    it('returns { data: user } when found', async () => {
-      users.findOne.mockResolvedValue({ id: 'u1' });
+    it('returns { data: user } with roles when found', async () => {
+      users.findOne.mockResolvedValue({
+        id: 'u1',
+        profile: { id: 'p1' },
+        userRoles: [{ role: { code: 'venue_admin' } }],
+      });
       const res = await controller.get('u1');
-      expect(res.data).toEqual({ id: 'u1' });
+      expect(res.data).toEqual({
+        id: 'u1',
+        profile: { id: 'p1' },
+        roles: ['venue_admin'],
+      });
+      expect(users.findOne).toHaveBeenCalledWith(
+        expect.objectContaining({
+          relations: { profile: true, userRoles: { role: true } },
+        }),
+      );
     });
 
     it('throws NotFoundException when missing', async () => {

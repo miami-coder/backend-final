@@ -65,6 +65,12 @@ export class AdminUsersController {
     private readonly events: EventEmitter2,
   ) {}
 
+  // Мапить користувача до DTO: прибирає userRoles, додає roles (коди ролей)
+  private toDto(u: User) {
+    const { userRoles, ...rest } = u;
+    return { ...rest, roles: (userRoles ?? []).map((ur) => ur.role.code) };
+  }
+
   @Get()
   @Permissions('user:manage')
   @ApiOperation({ summary: 'Список користувачів (без видалених)' })
@@ -91,13 +97,13 @@ export class AdminUsersController {
     return this.users
       .findAndCount({
         where: { deletedAt: IsNull() },
-        relations: { profile: true },
+        relations: { profile: true, userRoles: { role: true } },
         skip: offset,
         take: limit,
         order: { createdAt: 'DESC' },
       })
       .then(([data, total]) => ({
-        data,
+        data: data.map((u) => this.toDto(u)),
         meta: buildMeta({ page: page ?? 1, limit: limit ?? 20, offset }, total),
       }));
   }
@@ -112,10 +118,10 @@ export class AdminUsersController {
   async get(@Param('id') id: string) {
     const user = await this.users.findOne({
       where: { id, deletedAt: IsNull() },
-      relations: { profile: true },
+      relations: { profile: true, userRoles: { role: true } },
     });
     if (!user) throw new NotFoundException('Користувача не знайдено');
-    return { data: user };
+    return { data: this.toDto(user) };
   }
 
   @Patch(':id')

@@ -4,11 +4,13 @@ import {
   CreateDateColumn,
   Entity,
   Index,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Profile } from './profile.entity';
+import { UserRole } from '../../rbac/entities/user-role.entity';
 
 @Entity('users')
 export class User {
@@ -26,4 +28,8 @@ export class User {
 
   @OneToOne(() => Profile, (profile) => profile.user)
   profile: Profile;
+
+  // Ролі користувача (циклічний імпорт для TypeORM безпечний)
+  @OneToMany(() => UserRole, (ur) => ur.user)
+  userRoles: UserRole[];
 }
