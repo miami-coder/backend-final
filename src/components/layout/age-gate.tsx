@@ -29,12 +29,16 @@ export function useAgeConfirmed(): boolean {
 export function AgeGate() {
   const confirmed = useAgeConfirmed()
   const [denied, setDenied] = useState(false)
-  // Фокус на контейнері діалога при монтуванні: без tabindex=-1 div нефокусабельний,
-  // і клавіатурний користувач опинявся «ніде» перед першим Tab.
+  // Фокус на контейнері діалога: без tabindex=-1 div нефокусабельний, і клавіатурний
+  // користувач опинявся «ніде» перед першим Tab.
+  // Залежність [confirmed], а не []: у прод-шляху першого візиту SSR-снапшот —
+  // «підтверджено» (getServerSnapshot), гідратація рендерить null, і діалог
+  // з'являється уже ПІСЛЯ одноразового ефекту. З [confirmed] фокус спрацьовує
+  // на до-рендері після гідратації (і при повторній появі діалогу в сесії).
   const dialogRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    dialogRef.current?.focus()
-  }, [])
+    if (!confirmed) dialogRef.current?.focus()
+  }, [confirmed])
 
   const confirm = useCallback(() => {
     sessionStorage.setItem('age-confirmed', '1')
