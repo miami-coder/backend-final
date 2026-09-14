@@ -208,7 +208,9 @@ export class HangoutsService {
       .createQueryBuilder()
       .update()
       .set({ status: HangoutStatus.Completed })
-      .where(`status IN ('open','filled') AND (date + time)::timestamp < NOW()`)
+      .where(
+        `status IN ('open','filled') AND (date + time::time)::timestamp < NOW()`,
+      )
       .execute();
     await this.invalidateListCache();
     return result.affected ?? 0;

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, RequestMethod } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -36,6 +36,12 @@ import { AdminModule } from './modules/admin/admin.module';
             ? undefined
             : { target: 'pino-pretty' },
       },
+      // path-to-regexp v8 (Express 5) no longer accepts the bare `*` wildcard
+      // that nestjs-pino registers by default. Combined with the global prefix
+      // it became `/api/v1/*` and triggered the LegacyRouteConverter warning.
+      // Use the named-wildcard syntax so the same catch-all is registered
+      // without the warning.
+      forRoutes: [{ path: '{*path}', method: RequestMethod.ALL }],
     }),
     CommonModule,
     HealthModule,

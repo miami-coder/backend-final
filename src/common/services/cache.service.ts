@@ -34,7 +34,7 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async onModuleDestroy() {
+  async onModuleDestroy(): Promise<void> {
     if (this.client) {
       this.client.disconnect();
       this.client = null;
