@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
+import { VenueAnalytics } from '@/components/features/account/venue-analytics'
 import { VenueEditForm } from '@/components/features/account/venue-edit-form'
 import { VenueNewsManager } from '@/components/features/account/venue-news-manager'
 import { VenuePhotoManager } from '@/components/features/account/venue-photo-manager'
@@ -10,7 +11,7 @@ import { parseVenue, VENUE_STATUS_LABELS, type RawVenue } from '@/types/venue'
 
 interface Props {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ tab?: string }>
+  searchParams: Promise<{ tab?: string; from?: string; to?: string }>
 }
 
 const TABS = [
@@ -21,6 +22,15 @@ const TABS = [
 ] as const
 
 type TabKey = (typeof TABS)[number]['key']
+
+// react-hooks/purity не пускає Date.now()/new Date() прямо в рендері —
+// обгортаємо дефолтний період (to = сьогодні, from = to − 30 днів) у хелпер
+function defaultAnalyticsRange() {
+  return {
+    to: new Date().toLocaleDateString('en-CA'),
+    from: new Date(Date.now() - 30 * 86400000).toLocaleDateString('en-CA'),
+  }
+}
 
 export default async function ManageVenuePage({ params, searchParams }: Props) {
   const tokens = await getSessionTokens()
@@ -64,9 +74,13 @@ export default async function ManageVenuePage({ params, searchParams }: Props) {
       {tab === 'edit' && <VenueEditForm venue={venue} />}
       {tab === 'photos' && <VenuePhotoManager venueId={venue.id} photos={venue.photos} />}
       {tab === 'news' && <VenueNewsManager venueId={venue.id} news={news} />}
-      {/* аналітика — Task 12 підключить свій компонент сюди */}
       {tab === 'analytics' && (
-        <p className="rounded-xl bg-stone-50 p-8 text-center text-stone-500">Розділ у розробці</p>
+        // діапазон із URL (YYYY-MM-DD, en-CA); дефолт — сьогодні / сьогодні − 30 днів
+        <VenueAnalytics
+          venueId={venue.id}
+          from={sp?.from || defaultAnalyticsRange().from}
+          to={sp?.to || defaultAnalyticsRange().to}
+        />
       )}
     </div>
   )

@@ -37,6 +37,16 @@ vi.mock('@/components/features/account/venue-photo-manager', () => ({
   },
 }))
 
+// VenueAnalytics — серверний компонент; заглушка ловить пропси
+// (from/to з searchParams або дефолтний 30-денний період)
+let analyticsProps: { venueId: string; from: string; to: string } | null = null
+vi.mock('@/components/features/account/venue-analytics', () => ({
+  VenueAnalytics: (props: { venueId: string; from: string; to: string }) => {
+    analyticsProps = props
+    return createElement('div', null, `ANALYTICS:${props.venueId}:${props.from}:${props.to}`)
+  },
+}))
+
 import ManageVenuePage from '@/app/account/venues/[id]/page'
 
 const rawVenue = {
@@ -49,12 +59,14 @@ const rawVenue = {
 
 const tokens = { accessToken: 'a', refreshToken: 'r' }
 
-async function renderPage(tab?: string) {
+async function renderPage(tab?: string, extra: Record<string, string> = {}) {
+  const sp: Record<string, string> = { ...extra }
+  if (tab) sp.tab = tab
   return renderToStaticMarkup(
     // Next.js 16: params/searchParams — Promises
     await ManageVenuePage({
       params: Promise.resolve({ id: 'v1' }),
-      searchParams: Promise.resolve(tab ? { tab } : {}),
+      searchParams: Promise.resolve(sp),
     }),
   )
 }
@@ -65,6 +77,7 @@ describe('/account/venues/[id]', () => {
     serverFetch.mockResolvedValue(rawVenue)
     editProps = null
     photoProps = null
+    analyticsProps = null
     redirect.mockClear()
     notFound.mockClear()
   })
@@ -98,6 +111,21 @@ describe('/account/venues/[id]', () => {
     serverFetch.mockRejectedValue(new Error('FORBIDDEN'))
     await expect(renderPage()).rejects.toThrow('NOT_FOUND')
     expect(notFound).toHaveBeenCalled()
+  })
+
+  it('?tab=analytics → VenueAnalytics з дефолтним періодом (to=сьогодні, from=−30 днів)', async () => {
+    const html = await renderPage('analytics')
+    expect(analyticsProps?.venueId).toBe('v1')
+    expect(analyticsProps?.to).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    // en-CA-формат: to − from ≈ 30 днів (±1 через північ)
+    const ms = (Date.parse(`${analyticsProps?.to}T00:00:00Z`) - Date.parse(`${analyticsProps?.from}T00:00:00Z`)) / 86400000
+    expect(Math.round(ms)).toBe(30)
+    expect(html).toContain('ANALYTICS:v1:')
+  })
+
+  it('?tab=analytics&from&to → діапазон із URL передається без змін', async () => {
+    await renderPage('analytics', { from: '2026-09-01', to: '2026-09-10' })
+    expect(analyticsProps).toEqual({ venueId: 'v1', from: '2026-09-01', to: '2026-09-10' })
   })
 
   it('без сесії → redirect на логін', async () => {
