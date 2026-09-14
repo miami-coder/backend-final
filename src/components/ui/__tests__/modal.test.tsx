@@ -40,6 +40,44 @@ describe('Modal (a11y)', () => {
     expect(document.activeElement).toBe(first.previousElementSibling)
   })
 
+  it('Tab із внутрішнього елемента не тікає з діалогу', () => {
+    // jsdom не рухає фокус на Tab сам, тому «витік» симулюємо явно:
+    // фокусуємо кнопку поза діалогом (клік по оверлею, перемикання вкладки
+    // браузера) і перевіряємо, що Tab повертає фокус усередину панелі.
+    const outside = document.createElement('button')
+    outside.textContent = 'Поза діалогом'
+    document.body.appendChild(outside)
+    render(
+      <Modal open onClose={() => {}} title="Тест">
+        <button>Один</button>
+        <button>Два</button>
+        <button>Три</button>
+      </Modal>,
+    )
+    screen.getByRole('button', { name: 'Два' }).focus()
+    outside.focus()
+    expect(document.activeElement).toBe(outside)
+    fireEvent.keyDown(document, { key: 'Tab' })
+    const panel = screen.getByRole('dialog')
+    expect(panel.contains(document.activeElement)).toBe(true)
+    outside.remove()
+  })
+
+  it('FOCUSABLE враховує tabindex і contenteditable', () => {
+    render(
+      <Modal open onClose={() => {}} title="Тест">
+        <span tabIndex={0}>Спан</span>
+        <div contentEditable data-testid="editor" />
+      </Modal>,
+    )
+    // span із tabindex — перший focusable контенту, тож початковий фокус на ньому
+    expect(document.activeElement).toBe(screen.getByText('Спан'))
+    // contenteditable div — останній у циклі: Tab із нього загортається на перший
+    screen.getByTestId('editor').focus()
+    fireEvent.keyDown(document, { key: 'Tab' })
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Закрити' }))
+  })
+
   it('ре-рендер з новою inline-ідентичністю onClose не скидає фокус', () => {
     // Фокус усередині діалогу (не на першому елементі) має переживати
     // ре-рендер батька з новим inline-колбеком onClose: ефект Escape/фокусу

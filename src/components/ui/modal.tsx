@@ -3,7 +3,7 @@
 import { useEffect, useRef, type ReactNode } from 'react'
 
 const FOCUSABLE =
-  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled])'
+  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable]:not([contenteditable="false"])'
 
 export function Modal({ open, onClose, title, children }: {
   open: boolean
@@ -42,6 +42,13 @@ export function Modal({ open, onClose, title, children }: {
       if (current.length === 0) return
       const first = current[0]
       const last = current[current.length - 1]
+      // Фокус витік із панелі (клік поза контентом, вкладка браузера тощо) —
+      // повертаємо всередину замість того, щоб Tab оброблявся поза діалогом
+      if (!panelRef.current.contains(document.activeElement)) {
+        e.preventDefault()
+        ;(e.shiftKey ? last : first).focus()
+        return
+      }
       if (e.shiftKey && document.activeElement === first) {
         e.preventDefault()
         last.focus()

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { Button } from '@/components/ui/button'
 
 // sessionStorage недоступний під час SSR: серверний снапшот — «підтверджено»
@@ -29,6 +29,12 @@ export function useAgeConfirmed(): boolean {
 export function AgeGate() {
   const confirmed = useAgeConfirmed()
   const [denied, setDenied] = useState(false)
+  // Фокус на контейнері діалога при монтуванні: без tabindex=-1 div нефокусабельний,
+  // і клавіатурний користувач опинявся «ніде» перед першим Tab.
+  const dialogRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    dialogRef.current?.focus()
+  }, [])
 
   const confirm = useCallback(() => {
     sessionStorage.setItem('age-confirmed', '1')
@@ -38,7 +44,13 @@ export function AgeGate() {
   if (confirmed) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true">
+    <div
+      ref={dialogRef}
+      tabIndex={-1}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 outline-none"
+      role="dialog"
+      aria-modal="true"
+    >
       <div className="max-w-md rounded-2xl bg-white p-6 text-center shadow-xl">
         {denied ? (
           <>

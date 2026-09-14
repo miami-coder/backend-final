@@ -23,6 +23,10 @@ describe('AgeGate', () => {
     expect(screen.getByText(/Вийдіть із застосунку/i)).toBeInTheDocument()
     expect(sessionStorage.getItem('age-confirmed')).toBeNull()
   })
+  it('діалог отримує фокус при монтуванні', () => {
+    render(<AgeGate />)
+    expect(screen.getByRole('dialog')).toHaveFocus()
+  })
   it('зі стану відмови можна повернутися до підтвердження', () => {
     render(<AgeGate />)
     fireEvent.click(screen.getByRole('button', { name: /Мені немає 18/ }))
