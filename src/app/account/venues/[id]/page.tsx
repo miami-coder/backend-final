@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { VenueEditForm } from '@/components/features/account/venue-edit-form'
+import { VenuePhotoManager } from '@/components/features/account/venue-photo-manager'
 import { serverFetch } from '@/lib/api/server-client'
 import { getSessionTokens } from '@/lib/auth/session'
 import { parseVenue, VENUE_STATUS_LABELS, type RawVenue } from '@/types/venue'
@@ -54,8 +55,9 @@ export default async function ManageVenuePage({ params, searchParams }: Props) {
         ))}
       </nav>
       {tab === 'edit' && <VenueEditForm venue={venue} />}
-      {/* фото/новини/аналітика — Task 10–12 підключать свої компоненти сюди */}
-      {tab !== 'edit' && (
+      {tab === 'photos' && <VenuePhotoManager venueId={venue.id} photos={venue.photos} />}
+      {/* новини/аналітика — Task 11–12 підключать свої компоненти сюди */}
+      {(tab === 'news' || tab === 'analytics') && (
         <p className="rounded-xl bg-stone-50 p-8 text-center text-stone-500">Розділ у розробці</p>
       )}
     </div>

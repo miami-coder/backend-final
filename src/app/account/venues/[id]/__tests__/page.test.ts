@@ -28,13 +28,23 @@ vi.mock('@/components/features/account/venue-edit-form', () => ({
   },
 }))
 
+// VenuePhotoManager — клієнтський компонент; заглушка ловить пропси
+let photoProps: { venueId: string; photos: { id: string }[] } | null = null
+vi.mock('@/components/features/account/venue-photo-manager', () => ({
+  VenuePhotoManager: (props: { venueId: string; photos: { id: string }[] }) => {
+    photoProps = props
+    return createElement('div', null, `PHOTO-MANAGER:${props.venueId}:${props.photos.length}`)
+  },
+}))
+
 import ManageVenuePage from '@/app/account/venues/[id]/page'
 
 const rawVenue = {
   id: 'v1', ownerId: 'u1', name: 'Бар «Пиво»', description: null, address: 'вул. Липова, 1',
   latitude: '50.45', longitude: '30.52', contacts: {}, workingHours: {}, averageCheck: '250',
   mainPhotoUrl: null, status: 'pending', ratingAvg: '4.5', ratingCount: 2, viewCount: 10,
-  createdAt: '2026-09-01T00:00:00Z', updatedAt: '2026-09-01T00:00:00Z', photos: [],
+  createdAt: '2026-09-01T00:00:00Z', updatedAt: '2026-09-01T00:00:00Z',
+  photos: [{ id: 'p1', venueId: 'v1', url: '/static/a.jpg', sortOrder: 0 }],
 }
 
 const tokens = { accessToken: 'a', refreshToken: 'r' }
@@ -54,6 +64,7 @@ describe('/account/venues/[id]', () => {
     serverFetch.mockReset()
     serverFetch.mockResolvedValue(rawVenue)
     editProps = null
+    photoProps = null
     redirect.mockClear()
     notFound.mockClear()
   })
@@ -70,9 +81,11 @@ describe('/account/venues/[id]', () => {
     expect(serverFetch).toHaveBeenCalledWith('/me/venues/v1', { tokens, revalidate: 0 })
   })
 
-  it('?tab=photos → плейсхолдер замість форми', async () => {
+  it('?tab=photos → VenuePhotoManager з venue.id і фото замість форми', async () => {
     const html = await renderPage('photos')
-    expect(html).toContain('Розділ у розробці')
+    expect(photoProps?.venueId).toBe('v1')
+    expect(photoProps?.photos).toHaveLength(1)
+    expect(html).toContain('PHOTO-MANAGER:v1:1')
     expect(html).not.toContain('EDIT-FORM')
   })
 
