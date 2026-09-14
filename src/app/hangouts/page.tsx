@@ -6,6 +6,8 @@ import { Pagination } from '@/components/ui/pagination'
 import { serverFetchList } from '@/lib/api/server-client'
 import { parseHangout, HANGOUT_STATUS_LABELS, type HangoutStatus, type RawHangout } from '@/types/hangout'
 import { formatMoney } from '@/lib/utils/format'
+// Лейбл payer — та сама константа, що й у формі створення/кабінеті (єдине джерело копірайту)
+import { HANGOUT_PAYERS } from '@/lib/validation/hangout'
 
 const LIMIT = 12
 const STATUSES = ['open', 'filled', 'cancelled', 'completed'] as const
@@ -84,7 +86,7 @@ export default async function HangoutsPage({ searchParams }: Props) {
               </div>
               <p className="mt-2 text-stone-700">{h.purpose}</p>
               <p className="mt-1 text-sm text-stone-500">
-                до {h.groupSize} осіб · {h.payer === 'me' ? 'Плачу я' : h.payer === 'split' ? 'Порівну' : 'Платить компанія'}
+                до {h.groupSize} осіб · {HANGOUT_PAYERS.find((p) => p.value === h.payer)?.label}
                 {h.desiredBudget !== null ? ` · бюджет ${formatMoney(h.desiredBudget)}` : ''}
               </p>
               <p className="mt-2">

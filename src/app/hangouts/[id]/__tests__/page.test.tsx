@@ -41,6 +41,9 @@ describe('/hangouts/[id]', () => {
     )
     await waitFor(() => expect(screen.getByText(/Посидіти з пивом/)).toBeInTheDocument())
     expect(screen.getByText(/Бар «Пиво»/)).toBeInTheDocument()
+    // лейбли gender/payer — канонічні константи HANGOUT_GENDERS/HANGOUT_PAYERS
+    expect(screen.getByText('Будь-хто')).toBeInTheDocument()
+    expect(screen.getByText('Ділити порівну')).toBeInTheDocument()
     expect(screen.getByText(/Учасники \(2\)/)).toBeInTheDocument()
   })
 

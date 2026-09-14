@@ -10,6 +10,8 @@ import { api } from '@/lib/api/client'
 import { ApiError } from '@/lib/api/parse'
 import { parseHangout, HANGOUT_STATUS_LABELS, type RawHangout, type Hangout } from '@/types/hangout'
 import { formatMoney } from '@/lib/utils/format'
+// Лейбли gender/payer — ті самі константи, що й у формі створення/кабінеті (єдине джерело копірайту)
+import { HANGOUT_GENDERS, HANGOUT_PAYERS } from '@/lib/validation/hangout'
 import { useUser } from '@/components/providers/user-provider'
 
 interface DetailState {
@@ -80,8 +82,8 @@ export default function HangoutDetailPage() {
       <p className="mt-2 text-stone-700">{hangout.purpose}</p>
       <ul className="mt-4 space-y-1 text-sm text-stone-600">
         <li>Учасників потрібно: до {hangout.groupSize}</li>
-        <li>{hangout.gender === 'any' ? 'Будь-хто' : hangout.gender === 'male' ? 'Чоловіки' : 'Жінки'}</li>
-        <li>{hangout.payer === 'me' ? 'Плачу я' : hangout.payer === 'split' ? 'Порівну' : 'Платить компанія'}</li>
+        <li>{HANGOUT_GENDERS.find((g) => g.value === hangout.gender)?.label}</li>
+        <li>{HANGOUT_PAYERS.find((p) => p.value === hangout.payer)?.label}</li>
         {hangout.desiredBudget !== null && <li>Бюджет: {formatMoney(hangout.desiredBudget)}</li>}
         {hangout.venue && (
           <li>Заклад: <Link className="text-brand-600 hover:underline" href={`/venues/${hangout.venue.id}`}>{hangout.venue.name}</Link></li>

@@ -37,6 +37,8 @@ describe('/hangouts', () => {
     expect(html).toContain('Дегустація крафтового пива')
     expect(html).toContain('2026-09-20')
     expect(html).toContain('Кварцяна Лузга')
+    // лейбл payer — канонічна константа HANGOUT_PAYERS (пріоритет «Ділити порівну»)
+    expect(html).toContain('Ділити порівну')
     expect(html).toContain('/hangouts/h1')
     // Produces-контракт брифа: картка кліком веде на /hangouts/[id] —
     // рядок дата/час обгорнуто лінком на деталі зустрічі
