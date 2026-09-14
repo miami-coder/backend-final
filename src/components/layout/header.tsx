@@ -3,10 +3,10 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@/components/providers/user-provider'
-import { Button } from '@/components/ui/button'
+import { UserMenu } from '@/components/layout/user-menu'
 
 export function Header() {
-  const { user, logout } = useUser()
+  const { user } = useUser()
   const router = useRouter()
 
   return (
@@ -15,6 +15,8 @@ export function Header() {
         <Link href="/" className="text-lg font-bold text-brand-600">🍺 Пиячок</Link>
         <nav className="flex gap-4 text-stone-600">
           <Link className="hover:text-brand-600" href="/">Каталог</Link>
+          <Link className="hover:text-brand-600" href="/news">Новини</Link>
+          <Link className="hover:text-brand-600" href="/hangouts">Зустрічі</Link>
         </nav>
         <form
           className="ml-auto hidden sm:block"
@@ -31,12 +33,7 @@ export function Header() {
             className="w-56 rounded-lg border border-stone-300 px-3 py-1.5 focus:border-brand-500 focus:outline-none"
           />
         </form>
-        {user ? (
-          <div className="flex items-center gap-3">
-            <Link href="/account" className="text-stone-700 hover:text-brand-600">{user.email}</Link>
-            <Button variant="secondary" size="sm" onClick={() => logout()}>Вийти</Button>
-          </div>
-        ) : (
+        {user ? <UserMenu /> : (
           // Посилання, а не Link>Button: <button> всередині <a> — невалідний HTML.
           // Класи ті самі, що в Button (primary + sm).
           <Link
