@@ -95,12 +95,16 @@ export class ReviewsService {
     sort: 'newest' | 'oldest' | 'highest' | 'lowest' = 'newest',
   ) {
     const { offset } = normalizePagination({ page, limit });
-    const order: any = {
+    const orderMap: Record<
+      typeof sort,
+      { rating?: 'DESC' | 'ASC'; createdAt?: 'DESC' | 'ASC' }
+    > = {
       newest: { createdAt: 'DESC' },
       oldest: { createdAt: 'ASC' },
       highest: { rating: 'DESC' },
       lowest: { rating: 'ASC' },
-    }[sort];
+    };
+    const order = orderMap[sort];
     const [data, total] = await this.reviews
       .createQueryBuilder('r')
       .leftJoinAndSelect('r.user', 'u')

@@ -19,8 +19,8 @@ export class PermissionsGuard implements CanActivate {
     );
     if (!required || required.length === 0) return true;
 
-    const request = context.switchToHttp().getRequest();
-    const user = request.user as JwtUser | undefined;
+    const request = context.switchToHttp().getRequest<{ user?: JwtUser }>();
+    const user = request.user;
     if (!user) throw new ForbiddenException('No authenticated user');
 
     // Permission check happens in service layer (has access to DB / cache).

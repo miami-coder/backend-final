@@ -8,6 +8,16 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiForbiddenResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
@@ -19,6 +29,7 @@ import { RecordViewDto } from './dto/record-view.dto';
 import { VenuesService } from '../venues/venues.service';
 import { PermissionsService } from '../rbac/permissions.service';
 
+@ApiTags('Analytics')
 @Controller()
 export class AnalyticsController {
   constructor(
@@ -29,15 +40,77 @@ export class AnalyticsController {
 
   @Public()
   @Post('venues/:id/view')
+  @ApiOperation({ summary: 'Записати перегляд закладу (з дедуплікацією)' })
+  @ApiOkResponse({
+    description: 'Чи було записано перегляд',
+    schema: {
+      type: 'object',
+      properties: {
+        data: {
+          type: 'object',
+          properties: { recorded: { type: 'boolean' } },
+        },
+      },
+    },
+  })
+  @ApiNotFoundResponse({ description: 'Заклад не знайдено' })
   recordView(@Param('id') id: string, @Body() dto: RecordViewDto) {
     return this.analytics
       .recordView(id, null, dto.sessionId)
       .then((data) => ({ data }));
   }
 
+  @ApiBearerAuth('access-token')
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Get('me/venues/:id/analytics')
   @Permissions('analytics:view:own', 'analytics:view:all')
+  @ApiOperation({ summary: 'Аналітика закладу (власник або модератор)' })
+  @ApiOkResponse({
+    description: 'Метрики переглядів та подій',
+    schema: {
+      type: 'object',
+      properties: {
+        totalViews: { type: 'number' },
+        viewsByDay: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              date: { type: 'string', example: '2026-08-01' },
+              count: { type: 'number' },
+            },
+          },
+        },
+        eventsByType: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              eventType: { type: 'string' },
+              count: { type: 'number' },
+            },
+          },
+        },
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({ description: 'Не авторизований' })
+  @ApiForbiddenResponse({
+    description: 'Немає доступу до аналітики цього закладу',
+  })
+  @ApiNotFoundResponse({ description: 'Заклад не знайдено' })
+  @ApiQuery({
+    name: 'from',
+    required: false,
+    type: String,
+    description: 'Дата з (ISO)',
+  })
+  @ApiQuery({
+    name: 'to',
+    required: false,
+    type: String,
+    description: 'Дата по (ISO)',
+  })
   getForVenue(
     @CurrentUser() u: JwtUser,
     @Param('id') id: string,
@@ -49,9 +122,33 @@ export class AnalyticsController {
     );
   }
 
+  @ApiBearerAuth('access-token')
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Get('admin/analytics/overview')
   @Permissions('analytics:view:all')
+  @ApiOperation({ summary: 'Загальна аналітика по всій системі' })
+  @ApiOkResponse({
+    description: 'Загальні метрики',
+    schema: {
+      type: 'object',
+      properties: {
+        totalViews: { type: 'number' },
+        totalEvents: { type: 'number' },
+        eventsByType: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              eventType: { type: 'string' },
+              count: { type: 'number' },
+            },
+          },
+        },
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({ description: 'Не авторизований' })
+  @ApiForbiddenResponse({ description: 'Немає дозволу analytics:view:all' })
   getOverview() {
     return this.analytics.getOverview();
   }

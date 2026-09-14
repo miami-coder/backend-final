@@ -13,7 +13,6 @@ import { CacheService } from '../../../common/services/cache.service';
 import { RegisterDto } from '../dto/register.dto';
 import { LoginDto } from '../dto/login.dto';
 import { USER_ROLE_ADDED } from '../../rbac/listeners/user-role.listener';
-import { JwtUser } from '../../../common/decorators/current-user.decorator';
 
 @Injectable()
 export class AuthService {
@@ -30,12 +29,12 @@ export class AuthService {
     if (!dto.acceptEula) {
       throw new ConflictException('Потрібно прийняти угоду користувача');
     }
-    const user = await this.users.create(dto, 'user');
+    const user = await this.users.create(dto);
 
     // Assign 'user' role
     const role = (await this.userRoles.manager.findOne('Role', {
       where: { code: 'user' },
-    })) as any;
+    })) as { id: string } | null;
     if (role) {
       await this.userRoles.save({ userId: user.id, roleId: role.id });
       this.events.emit(USER_ROLE_ADDED, { userId: user.id });

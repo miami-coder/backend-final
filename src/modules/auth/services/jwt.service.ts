@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { JwtService as NestJwt } from '@nestjs/jwt';
+import { JwtService as NestJwt, type JwtSignOptions } from '@nestjs/jwt';
 
 @Injectable()
 export class TokenService {
@@ -8,14 +8,16 @@ export class TokenService {
   signAccess(payload: { sub: string; email: string; roles: string[] }): string {
     return this.jwt.sign(payload, {
       secret: process.env.JWT_ACCESS_SECRET,
-      expiresIn: (process.env.JWT_ACCESS_TTL ?? '15m') as any,
+      expiresIn: (process.env.JWT_ACCESS_TTL ??
+        '15m') as JwtSignOptions['expiresIn'],
     });
   }
 
   signRefresh(payload: { sub: string }): string {
     return this.jwt.sign(payload, {
       secret: process.env.JWT_REFRESH_SECRET,
-      expiresIn: (process.env.JWT_REFRESH_TTL ?? '30d') as any,
+      expiresIn: (process.env.JWT_REFRESH_TTL ??
+        '30d') as JwtSignOptions['expiresIn'],
     });
   }
 

@@ -23,7 +23,7 @@ export class UsersService {
     private readonly oauth: Repository<OAuthAccount>,
   ) {}
 
-  async create(dto: CreateUserDto, roleCode: string = 'user'): Promise<User> {
+  async create(dto: CreateUserDto): Promise<User> {
     const existing = await this.users.findOne({
       where: { email: dto.email.toLowerCase() },
     });
