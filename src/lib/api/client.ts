@@ -39,13 +39,15 @@ export async function apiList<T>(path: string, init?: RequestInit): Promise<Clie
 }
 
 // Запити, у яких тіло відповіді не потрібне (DELETE /reviews/:id → 200 з ПОРОЖНІМ тілом).
-// Від api() відрізняється лише семантикою результату: нічого не повертає,
-// а на 401 одразу кидає ApiError після редіректу (відновлювати нічого — тіла немає).
+// Від api() відрізняється лише семантикою результату: нічого не повертає;
+// на 401 редірект уже ініційовано — тихо завершуємо без кидка.
 export async function apiVoid(path: string, init?: RequestInit): Promise<void> {
   const res = await fetch(`/api/v1${path}`, init)
   if (res.status === 401) {
     redirectToLogin()
-    throw new ApiError(401, 'UNAUTHORIZED', 'Сесія завершена')
+    // Редірект уже ініційовано — компоненти не показують toast перед
+    // перезавантаженням (резидуал Плану 2 №10): тихо завершуємо
+    return
   }
   await parseEmpty(res)
 }

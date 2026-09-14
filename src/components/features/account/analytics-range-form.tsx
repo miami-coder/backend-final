@@ -28,4 +28,3 @@ export function AnalyticsRangeForm({ from, to }: { from: string; to: string }) {
     </form>
   )
 }
-

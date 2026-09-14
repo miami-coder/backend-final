@@ -18,6 +18,7 @@ export function VenueCard({ venue }: { venue: Venue }) {
           <img
             src={venue.mainPhotoUrl}
             alt={venue.name}
+            loading="lazy"
             className="h-full w-full object-cover transition group-hover:scale-[1.03]"
           />
         ) : (

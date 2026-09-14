@@ -42,24 +42,28 @@ export default async function NewsPage({ searchParams }: Props) {
         </div>
       ) : (
         <ul className="mt-6 grid gap-4 sm:grid-cols-2">
-          {news.map((n) => (
-            <li key={n.id} className="overflow-hidden rounded-2xl border border-stone-200 bg-white">
-              <Link href={`/news/${n.id}`} className="block">
-                {n.imageUrl && (
-                  /* eslint-disable-next-line @next/next/no-img-element -- зовнішній URL з бекенда */
-                  <img src={n.imageUrl} alt="" loading="lazy" className="h-40 w-full object-cover" />
-                )}
-                <div className="p-4">
-                  {n.isPromoted && <span className="mr-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">Промо</span>}
-                  <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600">
-                    {NEWS_CATEGORIES.find((c) => c.value === n.category)?.label}
-                  </span>
-                  <h2 className="mt-2 font-semibold">{n.title}</h2>
-                  {n.publishedAt && <p className="mt-1 text-sm text-stone-500">{formatDate(n.publishedAt)}</p>}
-                </div>
-              </Link>
-            </li>
-          ))}
+          {news.map((n) => {
+            // невідома категорія з бекенда → бейдж узагалі не рендеримо (порожній span недопустимий)
+            const categoryLabel = NEWS_CATEGORIES.find((c) => c.value === n.category)?.label
+            return (
+              <li key={n.id} className="overflow-hidden rounded-2xl border border-stone-200 bg-white">
+                <Link href={`/news/${n.id}`} className="block">
+                  {n.imageUrl && (
+                    /* eslint-disable-next-line @next/next/no-img-element -- зовнішній URL з бекенда */
+                    <img src={n.imageUrl} alt="" loading="lazy" className="h-40 w-full object-cover" />
+                  )}
+                  <div className="p-4">
+                    {n.isPromoted && <span className="mr-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">Промо</span>}
+                    {categoryLabel && (
+                      <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600">{categoryLabel}</span>
+                    )}
+                    <h2 className="mt-2 font-semibold">{n.title}</h2>
+                    {n.publishedAt && <p className="mt-1 text-sm text-stone-500">{formatDate(n.publishedAt)}</p>}
+                  </div>
+                </Link>
+              </li>
+            )
+          })}
         </ul>
       )}
       {totalPages > 1 && <Pagination page={page} totalPages={totalPages} hrefFor={(p) => `/news?${category ? `category=${category}&` : ''}page=${p}`} />}

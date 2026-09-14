@@ -42,7 +42,7 @@ export default async function FavoritesPage({ searchParams }: Props) {
             <li key={f.id} className="flex items-center gap-4 rounded-xl border border-stone-200 p-4">
               {f.mainPhotoUrl ? (
                 /* eslint-disable-next-line @next/next/no-img-element -- зовнішній URL з бекенда */
-                <img src={f.mainPhotoUrl} alt="" className="h-16 w-16 rounded-lg object-cover" />
+                <img src={f.mainPhotoUrl} alt="" loading="lazy" className="h-16 w-16 rounded-lg object-cover" />
               ) : (
                 <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-stone-100 text-stone-400">
                   🍺

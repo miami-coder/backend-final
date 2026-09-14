@@ -23,6 +23,10 @@ const TABS = [
 
 type TabKey = (typeof TABS)[number]['key']
 
+// Формат дати аналітики з URL (YYYY-MM-DD): сире значення з query не
+// інтерполюємо у запит — невалідне відкидаємо на дефолтний період
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
+
 // react-hooks/purity не пускає Date.now()/new Date() прямо в рендері —
 // обгортаємо дефолтний період (to = сьогодні, from = to − 30 днів) у хелпер
 function defaultAnalyticsRange() {
@@ -78,8 +82,8 @@ export default async function ManageVenuePage({ params, searchParams }: Props) {
         // діапазон із URL (YYYY-MM-DD, en-CA); дефолт — сьогодні / сьогодні − 30 днів
         <VenueAnalytics
           venueId={venue.id}
-          from={sp?.from || defaultAnalyticsRange().from}
-          to={sp?.to || defaultAnalyticsRange().to}
+          from={sp?.from && DATE_RE.test(sp.from) ? sp.from : defaultAnalyticsRange().from}
+          to={sp?.to && DATE_RE.test(sp.to) ? sp.to : defaultAnalyticsRange().to}
         />
       )}
     </div>

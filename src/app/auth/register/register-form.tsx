@@ -182,11 +182,13 @@ export function RegisterForm() {
           <span id="reg-phone-error" role="alert" className="mt-1 block text-red-600">{fieldErrors.phone}</span>
         )}
       </div>
-      <label className="flex items-start gap-2 text-sm">
+      {/* aria-describedby веде на текст EULA: скрінрідер озвучує умови після чекбокса */}
+      <label id="eula-text" className="flex items-start gap-2 text-sm">
         <input
           type="checkbox"
           className="mt-0.5 size-4 accent-brand-500"
           checked={acceptEula}
+          aria-describedby="eula-text"
           onChange={(e) => setAcceptEula(e.target.checked)}
         />
         Приймаю умови угоди користувача

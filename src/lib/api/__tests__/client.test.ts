@@ -72,12 +72,14 @@ describe('apiVoid', () => {
     expect(assign).not.toHaveBeenCalled()
   })
 
-  it('401 → redirectToLogin + ApiError', async () => {
+  it('apiVoid: 401 → redirect ініційовано, НЕ кидає ApiError', async () => {
     const assign = vi.fn()
-    vi.stubGlobal('window', { location: { pathname: '/venues/v1', assign } })
+    vi.stubGlobal('window', { location: { pathname: '/me/favorites/v1', assign } })
     vi.stubGlobal('fetch', vi.fn(async () => new Response(null, { status: 401 })))
-    await expect(apiVoid('/reviews/r1', { method: 'DELETE' })).rejects.toBeInstanceOf(ApiError)
-    expect(assign).toHaveBeenCalledWith('/auth/login?next=' + encodeURIComponent('/venues/v1'))
+    // Редірект уже ініційовано — компоненти не показують toast перед
+    // перезавантаженням (резидуал Плану 2 №10): тихо резолвимося
+    await expect(apiVoid('/me/favorites/v1', { method: 'DELETE' })).resolves.toBeUndefined()
+    expect(assign).toHaveBeenCalledWith('/auth/login?next=' + encodeURIComponent('/me/favorites/v1'))
   })
 })
 

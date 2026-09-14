@@ -9,6 +9,9 @@ import { formatMoney } from '@/lib/utils/format'
 
 const LIMIT = 12
 const STATUSES = ['open', 'filled', 'cancelled', 'completed'] as const
+// Формат дати фільтра з URL (YYYY-MM-DD): сире значення з query не
+// інтерполюємо у запит — невалідне відкидаємо (фільтр просто не застосовується)
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
 interface Props {
   searchParams: Promise<{ venueId?: string; date?: string; status?: string; page?: string }>
@@ -25,7 +28,8 @@ export default async function HangoutsPage({ searchParams }: Props) {
     ? (statusParam as HangoutStatus)
     : 'open'
   const venueId = sp?.venueId?.trim() || undefined
-  const date = sp?.date?.trim() || undefined
+  const dateParam = sp?.date?.trim()
+  const date = dateParam && DATE_RE.test(dateParam) ? dateParam : undefined
 
   const qs = [`page=${page}`, `limit=${LIMIT}`, `status=${status}`]
   if (venueId) qs.push(`venueId=${encodeURIComponent(venueId)}`)

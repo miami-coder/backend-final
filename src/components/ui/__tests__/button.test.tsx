@@ -11,7 +11,7 @@ describe('Button', () => {
     render(<Button type="submit">Надіслати</Button>)
     expect(screen.getByRole('button')).toHaveAttribute('type', 'submit')
   })
-  it('type="submit" у пропсах ПЕРЕПИСУЄ дефолт button (сабміт у формі працює)', () => {
+  it('клік по Button з type="submit" надсилає форму — дефолт "button" переважено', () => {
     const onSubmit = vi.fn()
     render(
       <form onSubmit={(e) => { e.preventDefault(); onSubmit() }}>
