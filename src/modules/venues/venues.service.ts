@@ -19,6 +19,7 @@ import { UpdateVenueDto } from './dto/update-venue.dto';
 import { QueryVenuesDto, VenueSort } from './dto/query-venues.dto';
 import { PermissionsService } from '../rbac/permissions.service';
 import { CacheService } from '../../common/services/cache.service';
+import { FileStorageService } from '../../common/services/file-storage.service';
 import {
   buildMeta,
   normalizePagination,
@@ -53,6 +54,7 @@ export class VenuesService {
     private readonly perms: PermissionsService,
     private readonly cache: CacheService,
     private readonly events: EventEmitter2,
+    private readonly storage: FileStorageService,
   ) {}
 
   async create(ownerId: string, dto: CreateVenueDto): Promise<Venue> {
@@ -290,6 +292,34 @@ export class VenuesService {
     if (venue.ownerId === userId) return;
     if (await this.perms.hasPermission(userId, 'venue:edit:any')) return;
     throw new ForbiddenException('Не можна редагувати цей заклад');
+  }
+
+  // Завантаження фото: файл у storage + запис у venue_photos (без цього фото
+  // ніде не показувалось би) + mainPhotoUrl для першого фото.
+  async uploadPhoto(
+    userId: string,
+    venueId: string,
+    file: {
+      originalname: string;
+      mimetype: string;
+      size: number;
+      buffer: Buffer;
+    },
+  ): Promise<{ url: string; filename: string; size: number }> {
+    const venue = await this.findOneOrThrow(venueId);
+    await this.assertCanEdit(userId, venue);
+    const stored = await this.storage.save(`venues/${venueId}`, file);
+    const sortOrder = await this.photos.count({ where: { venueId } });
+    await this.photos.insert({
+      venueId,
+      url: stored.url,
+      sortOrder,
+    });
+    if (!venue.mainPhotoUrl) {
+      venue.mainPhotoUrl = stored.url;
+      await this.venues.save(venue);
+    }
+    return stored;
   }
 
   private hashQuery(q: QueryVenuesDto): string {

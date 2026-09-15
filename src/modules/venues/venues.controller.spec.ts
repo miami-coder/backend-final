@@ -15,6 +15,7 @@ describe('VenuesController', () => {
       create: jest.fn(),
       update: jest.fn(),
       findOneOrThrow: jest.fn(),
+      uploadPhoto: jest.fn(),
     };
     storage = { save: jest.fn() };
     const module = await Test.createTestingModule({
@@ -41,5 +42,26 @@ describe('VenuesController', () => {
     );
     expect(res.data.id).toBe('v1');
     expect(venues.create).toHaveBeenCalledWith('u1', expect.anything());
+  });
+
+  it('uploadPhoto делегує в сервіс', async () => {
+    const file = {
+      originalname: 'a.png',
+      mimetype: 'image/png',
+      size: 10,
+      buffer: Buffer.from('x'),
+    } as Express.Multer.File;
+    venues.uploadPhoto.mockResolvedValue({
+      url: '/static/venues/v1/abc.png',
+      filename: 'abc.png',
+      size: 10,
+    });
+    const res = await controller.uploadPhoto(
+      { sub: 'u1', email: 'a@b.com', roles: ['user'] } as any,
+      'v1',
+      file,
+    );
+    expect(venues.uploadPhoto).toHaveBeenCalledWith('u1', 'v1', file);
+    expect(res.data.url).toBe('/static/venues/v1/abc.png');
   });
 });
