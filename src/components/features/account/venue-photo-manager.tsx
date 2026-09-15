@@ -3,7 +3,8 @@
 // Менеджер фото закладу (вкладка «Фото»): multipart POST /venues/:id/photos
 // (поле file; content-type НЕ ставимо — браузер сам проставить boundary
 // для FormData) → toast + router.refresh() (перезавантажує серверні дані
-// вкладки). Список — lazy-зображення з venue.photos.
+// вкладки). Список — lazy-зображення з venue.photos. Бекенд приєднує фото
+// (VenuePhoto + mainPhotoUrl для першого), тож воно одразу у галереї.
 //
 // Відхилення від референс-імплементації брифа (тести брифа — вербатим,
 // саме вони поведінкова специфіка): (1) upload запускається одразу на
@@ -60,7 +61,7 @@ export function VenuePhotoManager({ venueId, photos }: { venueId: string; photos
         </Button>
       </div>
       <p className="mt-2 text-sm text-stone-500">
-        Увага: завантажене фото може не з&apos;явитись у публічній галереї автоматично (обмеження бекенда).
+        Перше завантажене фото стає головним у публічній галереї.
       </p>
       {photos.length === 0 ? (
         <p className="mt-4 text-sm text-stone-500">Фото ще немає.</p>

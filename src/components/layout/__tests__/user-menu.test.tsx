@@ -30,6 +30,24 @@ describe('UserMenu', () => {
     expect(screen.queryByRole('menuitem', { name: 'Адмінка' })).not.toBeInTheDocument()
   })
 
+  it('показує імʼя з профілю замість пошти', async () => {
+    const namedUser: SessionUser = {
+      id: 'u3',
+      email: 'a@b.c',
+      roles: ['user'],
+      profile: { firstname: 'Олена', lastname: 'Коваль' },
+    }
+    vi.stubGlobal('fetch', vi.fn(async () =>
+      new Response(JSON.stringify({ data: namedUser }), { status: 200, headers: { 'content-type': 'application/json' } })))
+    render(
+      <UserProvider initialUser={namedUser}>
+        <UserMenu />
+      </UserProvider>,
+    )
+    expect(screen.getByRole('button', { name: /Олена Коваль/ })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /a@b\.c/ })).not.toBeInTheDocument()
+  })
+
   it('super_admin бачить «Адмінка»', async () => {
     vi.stubGlobal('fetch', vi.fn(async () =>
       new Response(JSON.stringify({ data: adminUser }), { status: 200, headers: { 'content-type': 'application/json' } })))

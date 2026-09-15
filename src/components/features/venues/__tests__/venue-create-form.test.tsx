@@ -38,8 +38,8 @@ describe('VenueCreateForm', () => {
       return new Response(JSON.stringify({ data: { id: 'v9' } }), { status: 201, headers: { 'content-type': 'application/json' } })
     }))
     renderForm(<VenueCreateForm />)
-    fireEvent.change(screen.getByLabelText(/^Назва$/i), { target: { value: 'Бар «Пиво»' } })
-    fireEvent.change(screen.getByLabelText(/^Адреса$/i), { target: { value: 'вул. Липова, 1' } })
+    fireEvent.change(screen.getByLabelText(/^Назва/i), { target: { value: 'Бар «Пиво»' } })
+    fireEvent.change(screen.getByLabelText(/^Адреса/i), { target: { value: 'вул. Липова, 1' } })
     fireEvent.change(screen.getByLabelText(/^Теги/i), { target: { value: 'pyvo, live' } })
     fireEvent.click(screen.getByRole('button', { name: /Подати/i }))
     await waitFor(() => expect(push).toHaveBeenCalledWith('/account/venues?created=1'))
@@ -51,6 +51,25 @@ describe('VenueCreateForm', () => {
     expect(body.tagSlugs).toEqual(['pyvo', 'live'])
   })
 
+  it('широти/довготи немає: ані інпутів, ані в POST-тілі', async () => {
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (String(input).endsWith('/auth/me')) {
+        return new Response(JSON.stringify({ data: testUser }), { status: 200, headers: { 'content-type': 'application/json' } })
+      }
+      return new Response(JSON.stringify({ data: { id: 'v9' } }), { status: 201, headers: { 'content-type': 'application/json' } })
+    }))
+    renderForm(<VenueCreateForm />)
+    expect(screen.queryByLabelText(/Широта/i)).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/Довгота/i)).not.toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText(/^Назва/i), { target: { value: 'Бар «Пиво»' } })
+    fireEvent.change(screen.getByLabelText(/^Адреса/i), { target: { value: 'вул. Липова, 1' } })
+    fireEvent.click(screen.getByRole('button', { name: /Подати/i }))
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/account/venues?created=1'))
+    const body = JSON.parse((apiCalls()[0][1] as RequestInit).body as string)
+    expect(body.latitude).toBeUndefined()
+    expect(body.longitude).toBeUndefined()
+  })
+
   it('name <3 → інлайн-помилка, без POST', async () => {
     vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
       if (String(input).endsWith('/auth/me')) {
@@ -59,11 +78,69 @@ describe('VenueCreateForm', () => {
       return new Response(null, { status: 500 })
     }))
     renderForm(<VenueCreateForm />)
-    fireEvent.change(screen.getByLabelText(/^Назва$/i), { target: { value: 'Ба' } })
-    fireEvent.change(screen.getByLabelText(/^Адреса$/i), { target: { value: 'вул. Липова, 1' } })
+    fireEvent.change(screen.getByLabelText(/^Назва/i), { target: { value: 'Ба' } })
+    fireEvent.change(screen.getByLabelText(/^Адреса/i), { target: { value: 'вул. Липова, 1' } })
     fireEvent.click(screen.getByRole('button', { name: /Подати/i }))
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(/мінімум 3/i))
     expect(apiCalls().length).toBe(0)
+  })
+
+  it('невалідний формат годин → по-полівна помилка з іменем поля/дня, без POST', async () => {
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+      if (String(input).endsWith('/auth/me')) {
+        return new Response(JSON.stringify({ data: testUser }), { status: 200, headers: { 'content-type': 'application/json' } })
+      }
+      return new Response(null, { status: 500 })
+    }))
+    renderForm(<VenueCreateForm />)
+    fireEvent.change(screen.getByLabelText(/^Назва/i), { target: { value: 'Бар «Пиво»' } })
+    fireEvent.change(screen.getByLabelText(/^Адреса/i), { target: { value: 'вул. Липова, 1' } })
+    fireEvent.change(screen.getByLabelText(/^Години: Понеділок$/i), { target: { value: '10:00' } })
+    fireEvent.click(screen.getByRole('button', { name: /Подати/i }))
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent(/Години роботи \(Понеділок\)/i)
+    expect(alert).toHaveTextContent(/Формат/i)
+    expect(apiCalls().length).toBe(0)
+  })
+
+  it('обовʼязкові поля позначені зірочкою, необовʼязкові — ні', () => {
+    renderForm(<VenueCreateForm />)
+    // label звʼязаний через htmlFor, а не вкладений — шукаємо лейбл напряму
+    const labelText = (forId: string) =>
+      document.querySelector(`label[for="${forId}"]`)?.textContent ?? ''
+    expect(labelText('vn-name')).toContain('*')
+    expect(labelText('vn-address')).toContain('*')
+    expect(labelText('vn-description')).not.toContain('*')
+    expect(labelText('vn-type')).not.toContain('*')
+  })
+
+  it('вибрані фото → після 201 POST /venues/:id/photos (FormData, на кожен файл) → redirect', async () => {
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (String(input).endsWith('/auth/me')) {
+        return new Response(JSON.stringify({ data: testUser }), { status: 200, headers: { 'content-type': 'application/json' } })
+      }
+      if (String(input).includes('/photos')) {
+        return new Response(JSON.stringify({ data: { url: '/static/venues/v9/a.png' } }), { status: 200, headers: { 'content-type': 'application/json' } })
+      }
+      return new Response(JSON.stringify({ data: { id: 'v9' } }), { status: 201, headers: { 'content-type': 'application/json' } })
+    }))
+    renderForm(<VenueCreateForm />)
+    fireEvent.change(screen.getByLabelText(/^Назва/i), { target: { value: 'Бар «Пиво»' } })
+    fireEvent.change(screen.getByLabelText(/^Адреса/i), { target: { value: 'вул. Липова, 1' } })
+    const files = [
+      new File(['x'], 'a.png', { type: 'image/png' }),
+      new File(['y'], 'b.png', { type: 'image/png' }),
+    ]
+    fireEvent.change(screen.getByLabelText(/Фото/i), { target: { files } })
+    fireEvent.click(screen.getByRole('button', { name: /Подати/i }))
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/account/venues?created=1'))
+    const photoCalls = apiCalls().filter(([u]) => String(u).includes('/photos'))
+    expect(photoCalls.length).toBe(2)
+    for (const [url, init] of photoCalls) {
+      expect(String(url)).toBe('/api/v1/venues/v9/photos')
+      expect((init as RequestInit).method).toBe('POST')
+      expect((init as RequestInit).body).toBeInstanceOf(FormData)
+    }
   })
 
   it('400 від бекенда (валідація «; ») → показ повідомлення', async () => {
@@ -74,8 +151,8 @@ describe('VenueCreateForm', () => {
       return new Response(JSON.stringify({ error: { code: 'BAD_REQUEST', message: 'averageCheck must not be less than 0' } }), { status: 400, headers: { 'content-type': 'application/json' } })
     }))
     renderForm(<VenueCreateForm />)
-    fireEvent.change(screen.getByLabelText(/^Назва$/i), { target: { value: 'Бар «Пиво»' } })
-    fireEvent.change(screen.getByLabelText(/^Адреса$/i), { target: { value: 'вул. Липова, 1' } })
+    fireEvent.change(screen.getByLabelText(/^Назва/i), { target: { value: 'Бар «Пиво»' } })
+    fireEvent.change(screen.getByLabelText(/^Адреса/i), { target: { value: 'вул. Липова, 1' } })
     fireEvent.click(screen.getByRole('button', { name: /Подати/i }))
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(/averageCheck/i))
   })

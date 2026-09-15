@@ -4,6 +4,11 @@ export interface SessionUser {
   id: string
   email: string
   roles: Role[]
+  // /auth/me повертає profile — імʼя показуємо в шапці замість пошти
+  profile?: {
+    firstname: string | null
+    lastname: string | null
+  }
 }
 
 export interface Profile {

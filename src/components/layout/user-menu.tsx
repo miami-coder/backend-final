@@ -31,6 +31,11 @@ export function UserMenu() {
 
   if (!user) return null
   const isAdmin = user.roles.includes('super_admin')
+  const displayName =
+    [user.profile?.firstname, user.profile?.lastname]
+      .filter(Boolean)
+      .join(' ')
+      .trim() || user.email
 
   return (
     <div ref={wrapRef} className="relative">
@@ -42,7 +47,7 @@ export function UserMenu() {
         onClick={() => setOpen((o) => !o)}
         className="flex items-center gap-2 rounded-lg border border-stone-200 px-2.5 py-1 text-sm hover:bg-stone-50"
       >
-        <span className="max-w-40 truncate">{user.email}</span>
+        <span className="max-w-40 truncate">{displayName}</span>
         {isAdmin && <span className="rounded-full bg-brand-100 px-1.5 text-xs text-brand-700">admin</span>}
       </button>
       {open && (

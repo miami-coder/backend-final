@@ -53,13 +53,14 @@ describe('VenuePhotoManager', () => {
     await waitFor(() => expect(refresh).toHaveBeenCalled())
   })
 
-  it('пояснення про бекенд-обмеження присутнє', () => {
+  it('попередження про бекенд-обмеження більше не показується (бекенд приєднує фото)', () => {
     render(
       <UserProvider initialUser={testUser}>
         <ToastProvider><VenuePhotoManager venueId="v1" photos={[]} /></ToastProvider>
       </UserProvider>,
     )
-    // Known limitation: завантажене фото може не з'явитись у галереї автоматично
-    expect(screen.getByText(/може не з'явитись/i)).toBeInTheDocument()
+    // Фікс бекенда: POST /venues/:id/photos створює VenuePhoto і ставить
+    // mainPhotoUrl — фото зʼявляється у галереї, попередження більше не потрібне
+    expect(screen.queryByText(/може не з'явитись/i)).not.toBeInTheDocument()
   })
 })
