@@ -13,6 +13,7 @@ import { VenueType } from './entities/venue-type.entity';
 import { VenueTypeAssignment } from './entities/venue-type-assignment.entity';
 import { PermissionsService } from '../rbac/permissions.service';
 import { CacheService } from '../../common/services/cache.service';
+import { FileStorageService } from '../../common/services/file-storage.service';
 
 function qb() {
   return {
@@ -33,9 +34,11 @@ function qb() {
 describe('VenuesService', () => {
   let service: VenuesService;
   let venues: any;
+  let photos: any;
   let perms: any;
   let cache: any;
   let events: any;
+  let storage: any;
 
   beforeEach(async () => {
     venues = {
@@ -45,6 +48,7 @@ describe('VenuesService', () => {
       findAndCount: jest.fn(),
       createQueryBuilder: jest.fn().mockReturnValue(qb()),
     };
+    photos = { save: jest.fn(), insert: jest.fn(), count: jest.fn() };
     perms = { hasPermission: jest.fn() };
     cache = {
       get: jest.fn().mockResolvedValue(null),
@@ -52,13 +56,14 @@ describe('VenuesService', () => {
       delByPattern: jest.fn(),
     };
     events = { emit: jest.fn() };
+    storage = { save: jest.fn() };
     const module = await Test.createTestingModule({
       providers: [
         VenuesService,
         { provide: getRepositoryToken(Venue), useValue: venues },
         {
           provide: getRepositoryToken(VenuePhoto),
-          useValue: { save: jest.fn() },
+          useValue: photos,
         },
         {
           provide: getRepositoryToken(VenueFeature),
@@ -84,6 +89,7 @@ describe('VenuesService', () => {
         { provide: PermissionsService, useValue: perms },
         { provide: CacheService, useValue: cache },
         { provide: EventEmitter2, useValue: events },
+        { provide: FileStorageService, useValue: storage },
       ],
     }).compile();
     service = module.get(VenuesService);
@@ -168,5 +174,72 @@ describe('VenuesService', () => {
       'venue.status_changed',
       expect.anything(),
     );
+  });
+
+  describe('uploadPhoto', () => {
+    const file = {
+      originalname: 'a.png',
+      mimetype: 'image/png',
+      size: 10,
+      buffer: Buffer.from('x'),
+    };
+
+    it('зберігає файл, створює VenuePhoto і ставить mainPhotoUrl, якщо його не було', async () => {
+      venues.findOne.mockResolvedValueOnce({
+        id: 'v1',
+        ownerId: 'u1',
+        mainPhotoUrl: null,
+      });
+      photos.count.mockResolvedValueOnce(2);
+      storage.save.mockResolvedValueOnce({
+        url: '/static/venues/v1/abc.png',
+        filename: 'abc.png',
+        size: 10,
+      });
+      const out = await service.uploadPhoto('u1', 'v1', file);
+      expect(storage.save).toHaveBeenCalledWith('venues/v1', file);
+      expect(photos.insert).toHaveBeenCalledWith({
+        venueId: 'v1',
+        url: '/static/venues/v1/abc.png',
+        sortOrder: 2,
+      });
+      expect(venues.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          mainPhotoUrl: '/static/venues/v1/abc.png',
+        }),
+      );
+      expect(out.url).toBe('/static/venues/v1/abc.png');
+    });
+
+    it('не перезаписує наявний mainPhotoUrl', async () => {
+      venues.findOne.mockResolvedValueOnce({
+        id: 'v1',
+        ownerId: 'u1',
+        mainPhotoUrl: '/static/venues/v1/old.png',
+      });
+      storage.save.mockResolvedValueOnce({
+        url: '/static/venues/v1/new.png',
+        filename: 'new.png',
+        size: 10,
+      });
+      await service.uploadPhoto('u1', 'v1', file);
+      expect(venues.save).not.toHaveBeenCalled();
+      expect(photos.insert).toHaveBeenCalledWith(
+        expect.objectContaining({ url: '/static/venues/v1/new.png' }),
+      );
+    });
+
+    it('кидає Forbidden для чужого закладу без права venue:edit:any', async () => {
+      venues.findOne.mockResolvedValueOnce({
+        id: 'v1',
+        ownerId: 'u2',
+        mainPhotoUrl: null,
+      });
+      perms.hasPermission.mockResolvedValueOnce(false);
+      await expect(service.uploadPhoto('u1', 'v1', file)).rejects.toThrow(
+        ForbiddenException,
+      );
+      expect(storage.save).not.toHaveBeenCalled();
+    });
   });
 });

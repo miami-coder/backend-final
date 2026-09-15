@@ -38,15 +38,11 @@ import {
   ApiDataResponse,
   ApiPaginatedResponse,
 } from '../../common/swagger/response-helpers';
-import { FileStorageService } from '../../common/services/file-storage.service';
 
 @ApiTags('Venues')
 @Controller('venues')
 export class VenuesController {
-  constructor(
-    private readonly venues: VenuesService,
-    private readonly storage: FileStorageService,
-  ) {}
+  constructor(private readonly venues: VenuesService) {}
 
   @Public()
   @Get()
@@ -134,14 +130,6 @@ export class VenuesController {
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    await this.venues.findOneOrThrow(id);
-    await this.venues.update(u.sub, id, {}); // noop, just assert edit
-    const stored = await this.storage.save(`venues/${id}`, {
-      originalname: file.originalname,
-      mimetype: file.mimetype,
-      size: file.size,
-      buffer: file.buffer,
-    });
-    return { data: stored };
+    return { data: await this.venues.uploadPhoto(u.sub, id, file) };
   }
 }
