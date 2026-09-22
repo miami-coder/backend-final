@@ -14,9 +14,9 @@ export default async function MyReviewsPage() {
 
   if (reviews.length === 0) {
     return (
-      <div className="rounded-xl bg-stone-50 p-8 text-center">
-        <p className="text-stone-500">Ви ще не залишали відгуки.</p>
-        <Link className="mt-4 inline-block text-brand-600 hover:underline" href="/">Перейти до каталогу</Link>
+      <div className="rounded-xl border border-line bg-surface p-8 text-center">
+        <p className="text-muted">Ви ще не залишали відгуки.</p>
+        <Link className="mt-4 inline-block text-amber-500 hover:underline" href="/">Перейти до каталогу</Link>
       </div>
     )
   }

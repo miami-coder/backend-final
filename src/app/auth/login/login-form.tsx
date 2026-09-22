@@ -65,10 +65,10 @@ export function LoginForm() {
 
   // noValidate: валідацію робимо через zod, нативні бульбашки браузера конфліктують з інлайн-помилками
   return (
-    <form noValidate onSubmit={submit} className="mx-auto max-w-sm space-y-4 rounded-2xl border border-stone-200 bg-white p-6">
-      <h1 className="text-xl font-bold">Вхід</h1>
+    <form noValidate onSubmit={submit} className="mx-auto max-w-sm space-y-4 rounded-xl border border-line bg-surface p-6">
+      <h1 className="font-display text-xl font-bold text-ink">Вхід</h1>
       {searchParams.get('error') === 'oauth' && (
-        <p role="alert" className="rounded-lg bg-red-50 p-2 text-sm text-red-700">Не вдалося увійти через соцмережу. Спробуйте ще раз.</p>
+        <p role="alert" className="rounded-lg bg-danger/15 p-2 text-sm text-danger">Не вдалося увійти через соцмережу. Спробуйте ще раз.</p>
       )}
       <label className="block text-sm">
         Email
@@ -78,12 +78,12 @@ export function LoginForm() {
         Пароль
         <Input type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
       </label>
-      {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+      {error && <p role="alert" className="text-sm text-danger">{error}</p>}
       <Button type="submit" disabled={loading} className="w-full">{loading ? 'Входимо…' : 'Увійти'}</Button>
       <div className="flex justify-between gap-2 text-sm">
-        <Link className="text-brand-600 hover:underline" href="/auth/register">Реєстрація</Link>
-        <a className="text-brand-600 hover:underline" href="/api/auth/google">Увійти через Google</a>
-        <a className="text-brand-600 hover:underline" href="/api/auth/facebook">Facebook</a>
+        <Link className="text-amber-500 hover:underline" href="/auth/register">Реєстрація</Link>
+        <a className="text-amber-500 hover:underline" href="/api/auth/google">Увійти через Google</a>
+        <a className="text-amber-500 hover:underline" href="/api/auth/facebook">Facebook</a>
       </div>
     </form>
   )

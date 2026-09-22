@@ -5,9 +5,9 @@ import Link from 'next/link'
 export default function NotFound() {
   return (
     <div className="py-16 text-center">
-      <h1 className="text-2xl font-bold">Заклад не знайдено</h1>
-      <p className="mt-2 text-stone-500">Заклад не знайдено або видалений.</p>
-      <Link className="mt-6 inline-block text-brand-600 hover:underline" href="/">
+      <h1 className="font-display text-2xl font-bold text-ink">Заклад не знайдено</h1>
+      <p className="mt-2 text-muted">Заклад не знайдено або видалений.</p>
+      <Link className="mt-6 inline-block text-amber-500 hover:underline" href="/">
         До каталогу
       </Link>
     </div>

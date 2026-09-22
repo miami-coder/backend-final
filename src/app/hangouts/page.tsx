@@ -50,47 +50,47 @@ export default async function HangoutsPage({ searchParams }: Props) {
 
   return (
     <div className="mx-auto max-w-4xl py-8">
-      <h1 className="text-2xl font-bold">Зустрічі</h1>
+      <h1 className="font-display text-2xl font-bold text-ink">Зустрічі</h1>
       <form className="mt-4 flex flex-wrap items-end gap-2" action="/hangouts" method="get" aria-label="Фільтри зустрічей">
         <input type="hidden" name="status" value={status} />
         <label className="text-sm">Дата
-          <input type="date" name="date" defaultValue={date} className="ml-1 rounded-lg border border-stone-300 px-2 py-1" />
+          <input type="date" name="date" defaultValue={date} className="ml-1 rounded-xl border border-strong bg-bg px-2 py-1 text-ink" />
         </label>
-        <button type="submit" className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm hover:bg-stone-50">Фільтрувати</button>
+        <button type="submit" className="rounded-full border border-strong px-3 py-1.5 text-sm hover:bg-raised">Фільтрувати</button>
       </form>
       <nav className="mt-3 flex gap-3 text-sm" aria-label="Статус зустрічей">
         {STATUSES.map((s) => (
           <Link key={s} href={`/hangouts?status=${s}`}
-            className={s === status ? 'font-semibold text-brand-600' : 'text-stone-600 hover:text-brand-600'}>
+            className={s === status ? 'font-semibold text-amber-500' : 'text-muted hover:text-amber-500'}>
             {HANGOUT_STATUS_LABELS[s]}
           </Link>
         ))}
       </nav>
       {hangouts.length === 0 ? (
-        <div className="mt-6 rounded-xl bg-stone-50 p-8 text-center">
-          <p className="text-stone-500">Немає відкритих зустрічей.</p>
+        <div className="mt-6 rounded-xl border border-line bg-surface p-8 text-center">
+          <p className="text-muted">Немає відкритих зустрічей.</p>
         </div>
       ) : (
         <ul className="mt-6 space-y-3">
           {hangouts.map((h) => (
-            <li key={h.id} className="rounded-2xl border border-stone-200 bg-white p-4">
+            <li key={h.id} className="rounded-xl border border-line bg-surface p-4">
               <div className="flex flex-wrap items-center gap-3">
                 {/* Produces-контракт брифа: картка кліком веде на /hangouts/[id] —
                     клікабельний заголовок-рядок (дата/час); без вкладених лінків */}
                 <Link className="font-medium hover:underline" href={`/hangouts/${h.id}`}>{h.date} · {h.time}</Link>
-                <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600">{HANGOUT_STATUS_LABELS[h.status]}</span>
+                <span className="rounded-full bg-raised px-2 py-0.5 text-xs text-muted">{HANGOUT_STATUS_LABELS[h.status]}</span>
                 {h.venue && (
-                  <Link className="text-sm text-brand-600 hover:underline" href={`/venues/${h.venue.id}`}>{h.venue.name}</Link>
+                  <Link className="text-sm text-amber-500 hover:underline" href={`/venues/${h.venue.id}`}>{h.venue.name}</Link>
                 )}
                 <div className="ml-auto"><HangoutJoinButton hangoutId={h.id} status={h.status} /></div>
               </div>
-              <p className="mt-2 text-stone-700">{h.purpose}</p>
-              <p className="mt-1 text-sm text-stone-500">
+              <p className="mt-2 text-muted">{h.purpose}</p>
+              <p className="mt-1 text-sm text-muted">
                 до {h.groupSize} осіб · {HANGOUT_PAYERS.find((p) => p.value === h.payer)?.label}
                 {h.desiredBudget !== null ? ` · бюджет ${formatMoney(h.desiredBudget)}` : ''}
               </p>
               <p className="mt-2">
-                <Link className="text-sm text-brand-600 hover:underline" href={`/hangouts/${h.id}`}>Деталі</Link>
+                <Link className="text-sm text-amber-500 hover:underline" href={`/hangouts/${h.id}`}>Деталі</Link>
               </p>
             </li>
           ))}

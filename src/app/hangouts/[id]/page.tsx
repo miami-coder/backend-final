@@ -45,11 +45,11 @@ export default function HangoutDetailPage() {
   const error = fresh ? state.error : null
   const loading = !fresh || (hangout === null && error === null)
 
-  if (loading) return <p className="py-8 text-center text-stone-500">Завантаження…</p>
+  if (loading) return <p className="py-8 text-center text-muted">Завантаження…</p>
   if (error) {
     return (
       <div className="py-8 text-center">
-        <p className="text-stone-600">{error}</p>
+        <p className="text-muted">{error}</p>
         <Button
           variant="secondary"
           className="mt-3"
@@ -57,7 +57,7 @@ export default function HangoutDetailPage() {
         >
           Повторити
         </Button>
-        <p className="mt-3"><Link href="/hangouts" className="text-brand-600 hover:underline">До списку зустрічей</Link></p>
+        <p className="mt-3"><Link href="/hangouts" className="text-amber-500 hover:underline">До списку зустрічей</Link></p>
       </div>
     )
   }
@@ -76,23 +76,23 @@ export default function HangoutDetailPage() {
   return (
     <article className="mx-auto max-w-2xl py-8">
       <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-bold">{hangout.date} · {hangout.time}</h1>
-        <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600">{HANGOUT_STATUS_LABELS[hangout.status]}</span>
+        <h1 className="font-display text-2xl font-bold text-ink">{hangout.date} · {hangout.time}</h1>
+        <span className="rounded-full bg-raised px-2 py-0.5 text-xs text-muted">{HANGOUT_STATUS_LABELS[hangout.status]}</span>
       </div>
-      <p className="mt-2 text-stone-700">{hangout.purpose}</p>
-      <ul className="mt-4 space-y-1 text-sm text-stone-600">
+      <p className="mt-2 text-muted">{hangout.purpose}</p>
+      <ul className="mt-4 space-y-1 text-sm text-muted">
         <li>Учасників потрібно: до {hangout.groupSize}</li>
         <li>{HANGOUT_GENDERS.find((g) => g.value === hangout.gender)?.label}</li>
         <li>{HANGOUT_PAYERS.find((p) => p.value === hangout.payer)?.label}</li>
         {hangout.desiredBudget !== null && <li>Бюджет: {formatMoney(hangout.desiredBudget)}</li>}
         {hangout.venue && (
-          <li>Заклад: <Link className="text-brand-600 hover:underline" href={`/venues/${hangout.venue.id}`}>{hangout.venue.name}</Link></li>
+          <li>Заклад: <Link className="text-amber-500 hover:underline" href={`/venues/${hangout.venue.id}`}>{hangout.venue.name}</Link></li>
         )}
       </ul>
 
       <div className="mt-6">
-        <h2 className="text-lg font-semibold">Учасники ({participants.length})</h2>
-        <ul className="mt-2 space-y-1 text-sm text-stone-600">
+        <h2 className="font-display text-lg font-semibold">Учасники ({participants.length})</h2>
+        <ul className="mt-2 space-y-1 text-sm text-muted">
           {participants.map((p) => (
             <li key={p.userId}>Учасник (приєднався {p.joinedAt?.slice(0, 10)})</li>
           ))}
@@ -106,7 +106,7 @@ export default function HangoutDetailPage() {
           isCreator={isCreatorActive}
           canLeave={Boolean(user) && !isCreator && hangout.status !== 'cancelled' && hangout.status !== 'completed'}
         />
-        <Link href="/hangouts" className="text-sm text-stone-600 hover:underline">До списку</Link>
+        <Link href="/hangouts" className="text-sm text-muted hover:underline">До списку</Link>
       </div>
     </article>
   )

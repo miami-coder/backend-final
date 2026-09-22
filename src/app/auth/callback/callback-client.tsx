@@ -44,13 +44,13 @@ export function CallbackClient() {
   if (failed) {
     return (
       <div className="py-16 text-center">
-        <h1 className="text-2xl font-bold">Не вдалося увійти</h1>
-        <p className="mt-2 text-stone-500">Токени застаріли або невалідні.</p>
-        <Link className="mt-6 inline-block rounded-lg bg-brand-500 px-4 py-2 text-white hover:bg-brand-600" href="/auth/login">
+        <h1 className="font-display text-2xl font-bold text-ink">Не вдалося увійти</h1>
+        <p className="mt-2 text-muted">Токени застаріли або невалідні.</p>
+        <Link className="mt-6 inline-block rounded-full bg-amber-500 px-4 py-2 font-medium text-espresso hover:bg-amber-400" href="/auth/login">
           Спробувати знову
         </Link>
       </div>
     )
   }
-  return <p className="py-16 text-center text-stone-500">Завершуємо вхід…</p>
+  return <p className="py-16 text-center text-muted">Завершуємо вхід…</p>
 }

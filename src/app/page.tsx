@@ -24,8 +24,8 @@ export default async function CatalogPage({ searchParams }: PageProps) {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Каталог закладів</h1>
-        <p className="text-stone-500">Знайдіть ідеальне місце: рейтинги, чеки, відгуки та зустрічі</p>
+        <h1 className="font-display text-2xl font-bold text-ink">Каталог закладів</h1>
+        <p className="text-muted">Знайдіть ідеальне місце: рейтинги, чеки, відгуки та зустрічі</p>
       </div>
       <VenueFilters initial={query} />
       {venues.length === 0 ? (

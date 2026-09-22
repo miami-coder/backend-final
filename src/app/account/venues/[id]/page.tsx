@@ -57,19 +57,19 @@ export default async function ManageVenuePage({ params, searchParams }: Props) {
   return (
     <div>
       <div className="mb-4 flex items-center gap-3">
-        <h2 className="text-lg font-semibold">{venue.name}</h2>
-        <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600">
+        <h2 className="font-display text-lg font-semibold">{venue.name}</h2>
+        <span className="rounded-full bg-raised px-2 py-0.5 text-xs text-muted">
           {VENUE_STATUS_LABELS[venue.status]}
         </span>
-        <Link className="ml-auto text-sm text-brand-600 hover:underline" href={`/venues/${venue.id}`}>Публічна сторінка</Link>
+        <Link className="ml-auto text-sm text-amber-500 hover:underline" href={`/venues/${venue.id}`}>Публічна сторінка</Link>
       </div>
-      <nav className="mb-4 flex gap-3 border-b border-stone-200 pb-2 text-sm" aria-label="Керування закладом">
+      <nav className="mb-4 flex gap-3 border-b border-line pb-2 text-sm" aria-label="Керування закладом">
         {TABS.map((t) => (
           <Link
             key={t.key}
             href={`/account/venues/${venue.id}?tab=${t.key}`}
             aria-current={t.key === tab ? 'page' : undefined}
-            className={t.key === tab ? 'font-semibold text-brand-600' : 'text-stone-600 hover:text-brand-600'}
+            className={t.key === tab ? 'font-semibold text-amber-500' : 'text-muted hover:text-amber-500'}
           >
             {t.label}
           </Link>

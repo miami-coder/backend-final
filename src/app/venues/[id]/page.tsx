@@ -95,16 +95,16 @@ export default async function VenuePage({ params, searchParams }: Props) {
       <PhotoGallery mainPhotoUrl={venue.mainPhotoUrl} photos={venue.photos} />
 
       <header className="space-y-2">
-        <h1 className="text-3xl font-bold">{venue.name}</h1>
-        <div className="flex flex-wrap items-center gap-3 text-sm text-stone-500">
+        <h1 className="font-display text-3xl font-bold text-ink">{venue.name}</h1>
+        <div className="flex flex-wrap items-center gap-3 text-sm text-muted">
           <RatingStars value={venue.ratingAvg} />
           {venue.ratingCount > 0 && <span>{venue.ratingCount} відгуків</span>}
           <span aria-hidden>·</span>
           <span>Середній чек: {formatMoney(venue.averageCheck)}</span>
         </div>
-        <p className="text-stone-600">{venue.address}</p>
+        <p className="text-muted">{venue.address}</p>
         {venue.types.length > 0 && (
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-muted">
             {venue.types.map((t) => t.name).join(' · ')}
           </p>
         )}
@@ -123,7 +123,7 @@ export default async function VenuePage({ params, searchParams }: Props) {
             <Link
               key={tag.id}
               href={`/venues?tag=${tag.slug}`}
-              className="rounded-full bg-stone-100 px-3 py-1 text-xs text-stone-600 hover:bg-stone-200"
+              className="rounded-full bg-raised px-3 py-1 text-xs text-muted hover:bg-strong"
             >
               #{tag.name}
             </Link>
@@ -134,7 +134,7 @@ export default async function VenuePage({ params, searchParams }: Props) {
       {venue.features.length > 0 && (
         <section aria-label="Особливості" className="flex flex-wrap gap-2">
           {venue.features.map((f) => (
-            <span key={f.id} className="rounded-lg border border-stone-200 px-3 py-1 text-xs">
+            <span key={f.id} className="rounded-full border border-line px-3 py-1 text-xs">
               {f.icon ? `${f.icon} ` : ''}{f.name}
             </span>
           ))}
@@ -144,32 +144,32 @@ export default async function VenuePage({ params, searchParams }: Props) {
       <div className="grid gap-8 md:grid-cols-2">
         {Object.keys(venue.workingHours).length > 0 && (
           <section aria-label="Години роботи">
-            <h2 className="mb-2 font-semibold">Години роботи</h2>
+            <h2 className="mb-2 font-display font-semibold">Години роботи</h2>
             <WorkingHours hours={venue.workingHours} />
           </section>
         )}
 
         <section aria-label="Контакти">
-          <h2 className="mb-2 font-semibold">Контакти</h2>
+          <h2 className="mb-2 font-display font-semibold">Контакти</h2>
           <ul className="space-y-1 text-sm">
-            {venue.contacts.phone && <li><a className="text-brand-600 hover:underline" href={`tel:${venue.contacts.phone}`}>{venue.contacts.phone}</a></li>}
-            {venue.contacts.instagram && <li><a className="text-brand-600 hover:underline" href={venue.contacts.instagram} target="_blank" rel="noopener noreferrer">Instagram</a></li>}
-            {venue.contacts.facebook && <li><a className="text-brand-600 hover:underline" href={venue.contacts.facebook} target="_blank" rel="noopener noreferrer">Facebook</a></li>}
-            {venue.contacts.website && <li><a className="text-brand-600 hover:underline" href={venue.contacts.website} target="_blank" rel="noopener noreferrer">Сайт</a></li>}
-            {!venue.contacts.phone && !venue.contacts.instagram && !venue.contacts.facebook && !venue.contacts.website && <li className="text-stone-400">Не вказано</li>}
+            {venue.contacts.phone && <li><a className="text-amber-500 hover:underline" href={`tel:${venue.contacts.phone}`}>{venue.contacts.phone}</a></li>}
+            {venue.contacts.instagram && <li><a className="text-amber-500 hover:underline" href={venue.contacts.instagram} target="_blank" rel="noopener noreferrer">Instagram</a></li>}
+            {venue.contacts.facebook && <li><a className="text-amber-500 hover:underline" href={venue.contacts.facebook} target="_blank" rel="noopener noreferrer">Facebook</a></li>}
+            {venue.contacts.website && <li><a className="text-amber-500 hover:underline" href={venue.contacts.website} target="_blank" rel="noopener noreferrer">Сайт</a></li>}
+            {!venue.contacts.phone && !venue.contacts.instagram && !venue.contacts.facebook && !venue.contacts.website && <li className="text-faint">Не вказано</li>}
           </ul>
         </section>
       </div>
 
       {venue.description && (
         <section aria-label="Опис">
-          <h2 className="mb-2 font-semibold">Про заклад</h2>
-          <p className="whitespace-pre-line text-stone-700">{venue.description}</p>
+          <h2 className="mb-2 font-display font-semibold">Про заклад</h2>
+          <p className="whitespace-pre-line text-muted">{venue.description}</p>
         </section>
       )}
 
       <section aria-label="Відгуки" className="space-y-4">
-        <h2 className="text-xl font-semibold">Відгуки</h2>
+        <h2 className="font-display text-xl font-semibold">Відгуки</h2>
         <ReviewForm venueId={venue.id} myReview={myReview} />
         <ReviewList venueId={venue.id} sort={sort} page={page} />
       </section>

@@ -6,6 +6,7 @@ import { Pagination } from '@/components/ui/pagination'
 import { serverFetchList } from '@/lib/api/server-client'
 import { getSessionTokens } from '@/lib/auth/session'
 import { parseFavoriteVenue, type RawFavoriteVenue } from '@/types/favorite'
+import { placeholderFor } from '@/lib/utils/placeholder'
 
 const LIMIT = 20
 
@@ -30,29 +31,29 @@ export default async function FavoritesPage({ searchParams }: Props) {
   return (
     <div className="space-y-4">
       {favorites.length === 0 ? (
-        <div className="rounded-xl bg-stone-50 p-8 text-center">
-          <p className="text-stone-500">У обраному поки порожньо.</p>
-          <Link className="mt-4 inline-block text-brand-600 hover:underline" href="/">
+        <div className="rounded-xl border border-line bg-surface p-8 text-center">
+          <p className="text-muted">У обраному поки порожньо.</p>
+          <Link className="mt-4 inline-block text-amber-500 hover:underline" href="/">
             Перейти до каталогу
           </Link>
         </div>
       ) : (
         <ul className="space-y-3">
           {favorites.map((f) => (
-            <li key={f.id} className="flex items-center gap-4 rounded-xl border border-stone-200 p-4">
+            <li key={f.id} className="flex items-center gap-4 rounded-xl border border-line p-4">
               {f.mainPhotoUrl ? (
                 /* eslint-disable-next-line @next/next/no-img-element -- зовнішній URL з бекенда */
                 <img src={f.mainPhotoUrl} alt="" loading="lazy" className="h-16 w-16 rounded-lg object-cover" />
               ) : (
-                <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-stone-100 text-stone-400">
-                  🍺
+                <div className="h-16 w-16 overflow-hidden rounded-lg bg-raised">
+                  <div style={{ background: placeholderFor(f.id) }} className="h-full w-full" />
                 </div>
               )}
               <div className="min-w-0 flex-1">
                 <Link className="font-medium hover:underline" href={`/venues/${f.id}`}>
                   {f.name}
                 </Link>
-                <p className="truncate text-sm text-stone-500">{f.address}</p>
+                <p className="truncate text-sm text-muted">{f.address}</p>
                 {f.ratingAvg !== null && <RatingStars value={f.ratingAvg} />}
               </div>
               <FavoriteRemoveButton venueId={f.id} />

@@ -45,19 +45,19 @@ export default async function NewsPage({ params }: Props) {
     <article className="mx-auto max-w-2xl py-8">
       {news.imageUrl && (
         /* eslint-disable-next-line @next/next/no-img-element -- зовнішній URL з бекенда */
-        <img src={news.imageUrl} alt="" className="mb-4 h-64 w-full rounded-2xl object-cover" />
+        <img src={news.imageUrl} alt="" className="mb-4 h-64 w-full rounded-xl object-cover" />
       )}
       <div className="mb-2 flex items-center gap-2">
         {categoryLabel && (
-          <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600">{categoryLabel}</span>
+          <span className="rounded-full bg-raised px-2 py-0.5 text-xs text-muted">{categoryLabel}</span>
         )}
-        {news.publishedAt && <span className="text-sm text-stone-500">{formatDate(news.publishedAt)}</span>}
+        {news.publishedAt && <span className="text-sm text-muted">{formatDate(news.publishedAt)}</span>}
       </div>
-      <h1 className="text-2xl font-bold">{news.title}</h1>
-      <div className="mt-4 whitespace-pre-line text-stone-700">{news.content}</div>
+      <h1 className="font-display text-2xl font-bold text-ink">{news.title}</h1>
+      <div className="mt-4 whitespace-pre-line text-muted">{news.content}</div>
       {venue && (
-        <p className="mt-6 text-sm text-stone-500">
-          Заклад: <Link className="text-brand-600 hover:underline" href={`/venues/${venue.id}`}>{venue.name}</Link>
+        <p className="mt-6 text-sm text-muted">
+          Заклад: <Link className="text-amber-500 hover:underline" href={`/venues/${venue.id}`}>{venue.name}</Link>
         </p>
       )}
     </article>

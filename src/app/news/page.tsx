@@ -26,19 +26,19 @@ export default async function NewsPage({ searchParams }: Props) {
 
   return (
     <div className="mx-auto max-w-4xl py-8">
-      <h1 className="text-2xl font-bold">Новини</h1>
+      <h1 className="font-display text-2xl font-bold text-ink">Новини</h1>
       <nav className="mt-4 flex gap-3 text-sm" aria-label="Категорії новин">
-        <Link href="/news" className={!category ? 'font-semibold text-brand-600' : 'text-stone-600 hover:text-brand-600'}>Усі</Link>
+        <Link href="/news" className={!category ? 'font-semibold text-amber-500' : 'text-muted hover:text-amber-500'}>Усі</Link>
         {NEWS_CATEGORIES.map((c) => (
           <Link key={c.value} href={`/news?category=${c.value}`}
-            className={category === c.value ? 'font-semibold text-brand-600' : 'text-stone-600 hover:text-brand-600'}>
+            className={category === c.value ? 'font-semibold text-amber-500' : 'text-muted hover:text-amber-500'}>
             {c.label}
           </Link>
         ))}
       </nav>
       {news.length === 0 ? (
-        <div className="mt-6 rounded-xl bg-stone-50 p-8 text-center">
-          <p className="text-stone-500">Новин ще немає.</p>
+        <div className="mt-6 rounded-xl border border-line bg-surface p-8 text-center">
+          <p className="text-muted">Новин ще немає.</p>
         </div>
       ) : (
         <ul className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -46,19 +46,19 @@ export default async function NewsPage({ searchParams }: Props) {
             // невідома категорія з бекенда → бейдж узагалі не рендеримо (порожній span недопустимий)
             const categoryLabel = NEWS_CATEGORIES.find((c) => c.value === n.category)?.label
             return (
-              <li key={n.id} className="overflow-hidden rounded-2xl border border-stone-200 bg-white">
+              <li key={n.id} className="overflow-hidden rounded-xl border border-line bg-surface">
                 <Link href={`/news/${n.id}`} className="block">
                   {n.imageUrl && (
                     /* eslint-disable-next-line @next/next/no-img-element -- зовнішній URL з бекенда */
                     <img src={n.imageUrl} alt="" loading="lazy" className="h-40 w-full object-cover" />
                   )}
                   <div className="p-4">
-                    {n.isPromoted && <span className="mr-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">Промо</span>}
+                    {n.isPromoted && <span className="mr-2 rounded-full bg-amber-400/15 px-2 py-0.5 text-xs text-amber-400">Промо</span>}
                     {categoryLabel && (
-                      <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600">{categoryLabel}</span>
+                      <span className="rounded-full bg-raised px-2 py-0.5 text-xs text-muted">{categoryLabel}</span>
                     )}
-                    <h2 className="mt-2 font-semibold">{n.title}</h2>
-                    {n.publishedAt && <p className="mt-1 text-sm text-stone-500">{formatDate(n.publishedAt)}</p>}
+                    <h2 className="mt-2 font-display font-semibold">{n.title}</h2>
+                    {n.publishedAt && <p className="mt-1 text-sm text-muted">{formatDate(n.publishedAt)}</p>}
                   </div>
                 </Link>
               </li>

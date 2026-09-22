@@ -14,21 +14,21 @@ export default async function AccountLayout({ children }: { children: React.Reac
 
   return (
     <div className="mx-auto max-w-4xl py-8">
-      <h1 className="text-2xl font-bold">Кабінет</h1>
-      <nav className="mt-4 flex gap-4 border-b border-stone-200 pb-2 text-sm">
-        <Link className="text-brand-600 hover:underline" href="/account">
+      <h1 className="font-display text-2xl font-bold text-ink">Кабінет</h1>
+      <nav className="mt-4 flex gap-4 border-b border-line pb-2 text-sm">
+        <Link className="text-amber-500 hover:underline" href="/account">
           Профіль
         </Link>
-        <Link className="text-brand-600 hover:underline" href="/account/favorites">
+        <Link className="text-amber-500 hover:underline" href="/account/favorites">
           Обране
         </Link>
-        <Link className="text-brand-600 hover:underline" href="/account/reviews">
+        <Link className="text-amber-500 hover:underline" href="/account/reviews">
           Відгуки
         </Link>
-        <Link className="text-brand-600 hover:underline" href="/account/hangouts">
+        <Link className="text-amber-500 hover:underline" href="/account/hangouts">
           Пиячки
         </Link>
-        <Link className="text-brand-600 hover:underline" href="/account/venues">
+        <Link className="text-amber-500 hover:underline" href="/account/venues">
           Заклади
         </Link>
       </nav>

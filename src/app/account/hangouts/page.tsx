@@ -41,15 +41,15 @@ export default async function MyHangoutsPage({ searchParams }: Props) {
           <Link
             key={r}
             href={`/account/hangouts?role=${r}`}
-            className={r === role ? 'font-semibold text-brand-600' : 'text-stone-600 hover:text-brand-600'}
+            className={r === role ? 'font-semibold text-amber-500' : 'text-muted hover:text-amber-500'}
           >
             {ROLE_LABELS[r]}
           </Link>
         ))}
       </nav>
       {hangouts.length === 0 ? (
-        <div className="rounded-xl bg-stone-50 p-8 text-center">
-          <p className="text-stone-500">Зустрічей немає.</p>
+        <div className="rounded-xl border border-line bg-surface p-8 text-center">
+          <p className="text-muted">Зустрічей немає.</p>
         </div>
       ) : (
         <ul className="space-y-3">
@@ -59,14 +59,14 @@ export default async function MyHangoutsPage({ searchParams }: Props) {
             // кнопку рендерить за isCreator, тому гейт статусів застосовано тут)
             const canCancel = isCreator && (h.status === 'open' || h.status === 'filled')
             return (
-              <li key={h.id} className="rounded-xl border border-stone-200 p-4">
+              <li key={h.id} className="rounded-xl border border-line p-4">
                 <div className="flex flex-wrap items-center gap-3">
                   <span className="font-medium">{h.date} · {h.time}</span>
-                  <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600">{HANGOUT_STATUS_LABELS[h.status]}</span>
-                  <Link className="ml-auto text-sm text-brand-600 hover:underline" href={`/hangouts/${h.id}`}>Деталі</Link>
+                  <span className="rounded-full bg-raised px-2 py-0.5 text-xs text-muted">{HANGOUT_STATUS_LABELS[h.status]}</span>
+                  <Link className="ml-auto text-sm text-amber-500 hover:underline" href={`/hangouts/${h.id}`}>Деталі</Link>
                 </div>
-                <p className="mt-2 text-stone-700">{h.purpose}</p>
-                <p className="mt-1 text-sm text-stone-500">
+                <p className="mt-2 text-muted">{h.purpose}</p>
+                <p className="mt-1 text-sm text-muted">
                   {genderLabel(h.gender)} · до {h.groupSize} осіб · {payerLabel(h.payer)}{h.desiredBudget !== null ? ` · бюджет ${formatMoney(h.desiredBudget)}` : ''}
                 </p>
                 <div className="mt-3">

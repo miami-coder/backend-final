@@ -9,7 +9,7 @@ export default async function NewVenuePage() {
   if (!tokens) redirect('/auth/login?next=/venues/new')
   return (
     <div className="mx-auto max-w-2xl py-8">
-      <h1 className="mb-4 text-2xl font-bold">Подати заклад</h1>
+      <h1 className="mb-4 font-display text-2xl font-bold text-ink">Подати заклад</h1>
       <VenueCreateForm />
     </div>
   )

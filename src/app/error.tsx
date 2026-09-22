@@ -13,9 +13,9 @@ export default function GlobalError({ error, retry }: { error: Error & { digest?
 
   return (
     <div className="py-16 text-center">
-      <h1 className="text-2xl font-bold">Щось пішло не так</h1>
-      <p className="mt-2 text-stone-500">Сервіс тимчасово недоступний. Спробуйте ще раз.</p>
-      <button className="mt-6 rounded-lg bg-brand-500 px-4 py-2 text-white hover:bg-brand-600" onClick={retry}>
+      <h1 className="font-display text-2xl font-bold text-ink">Щось пішло не так</h1>
+      <p className="mt-2 text-muted">Сервіс тимчасово недоступний. Спробуйте ще раз.</p>
+      <button className="mt-6 rounded-full bg-amber-500 px-4 py-2 font-medium text-espresso hover:bg-amber-400" onClick={retry}>
         Повторити
       </button>
     </div>

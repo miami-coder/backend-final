@@ -83,9 +83,9 @@ export function RegisterForm() {
 
   return (
     // noValidate: валідацію робимо через zod, нативні бульбашки браузера конфліктують з інлайн-помилками
-    <form noValidate onSubmit={submit} className="mx-auto max-w-sm space-y-4 rounded-2xl border border-stone-200 bg-white p-6">
-      <h1 className="text-xl font-bold">Реєстрація</h1>
-      {error && <p role="alert" className="rounded-lg bg-red-50 p-2 text-sm text-red-700">{error}</p>}
+    <form noValidate onSubmit={submit} className="mx-auto max-w-sm space-y-4 rounded-xl border border-line bg-surface p-6">
+      <h1 className="font-display text-xl font-bold text-ink">Реєстрація</h1>
+      {error && <p role="alert" className="rounded-lg bg-danger/15 p-2 text-sm text-danger">{error}</p>}
       {/* Помилка — сусід label, а не вкладена в нього: не забруднює accessible name;
           зв'язок через aria-describedby */}
       <div className="text-sm">
@@ -100,7 +100,7 @@ export function RegisterForm() {
           onChange={(e) => setFirstname(e.target.value)}
         />
         {fieldErrors.firstname && (
-          <span id="reg-firstname-error" role="alert" className="mt-1 block text-red-600">{fieldErrors.firstname}</span>
+          <span id="reg-firstname-error" role="alert" className="mt-1 block text-danger">{fieldErrors.firstname}</span>
         )}
       </div>
       <div className="text-sm">
@@ -115,7 +115,7 @@ export function RegisterForm() {
           onChange={(e) => setLastname(e.target.value)}
         />
         {fieldErrors.lastname && (
-          <span id="reg-lastname-error" role="alert" className="mt-1 block text-red-600">{fieldErrors.lastname}</span>
+          <span id="reg-lastname-error" role="alert" className="mt-1 block text-danger">{fieldErrors.lastname}</span>
         )}
       </div>
       <div className="text-sm">
@@ -131,7 +131,7 @@ export function RegisterForm() {
           onChange={(e) => setEmail(e.target.value)}
         />
         {fieldErrors.email && (
-          <span id="reg-email-error" role="alert" className="mt-1 block text-red-600">{fieldErrors.email}</span>
+          <span id="reg-email-error" role="alert" className="mt-1 block text-danger">{fieldErrors.email}</span>
         )}
       </div>
       <div className="text-sm">
@@ -147,7 +147,7 @@ export function RegisterForm() {
           onChange={(e) => setPassword(e.target.value)}
         />
         {fieldErrors.password && (
-          <span id="reg-password-error" role="alert" className="mt-1 block text-red-600">{fieldErrors.password}</span>
+          <span id="reg-password-error" role="alert" className="mt-1 block text-danger">{fieldErrors.password}</span>
         )}
       </div>
       <div className="text-sm">
@@ -163,7 +163,7 @@ export function RegisterForm() {
           onChange={(e) => setAge(e.target.value)}
         />
         {fieldErrors.age && (
-          <span id="reg-age-error" role="alert" className="mt-1 block text-red-600">{fieldErrors.age}</span>
+          <span id="reg-age-error" role="alert" className="mt-1 block text-danger">{fieldErrors.age}</span>
         )}
       </div>
       <div className="text-sm">
@@ -179,25 +179,25 @@ export function RegisterForm() {
           onChange={(e) => setPhone(e.target.value)}
         />
         {fieldErrors.phone && (
-          <span id="reg-phone-error" role="alert" className="mt-1 block text-red-600">{fieldErrors.phone}</span>
+          <span id="reg-phone-error" role="alert" className="mt-1 block text-danger">{fieldErrors.phone}</span>
         )}
       </div>
       {/* aria-describedby веде на текст EULA: скрінрідер озвучує умови після чекбокса */}
       <label id="eula-text" className="flex items-start gap-2 text-sm">
         <input
           type="checkbox"
-          className="mt-0.5 size-4 accent-brand-500"
+          className="mt-0.5 size-4 accent-amber-500"
           checked={acceptEula}
           aria-describedby="eula-text"
           onChange={(e) => setAcceptEula(e.target.checked)}
         />
         Приймаю умови угоди користувача
       </label>
-      {fieldErrors.acceptEula && <span role="alert" className="block text-sm text-red-600">{fieldErrors.acceptEula}</span>}
+      {fieldErrors.acceptEula && <span role="alert" className="block text-sm text-danger">{fieldErrors.acceptEula}</span>}
       <Button type="submit" disabled={loading} className="w-full">{loading ? 'Реєструємо…' : 'Зареєструватися'}</Button>
       <p className="text-center text-sm">
         Вже маєте акаунт?{' '}
-        <Link className="text-brand-600 hover:underline" href="/auth/login">Увійти</Link>
+        <Link className="text-amber-500 hover:underline" href="/auth/login">Увійти</Link>
       </p>
     </form>
   )

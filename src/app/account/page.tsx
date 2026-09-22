@@ -9,7 +9,7 @@ export default async function AccountProfilePage() {
   const me = await serverFetch<{ profile: ProfileFields }>('/me', { tokens, revalidate: 0 })
   return (
     <section>
-      <h2 className="mb-4 text-lg font-semibold">Профіль</h2>
+      <h2 className="mb-4 font-display text-lg font-semibold">Профіль</h2>
       <ProfileForm profile={me.profile} />
     </section>
   )
