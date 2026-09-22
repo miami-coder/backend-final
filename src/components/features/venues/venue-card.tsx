@@ -10,7 +10,7 @@ export function VenueCard({ venue }: { venue: Venue }) {
   return (
     <Link
       href={`/venues/${venue.id}`}
-      className="group block overflow-hidden rounded-xl border border-line bg-surface transition-colors hover:border-amber-500/70"
+      className="block overflow-hidden rounded-xl border border-line bg-surface transition-colors hover:border-amber-500/70"
     >
       <div className="aspect-[4/3] overflow-hidden bg-raised">
         {venue.mainPhotoUrl ? (
