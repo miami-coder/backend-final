@@ -56,7 +56,7 @@ export function VenueFilters({ initial }: { initial: CatalogQuery }) {
   }
 
   return (
-    <form onSubmit={apply} className="mb-6 rounded-2xl border border-stone-200 bg-white p-4" aria-label="Фільтри каталогу">
+    <form onSubmit={apply} className="mb-6 rounded-xl border border-line bg-surface p-4" aria-label="Фільтри каталогу">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <label className="text-sm">
           Пошук
@@ -104,10 +104,10 @@ export function VenueFilters({ initial }: { initial: CatalogQuery }) {
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <Button type="submit">Застосувати</Button>
         <Button type="button" variant="secondary" onClick={nearMe}>📍 Поблизу</Button>
-        {geo && <span className="text-sm text-stone-500">Поблизу, радіус {radiusKm} км</span>}
+        {geo && <span className="text-sm text-muted">Поблизу, радіус {radiusKm} км</span>}
         <Button type="button" variant="ghost" onClick={() => router.push('/')}>Скинути</Button>
       </div>
-      {geoError && <p role="alert" className="mt-2 text-sm text-red-600">{geoError}</p>}
+      {geoError && <p role="alert" className="mt-2 text-sm text-danger">{geoError}</p>}
     </form>
   )
 }
