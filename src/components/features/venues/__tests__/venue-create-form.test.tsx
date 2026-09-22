@@ -29,9 +29,7 @@ function apiCalls() {
 
 describe('VenueCreateForm', () => {
   it('сабміт → POST /venues з DTO-полями → redirect /account/venues?created=1', async () => {
-    // init потрібен лише для типізації викликів — значення читаємо з mock.calls
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
       if (String(input).endsWith('/auth/me')) {
         return new Response(JSON.stringify({ data: testUser }), { status: 200, headers: { 'content-type': 'application/json' } })
       }
@@ -52,7 +50,7 @@ describe('VenueCreateForm', () => {
   })
 
   it('широти/довготи немає: ані інпутів, ані в POST-тілі', async () => {
-    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
       if (String(input).endsWith('/auth/me')) {
         return new Response(JSON.stringify({ data: testUser }), { status: 200, headers: { 'content-type': 'application/json' } })
       }
@@ -115,7 +113,7 @@ describe('VenueCreateForm', () => {
   })
 
   it('вибрані фото → після 201 POST /venues/:id/photos (FormData, на кожен файл) → redirect', async () => {
-    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
       if (String(input).endsWith('/auth/me')) {
         return new Response(JSON.stringify({ data: testUser }), { status: 200, headers: { 'content-type': 'application/json' } })
       }
