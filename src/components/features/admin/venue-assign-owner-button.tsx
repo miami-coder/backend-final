@@ -8,8 +8,15 @@ import { useToast } from '@/components/ui/toast'
 import { parseAdminUser, type AdminUser, type RawAdminUser } from '@/types/admin'
 
 // Призначення власника закладу: модалка з вибором користувача, POST
-// assign-owner { userId } → toast + refresh + закриття
-export function VenueAssignOwnerButton({ venueId }: { venueId: string }) {
+// assign-owner { userId } → toast + refresh + закриття.
+// label — текст кнопки (в черзі модерації і при передачі керування різні формулі)
+export function VenueAssignOwnerButton({
+  venueId,
+  label = 'Призначити власника',
+}: {
+  venueId: string
+  label?: string
+}) {
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [users, setUsers] = useState<AdminUser[]>([])
@@ -69,9 +76,9 @@ export function VenueAssignOwnerButton({ venueId }: { venueId: string }) {
         onClick={() => setOpen(true)}
         className="rounded-md border border-stone-300 px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50"
       >
-        Призначити власника
+        {label}
       </button>
-      <Modal open={open} onClose={close} title="Призначити власника">
+      <Modal open={open} onClose={close} title={label}>
         <label className="block text-sm text-stone-600" htmlFor={`assign-owner-${venueId}`}>
           Користувач
         </label>

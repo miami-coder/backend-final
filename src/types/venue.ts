@@ -21,6 +21,12 @@ export interface RawVenue {
   updatedAt: string
   // Відносини Є лише у елементах GET /venues (list); GET /venues/:id
   // повертає лише owner+profile — тому всі відносини optional
+  owner?: {
+    id: string
+    email: string
+    // passwordHash у owner підтікає з бекенда — свідомо не чіпаємо і не рендеримо
+    profile?: { firstname?: string | null; lastname?: string | null } | null
+  } | null
   photos?: { id: string; venueId: string; url: string; sortOrder: number }[]
   featureAssignments?: { venueId: string; featureId: string; feature: { id: string; code: string; name: string; icon: string | null } }[]
   venueTags?: { venueId: string; tagId: string; tag: { id: string; name: string; slug: string } }[]
@@ -51,6 +57,8 @@ export interface Venue {
   viewCount: number
   createdAt: string
   updatedAt: string
+  // Власник — лише там, де бекенд віддає owner (список pending в адмінці, listMine)
+  owner?: { email: string; name: string | null } | null
   photos: VenuePhoto[]
   features: VenueFeature[]
   tags: VenueTag[]
@@ -82,6 +90,14 @@ export function parseVenue(raw: RawVenue): Venue {
     viewCount: raw.viewCount,
     createdAt: raw.createdAt,
     updatedAt: raw.updatedAt,
+    owner: raw.owner
+      ? {
+          email: raw.owner.email,
+          name: [raw.owner.profile?.firstname, raw.owner.profile?.lastname]
+            .filter(Boolean)
+            .join(' ') || null,
+        }
+      : null,
     photos: raw.photos ?? [],
     features: (raw.featureAssignments ?? []).map((a) => a.feature),
     tags: (raw.venueTags ?? []).map((a) => a.tag),
