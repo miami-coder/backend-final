@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+:root {
+  color-scheme: dark;
+}
+
 @theme {
   /* Поверхні: глибина через відтінки еспресо, не через тіні */
   --color-bg: #171310;
