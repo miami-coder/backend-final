@@ -9,14 +9,14 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 // Мапа класів для варіантів кнопки
 const variantClasses = {
-  primary: 'bg-brand-500 text-white hover:bg-brand-600',
-  secondary: 'border border-stone-300 bg-white text-ink hover:bg-stone-100',
-  ghost: 'text-ink hover:bg-stone-100',
-  danger: 'bg-red-600 text-white hover:bg-red-700',
+  primary: 'bg-amber-500 text-espresso hover:bg-amber-400 active:bg-amber-600',
+  secondary: 'border border-strong bg-surface text-ink hover:bg-raised hover:border-amber-500/60',
+  ghost: 'text-amber-400 hover:bg-raised',
+  danger: 'bg-danger text-espresso hover:bg-danger/85',
 } satisfies Record<NonNullable<ButtonProps['variant']>, string>
 
 const sizeClasses = {
-  sm: 'px-2.5 py-1 text-sm',
+  sm: 'px-3 py-1 text-sm',
   md: 'px-4 py-2',
 } satisfies Record<NonNullable<ButtonProps['size']>, string>
 
@@ -24,7 +24,7 @@ const sizeClasses = {
 // явний type="submit" у пропсах усе одно перезаписує дефолт
 export function Button({ variant = 'primary', size = 'md', type = 'button', className, ...props }: ButtonProps) {
   const classes = [
-    'inline-flex items-center justify-center gap-1.5 rounded-lg font-medium transition-colors',
+    'inline-flex items-center justify-center gap-1.5 rounded-full font-medium transition-colors',
     'disabled:pointer-events-none disabled:opacity-50',
     variantClasses[variant],
     sizeClasses[size],
