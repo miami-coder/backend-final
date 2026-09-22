@@ -36,7 +36,7 @@ export function ComplaintButton({ target, label = 'Скарга', loginNext }: P
       // а слеші в route-значенні безпечні — патерн FavoriteButton/ReviewForm
       <Link
         href={`/auth/login?next=${loginPath}`}
-        className="inline-flex items-center rounded-lg border border-stone-300 px-4 py-2 text-sm hover:bg-stone-100"
+        className="inline-flex items-center rounded-full border border-strong px-4 py-2 text-sm hover:bg-raised"
       >
         ⚑ {label}
       </Link>
@@ -86,7 +86,7 @@ export function ComplaintButton({ target, label = 'Скарга', loginNext }: P
               id="complaint-reason"
               value={reason}
               onChange={(e) => setReason(e.target.value as typeof reason)}
-              className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2"
+              className="w-full rounded-xl border border-strong bg-bg px-3 py-2 text-ink focus:border-amber-500 focus:outline-none"
             >
               {COMPLAINT_REASONS.map((r) => (
                 <option key={r.value} value={r.value}>{r.label}</option>
@@ -106,7 +106,7 @@ export function ComplaintButton({ target, label = 'Скарга', loginNext }: P
             />
           </div>
 
-          {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+          {error && <p role="alert" className="text-sm text-danger">{error}</p>}
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="secondary" onClick={() => setOpen(false)}>

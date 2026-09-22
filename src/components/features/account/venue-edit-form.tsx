@@ -131,7 +131,7 @@ export function VenueEditForm({ venue }: { venue: Venue }) {
           <Input value={longitude} onChange={(e) => setLongitude(e.target.value)} className="mt-1 w-full" inputMode="decimal" />
         </label>
       </div>
-      <fieldset className="rounded-xl border border-stone-200 p-3">
+      <fieldset className="rounded-xl border border-line p-3">
         <legend className="px-1 text-sm font-medium">Контакти</legend>
         <div className="grid gap-2 sm:grid-cols-2">
           <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Телефон" aria-label="Телефон" />
@@ -140,11 +140,11 @@ export function VenueEditForm({ venue }: { venue: Venue }) {
           <Input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="Сайт" aria-label="Сайт" />
         </div>
       </fieldset>
-      <fieldset className="rounded-xl border border-stone-200 p-3">
+      <fieldset className="rounded-xl border border-line p-3">
         <legend className="px-1 text-sm font-medium">Години роботи (формат HH:MM-HH:MM, порожнє — вихідний)</legend>
         <div className="grid gap-2 sm:grid-cols-2">
           {WH_DAYS.map((d) => (
-            <label key={d} className="block text-xs text-stone-500">
+            <label key={d} className="block text-xs text-muted">
               {DAY_LABELS[d]}
               <Input
                 value={hours[d] ?? ''}
@@ -161,24 +161,24 @@ export function VenueEditForm({ venue }: { venue: Venue }) {
         <Input type="number" min="0" value={averageCheck} onChange={(e) => setAverageCheck(e.target.value)} className="mt-1 w-full" />
       </label>
       {(venue.types.length > 0 || venue.features.length > 0 || venue.tags.length > 0) && (
-        <div className="rounded-xl border border-stone-200 p-3 text-sm">
-          <p className="mb-2 text-xs text-stone-500">Тип, фічі та теги — лише для перегляду (редагуються під час модерації):</p>
+        <div className="rounded-xl border border-line p-3 text-sm">
+          <p className="mb-2 text-xs text-muted">Тип, фічі та теги — лише для перегляду (редагуються під час модерації):</p>
           <div className="flex flex-wrap gap-2">
             {venue.types.map((t) => (
-              <span key={t.id} className="rounded-full bg-stone-100 px-3 py-1 text-xs text-stone-600">{t.name}</span>
+              <span key={t.id} className="rounded-full bg-raised px-3 py-1 text-xs text-muted">{t.name}</span>
             ))}
             {venue.features.map((f) => (
-              <span key={f.id} className="rounded-lg border border-stone-200 px-3 py-1 text-xs">
+              <span key={f.id} className="rounded-full border border-line px-3 py-1 text-xs">
                 {f.icon ? `${f.icon} ` : ''}{f.name}
               </span>
             ))}
             {venue.tags.map((t) => (
-              <span key={t.id} className="rounded-full bg-stone-100 px-3 py-1 text-xs text-stone-600">#{t.name}</span>
+              <span key={t.id} className="rounded-full bg-raised px-3 py-1 text-xs text-muted">#{t.name}</span>
             ))}
           </div>
         </div>
       )}
-      {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+      {error && <p role="alert" className="text-sm text-danger">{error}</p>}
       <Button type="submit" disabled={sending}>{sending ? 'Зберігаємо…' : 'Зберегти зміни'}</Button>
     </form>
   )

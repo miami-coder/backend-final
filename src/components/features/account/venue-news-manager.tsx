@@ -106,7 +106,7 @@ export function VenueNewsManager({ venueId, news }: { venueId: string; news: New
 
   return (
     <section aria-label="Новини закладу">
-      <form onSubmit={submit} className="space-y-2 rounded-xl border border-stone-200 p-4" aria-label="Нова новина">
+      <form onSubmit={submit} className="space-y-2 rounded-xl border border-line p-4" aria-label="Нова новина">
         <Select value={category} onChange={(e) => setCategory(e.target.value as NewsCategory)} aria-label="Категорія">
           {NEWS_CATEGORIES.map((c) => (
             <option key={c.value} value={c.value}>{c.label}</option>
@@ -115,24 +115,24 @@ export function VenueNewsManager({ venueId, news }: { venueId: string; news: New
         <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Заголовок (від 5 символів)" aria-label="Заголовок новини" />
         <Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="Текст (від 20 символів)" aria-label="Текст новини" />
         <Input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="URL зображення (опційно)" aria-label="URL зображення" />
-        {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+        {error && <p role="alert" className="text-sm text-danger">{error}</p>}
         <Button type="submit" disabled={sending}>{sending ? 'Додаємо…' : 'Додати новину'}</Button>
       </form>
-      <p className="mt-2 text-sm text-stone-500">
+      <p className="mt-2 text-sm text-muted">
         Публічний список показує лише опубліковані новини: заархівовані зникають із публічної сторінки закладу.
       </p>
 
       {news.length === 0 ? (
-        <p className="mt-4 text-sm text-stone-500">Новин у закладу ще немає.</p>
+        <p className="mt-4 text-sm text-muted">Новин у закладу ще немає.</p>
       ) : (
         <ul className="mt-4 space-y-2">
           {news.map((n) => (
-            <li key={n.id} className="flex flex-wrap items-center gap-3 rounded-xl border border-stone-200 p-3">
-              <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600">
+            <li key={n.id} className="flex flex-wrap items-center gap-3 rounded-xl border border-line p-3">
+              <span className="rounded-full bg-raised px-2 py-0.5 text-xs text-muted">
                 {NEWS_CATEGORIES.find((c) => c.value === n.category)?.label}
               </span>
               <span className="min-w-0 flex-1 truncate font-medium">{n.title}</span>
-              {n.publishedAt && <span className="text-sm text-stone-500">{formatDate(n.publishedAt)}</span>}
+              {n.publishedAt && <span className="text-sm text-muted">{formatDate(n.publishedAt)}</span>}
               <Button variant="secondary" size="sm" onClick={() => setEditing(n)}>Редагувати</Button>
               <Button variant="ghost" size="sm" onClick={() => setDeleting(n)}>Видалити</Button>
             </li>
@@ -151,7 +151,7 @@ export function VenueNewsManager({ venueId, news }: { venueId: string; news: New
       </Modal>
 
       <Modal open={deleting !== null} onClose={() => setDeleting(null)} title="Видалити новину?">
-        <p className="text-stone-600">Новина буде видалена (заархівована) і зникне з публічного списку.</p>
+        <p className="text-muted">Новина буде видалена (заархівована) і зникне з публічного списку.</p>
         <div className="mt-4 flex gap-2">
           <Button variant="secondary" onClick={() => setDeleting(null)}>Скасувати</Button>
           <Button onClick={remove}>Так, видалити</Button>

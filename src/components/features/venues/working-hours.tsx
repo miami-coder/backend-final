@@ -17,7 +17,7 @@ export function WorkingHours({ hours }: { hours: Record<string, string> }) {
     <dl className="space-y-1 text-sm">
       {entries.map(([day, value]) => (
         <div key={day} className="flex justify-between gap-4">
-          <dt className="text-stone-500">{DAY_LABELS[day] ?? day}</dt>
+          <dt className="text-muted">{DAY_LABELS[day] ?? day}</dt>
           <dd>{value}</dd>
         </div>
       ))}

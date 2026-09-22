@@ -31,7 +31,7 @@ export function VenueApproveButton({ venueId }: { venueId: string }) {
       type="button"
       onClick={() => void approve()}
       disabled={busy}
-      className="rounded-md bg-brand-600 px-3 py-1.5 text-sm text-white hover:bg-brand-700 disabled:opacity-50"
+      className="rounded-full bg-amber-500 px-3 py-1.5 text-sm font-medium text-espresso hover:bg-amber-400 disabled:opacity-50"
     >
       Схвалити
     </button>

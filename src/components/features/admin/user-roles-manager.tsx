@@ -70,7 +70,7 @@ export function UserRolesManager({ userId, roles }: { userId: string; roles: Rol
         {roles.map((r) => (
           <li
             key={r}
-            className="flex items-center gap-1 rounded-full border border-stone-300 py-0.5 pl-2.5 pr-1 text-sm text-stone-700"
+            className="flex items-center gap-1 rounded-full border border-strong py-0.5 pl-2.5 pr-1 text-sm text-muted"
           >
             {ROLE_LABELS[r]}
             <button
@@ -78,7 +78,7 @@ export function UserRolesManager({ userId, roles }: { userId: string; roles: Rol
               aria-label={`Зняти роль ${ROLE_LABELS[r]}`}
               disabled={busy}
               onClick={() => request(r, 'remove')}
-              className="rounded-full px-1.5 text-stone-400 hover:bg-stone-100 hover:text-red-600 disabled:opacity-50"
+              className="rounded-full px-1.5 text-faint hover:bg-raised hover:text-danger disabled:opacity-50"
             >
               ×
             </button>
@@ -88,11 +88,11 @@ export function UserRolesManager({ userId, roles }: { userId: string; roles: Rol
 
       {available.length > 0 && (
         <div className="flex items-end gap-2">
-          <label className="block text-sm text-stone-600">
+          <label className="block text-sm text-muted">
             Нова роль
             <select
               aria-label="Оберіть роль"
-              className="mt-1 block w-56 rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900"
+              className="mt-1 block w-56 rounded-xl border border-strong bg-bg px-3 py-2 text-sm text-ink focus:border-amber-500 focus:outline-none"
               value={roleCode}
               onChange={(e) => setRoleCode(e.target.value)}
             >
@@ -108,7 +108,7 @@ export function UserRolesManager({ userId, roles }: { userId: string; roles: Rol
             type="button"
             onClick={() => request(roleCode as Role, 'add')}
             disabled={!roleCode || busy}
-            className="rounded-md bg-brand-600 px-3 py-2 text-sm text-white hover:bg-brand-700 disabled:opacity-50"
+            className="rounded-full bg-amber-500 px-3 py-2 text-sm font-medium text-espresso hover:bg-amber-400 disabled:opacity-50"
           >
             Додати
           </button>
@@ -120,14 +120,14 @@ export function UserRolesManager({ userId, roles }: { userId: string; roles: Rol
         onClose={closeConfirm}
         title={confirm?.action === 'add' ? 'Надати супер-адміна?' : 'Зняти супер-адміна?'}
       >
-        <p className="text-sm text-stone-600">
+        <p className="text-sm text-muted">
           Супер-адмін має повний доступ до адмінки, включно з керуванням ролями інших адміністраторів.
         </p>
         <div className="mt-4 flex justify-end gap-2">
           <button
             type="button"
             onClick={closeConfirm}
-            className="rounded-md border border-stone-300 px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50"
+            className="rounded-full border border-strong px-3 py-1.5 text-sm text-muted hover:bg-raised"
           >
             Скасувати
           </button>
@@ -135,7 +135,7 @@ export function UserRolesManager({ userId, roles }: { userId: string; roles: Rol
             type="button"
             onClick={() => confirm && void apply(confirm)}
             disabled={busy}
-            className="rounded-md bg-brand-600 px-3 py-1.5 text-sm text-white hover:bg-brand-700 disabled:opacity-50"
+            className="rounded-full bg-amber-500 px-3 py-1.5 text-sm font-medium text-espresso hover:bg-amber-400 disabled:opacity-50"
           >
             Підтвердити
           </button>

@@ -80,7 +80,7 @@ export function ProfileForm({ profile }: { profile: ProfileFields }) {
       <label className="block text-sm font-medium">URL аватара
         <Input value={avatarUrl} onChange={(e) => setAvatarUrl(e.target.value)} className="mt-1 w-full" />
       </label>
-      {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+      {error && <p role="alert" className="text-sm text-danger">{error}</p>}
       <Button type="submit" disabled={saving}>{saving ? 'Зберігаємо…' : 'Зберегти'}</Button>
     </form>
   )

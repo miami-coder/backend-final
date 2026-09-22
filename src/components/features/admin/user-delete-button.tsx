@@ -45,16 +45,16 @@ export function UserDeleteButton({ userId, email }: { userId: string; email: str
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-700 hover:bg-red-50"
+        className="rounded-full border border-danger/50 px-3 py-1.5 text-sm text-danger hover:bg-danger/10"
       >
         Видалити
       </button>
       <Modal open={open} onClose={close} title="Видалити користувача?">
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-danger">
           Користувача буде мʼяко видалено: вхід і публічний контент стануть недоступні. Дію не можна
           скасувати з інтерфейсу.
         </p>
-        <label className="mt-3 block text-sm text-stone-600" htmlFor={`delete-confirm-${userId}`}>
+        <label className="mt-3 block text-sm text-muted" htmlFor={`delete-confirm-${userId}`}>
           Введіть email користувача для підтвердження
         </label>
         <input
@@ -63,14 +63,14 @@ export function UserDeleteButton({ userId, email }: { userId: string; email: str
           autoComplete="off"
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          className="mt-1 w-full rounded-md border border-stone-300 px-3 py-2 text-sm text-stone-900"
+          className="mt-1 w-full rounded-xl border border-strong bg-bg px-3 py-2 text-sm text-ink focus:border-amber-500 focus:outline-none"
         />
         <div className="mt-4 flex justify-end">
           <button
             type="button"
             onClick={() => void remove()}
             disabled={!matched || busy}
-            className="rounded-md bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-700 disabled:opacity-50"
+            className="rounded-full bg-danger px-3 py-1.5 text-sm font-medium text-espresso hover:bg-danger/85 disabled:opacity-50"
           >
             Видалити користувача
           </button>

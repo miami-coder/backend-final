@@ -22,7 +22,7 @@ export function FavoriteButton({ venueId, initialFavorite }: { venueId: string; 
     return (
       <Link
         href={`/auth/login?next=/venues/${venueId}`}
-        className="inline-flex items-center rounded-lg border border-stone-300 px-4 py-2 text-sm hover:bg-stone-100"
+        className="inline-flex items-center rounded-full border border-strong px-4 py-2 text-sm hover:bg-raised"
       >
         ♡ Обране
       </Link>
@@ -56,7 +56,7 @@ export function FavoriteButton({ venueId, initialFavorite }: { venueId: string; 
       onClick={toggle}
       disabled={busy || pending}
       aria-pressed={favorite}
-      className="inline-flex items-center rounded-lg border border-stone-300 px-4 py-2 text-sm hover:bg-stone-100"
+      className="inline-flex items-center rounded-full border border-strong px-4 py-2 text-sm hover:bg-raised"
     >
       {favorite ? '♥ В обраному' : '♡ Додати до обраного'}
     </button>

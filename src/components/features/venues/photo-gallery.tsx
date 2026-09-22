@@ -7,7 +7,7 @@ export function PhotoGallery({ mainPhotoUrl, photos }: { mainPhotoUrl: string | 
   const urls = [mainPhotoUrl, ...photos.map((p) => p.url)].filter((u): u is string => Boolean(u))
   if (urls.length === 0) {
     return (
-      <div className="flex h-64 items-center justify-center rounded-xl bg-stone-100 text-stone-400">
+      <div className="flex h-64 items-center justify-center rounded-xl bg-raised text-faint">
         Немає фото
       </div>
     )
@@ -22,7 +22,7 @@ export function PhotoGallery({ mainPhotoUrl, photos }: { mainPhotoUrl: string | 
         <div className="grid grid-cols-4 gap-2">
           {rest.slice(0, 8).map((url, i) => (
             /* eslint-disable-next-line @next/next/no-img-element */
-            <img key={url + i} src={url} alt="" loading="lazy" className="h-20 w-full rounded-lg object-cover" />
+            <img key={url + i} src={url} alt="" loading="lazy" className="h-20 w-full rounded-xl object-cover" />
           ))}
         </div>
       )}

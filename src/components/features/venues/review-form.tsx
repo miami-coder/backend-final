@@ -28,9 +28,9 @@ export function ReviewForm({ venueId, myReview }: { venueId: string; myReview: M
 
   if (!user) {
     return (
-      <p className="rounded-xl bg-stone-50 p-4 text-sm text-stone-600">
+      <p className="rounded-xl bg-raised p-4 text-sm text-muted">
         Щоб залишити відгук,{' '}
-        <Link className="text-brand-600 hover:underline" href={`/auth/login?next=/venues/${venueId}`}>
+        <Link className="text-amber-500 hover:underline" href={`/auth/login?next=/venues/${venueId}`}>
           Увійдіть
         </Link>{' '}
         або зареєструйтеся.
@@ -100,7 +100,7 @@ export function ReviewForm({ venueId, myReview }: { venueId: string; myReview: M
   }
 
   return (
-    <div className="space-y-3 rounded-xl border border-stone-200 p-4">
+    <div className="space-y-3 rounded-xl border border-line p-4">
       <fieldset>
         <legend className="mb-1 text-sm font-medium">Оцінка</legend>
         <div className="flex gap-1">
@@ -114,7 +114,7 @@ export function ReviewForm({ venueId, myReview }: { venueId: string; myReview: M
                 onChange={() => setRating(n)}
                 className="sr-only"
               />
-              <span className={`text-2xl ${rating >= n ? 'text-amber-400' : 'text-stone-300'}`} aria-hidden>
+              <span className={`text-2xl ${rating >= n ? 'text-amber-400' : 'text-faint'}`} aria-hidden>
                 ★
               </span>
               <span className="sr-only">{n}</span>
@@ -148,7 +148,7 @@ export function ReviewForm({ venueId, myReview }: { venueId: string; myReview: M
         </div>
       )}
 
-      {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+      {error && <p role="alert" className="text-sm text-danger">{error}</p>}
 
       <div className="flex gap-2">
         <Button type="button" variant="primary" onClick={submit} disabled={saving}>

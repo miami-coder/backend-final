@@ -126,13 +126,13 @@ export function VenueCreateForm() {
 
   const err = (key: string) =>
     fieldErrors[key] && (
-      <span role="alert" className="mt-1 block text-red-600">{fieldErrors[key]}</span>
+      <span role="alert" className="mt-1 block text-danger">{fieldErrors[key]}</span>
     )
 
   // Зірочка — видимий маркер обовʼязковості, прихована від скрінрідера
   // (вимога передає aria-required на інпуті)
   const req = (
-    <span aria-hidden="true" className="text-red-600">
+    <span aria-hidden="true" className="text-danger">
       {' '}*
     </span>
   )
@@ -152,7 +152,7 @@ export function VenueCreateForm() {
           className="mt-1 w-full"
         />
         {fieldErrors.name && (
-          <span id="vn-name-error" role="alert" className="mt-1 block text-red-600">{fieldErrors.name}</span>
+          <span id="vn-name-error" role="alert" className="mt-1 block text-danger">{fieldErrors.name}</span>
         )}
       </div>
       <div className="text-sm">
@@ -167,7 +167,7 @@ export function VenueCreateForm() {
           className="mt-1 w-full"
         />
         {fieldErrors.address && (
-          <span id="vn-address-error" role="alert" className="mt-1 block text-red-600">{fieldErrors.address}</span>
+          <span id="vn-address-error" role="alert" className="mt-1 block text-danger">{fieldErrors.address}</span>
         )}
       </div>
       <div className="text-sm">
@@ -179,7 +179,7 @@ export function VenueCreateForm() {
           className="mt-1 w-full"
         />
       </div>
-      <fieldset className="rounded-xl border border-stone-200 p-3">
+      <fieldset className="rounded-xl border border-line p-3">
         <legend className="px-1 text-sm font-medium">Контакти</legend>
         <div className="grid gap-2 sm:grid-cols-2">
           <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Телефон" aria-label="Телефон" />
@@ -188,11 +188,11 @@ export function VenueCreateForm() {
           <Input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="Сайт" aria-label="Сайт" />
         </div>
       </fieldset>
-      <fieldset className="rounded-xl border border-stone-200 p-3">
+      <fieldset className="rounded-xl border border-line p-3">
         <legend className="px-1 text-sm font-medium">Години роботи (формат HH:MM-HH:MM, порожнє — вихідний)</legend>
         <div className="grid gap-2 sm:grid-cols-2">
           {WH_DAYS.map((d) => (
-            <label key={d} className="block text-xs text-stone-500">
+            <label key={d} className="block text-xs text-muted">
               {DAY_LABELS[d]}
               <Input
                 value={hours[d] ?? ''}
@@ -206,7 +206,7 @@ export function VenueCreateForm() {
         </div>
         {WH_DAYS.map((d) =>
           fieldErrors[`workingHours.${d}`] && (
-            <span key={`wh-${d}`} role="alert" className="block text-red-600">
+            <span key={`wh-${d}`} role="alert" className="block text-danger">
               {fieldErrors[`workingHours.${d}`]}
             </span>
           ),
@@ -224,7 +224,7 @@ export function VenueCreateForm() {
           className="mt-1 w-full"
         />
         {fieldErrors.averageCheck && (
-          <span id="vn-check-error" role="alert" className="mt-1 block text-red-600">{fieldErrors.averageCheck}</span>
+          <span id="vn-check-error" role="alert" className="mt-1 block text-danger">{fieldErrors.averageCheck}</span>
         )}
       </div>
       <div className="text-sm">
@@ -268,11 +268,11 @@ export function VenueCreateForm() {
           onChange={(e) => setPhotos(e.target.files ? Array.from(e.target.files) : [])}
           className="mt-1 block w-full text-sm"
         />
-        <p className="mt-1 text-xs text-stone-500">JPEG/PNG/WebP, до 5 МБ кожне. Перше фото стане головним.</p>
+        <p className="mt-1 text-xs text-muted">JPEG/PNG/WebP, до 5 МБ кожне. Перше фото стане головним.</p>
       </div>
-      {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+      {error && <p role="alert" className="text-sm text-danger">{error}</p>}
       <Button type="submit" disabled={sending}>{sending ? 'Подаємо…' : 'Подати заклад'}</Button>
-      <p className="text-sm text-stone-500">Заклад буде відправлено на модерацію.</p>
+      <p className="text-sm text-muted">Заклад буде відправлено на модерацію.</p>
     </form>
   )
 }

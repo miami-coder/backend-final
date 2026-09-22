@@ -72,7 +72,7 @@ export function AdminNewsCreateForm() {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-2 rounded-xl border border-stone-200 p-4" aria-label="Створення новини">
+    <form onSubmit={submit} className="space-y-2 rounded-xl border border-line p-4" aria-label="Створення новини">
       <div className="flex flex-wrap gap-2">
         <Select value={category} onChange={(e) => setCategory(e.target.value)} aria-label="Категорія">
           {NEWS_CATEGORIES.map((c) => (
@@ -83,7 +83,7 @@ export function AdminNewsCreateForm() {
           <option value="published">{NEWS_STATUS_LABELS.published}</option>
           <option value="draft">{NEWS_STATUS_LABELS.draft}</option>
         </Select>
-        <label className="flex items-center gap-2 text-sm text-stone-700">
+        <label className="flex items-center gap-2 text-sm text-muted">
           <input
             type="checkbox"
             checked={isPromoted}
@@ -96,7 +96,7 @@ export function AdminNewsCreateForm() {
       <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Заголовок (від 5 символів)" aria-label="Заголовок новини" />
       <Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="Текст (від 20 символів)" aria-label="Текст новини" />
       <Input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="URL зображення (опційно)" aria-label="URL зображення" />
-      {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+      {error && <p role="alert" className="text-sm text-danger">{error}</p>}
       <Button type="submit" disabled={busy}>{busy ? 'Створюємо…' : 'Створити новину'}</Button>
     </form>
   )

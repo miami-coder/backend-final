@@ -36,7 +36,7 @@ export async function ReviewList({ venueId, sort, page }: { venueId: string; sor
             href={`/venues/${venueId}?sort=${s.value}${page > 1 ? `&page=${page}` : ''}`}
             aria-current={safeSort === s.value ? 'true' : undefined}
             className={`rounded-full px-3 py-1 text-xs ${
-              safeSort === s.value ? 'bg-brand-500 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+              safeSort === s.value ? 'bg-amber-500 text-espresso' : 'bg-raised text-muted hover:bg-strong'
             }`}
           >
             {s.label}
@@ -45,27 +45,27 @@ export async function ReviewList({ venueId, sort, page }: { venueId: string; sor
       </div>
 
       {reviews.length === 0 && (
-        <p className="rounded-xl bg-stone-50 p-6 text-center text-stone-500">
+        <p className="rounded-xl bg-raised p-6 text-center text-muted">
           Відгуків ще немає — будьте першим!
         </p>
       )}
 
       <ul className="space-y-4">
         {reviews.map((r) => (
-          <li key={r.id} className="rounded-xl border border-stone-200 p-4">
+          <li key={r.id} className="rounded-xl border border-line p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-medium">
                 {r.author.firstname || r.author.lastname
                   ? [r.author.firstname, r.author.lastname].filter(Boolean).join(' ')
                   : 'Користувач'}
               </span>
-              <span className="text-xs text-stone-400">{formatDateTime(r.createdAt)}</span>
+              <span className="text-xs text-faint">{formatDateTime(r.createdAt)}</span>
             </div>
             <div className="mt-1"><RatingStars value={r.rating} /></div>
-            <p className="mt-2 whitespace-pre-line text-stone-700">{r.text}</p>
+            <p className="mt-2 whitespace-pre-line text-muted">{r.text}</p>
             <div className="mt-2 flex items-center gap-3">
               {r.isFeatured && (
-                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">
+                <span className="rounded-full bg-amber-400/15 px-2 py-0.5 text-xs text-amber-400">
                   Рекомендований критиком
                 </span>
               )}

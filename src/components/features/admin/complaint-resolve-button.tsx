@@ -53,13 +53,13 @@ export function ComplaintResolveButton({ complaintId }: { complaintId: string })
       <button
         type="button"
         onClick={openModal}
-        className="rounded-md border border-stone-300 px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-100"
+        className="rounded-full border border-strong px-3 py-1.5 text-sm text-muted hover:bg-raised"
       >
         Вирішити
       </button>
       <Modal open={open} onClose={() => setOpen(false)} title="Вирішити скаргу">
         <div role="radiogroup" aria-label="Статус вирішення" className="flex flex-col gap-2">
-          <label className="flex items-center gap-2 text-sm text-stone-700">
+          <label className="flex items-center gap-2 text-sm text-muted">
             <input
               type="radio"
               name={`complaint-status-${complaintId}`}
@@ -69,7 +69,7 @@ export function ComplaintResolveButton({ complaintId }: { complaintId: string })
             />
             Вирішено (resolved)
           </label>
-          <label className="flex items-center gap-2 text-sm text-stone-700">
+          <label className="flex items-center gap-2 text-sm text-muted">
             <input
               type="radio"
               name={`complaint-status-${complaintId}`}
@@ -80,7 +80,7 @@ export function ComplaintResolveButton({ complaintId }: { complaintId: string })
             Відхилено (rejected)
           </label>
         </div>
-        <label htmlFor={`complaint-note-${complaintId}`} className="mt-3 block text-sm text-stone-700">
+        <label htmlFor={`complaint-note-${complaintId}`} className="mt-3 block text-sm text-muted">
           Примітка (необовʼязково)
         </label>
         <textarea
@@ -88,10 +88,10 @@ export function ComplaintResolveButton({ complaintId }: { complaintId: string })
           rows={3}
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          className="mt-1 w-full rounded-md border border-stone-300 px-3 py-2 text-sm"
+          className="mt-1 w-full rounded-xl border border-strong bg-bg px-3 py-2 text-sm text-ink placeholder:text-faint focus:border-amber-500 focus:outline-none"
         />
         {error && (
-          <p role="alert" className="mt-2 text-sm text-red-600">
+          <p role="alert" className="mt-2 text-sm text-danger">
             {error}
           </p>
         )}
@@ -100,7 +100,7 @@ export function ComplaintResolveButton({ complaintId }: { complaintId: string })
             type="button"
             onClick={() => void resolve()}
             disabled={busy}
-            className="rounded-md bg-stone-900 px-3 py-1.5 text-sm text-white hover:bg-stone-700 disabled:opacity-50"
+            className="rounded-full bg-amber-500 px-3 py-1.5 text-sm font-medium text-espresso hover:bg-amber-400 disabled:opacity-50"
           >
             Зберегти
           </button>

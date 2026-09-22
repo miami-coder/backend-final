@@ -33,15 +33,15 @@ export function MyReviewItem({ review, venueName }: { review: Review; venueName:
   }
 
   return (
-    <li className="rounded-xl border border-stone-200 p-4">
+    <li className="rounded-xl border border-line p-4">
       <div className="flex items-center gap-3">
         <RatingStars value={review.rating} />
-        <span className="text-sm text-stone-500">{formatDate(review.createdAt)}</span>
-        <Link className="ml-auto text-sm text-brand-600 hover:underline" href={`/venues/${review.venueId}`}>
+        <span className="text-sm text-muted">{formatDate(review.createdAt)}</span>
+        <Link className="ml-auto text-sm text-amber-500 hover:underline" href={`/venues/${review.venueId}`}>
           {venueName ?? 'Переглянути заклад'}
         </Link>
       </div>
-      <p className="mt-2 whitespace-pre-line text-stone-700">{review.text}</p>
+      <p className="mt-2 whitespace-pre-line text-muted">{review.text}</p>
       <div className="mt-3 flex gap-2">
         <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>Редагувати</Button>
         <Button variant="ghost" size="sm" onClick={() => setDeleting(true)}>Видалити</Button>
@@ -54,7 +54,7 @@ export function MyReviewItem({ review, venueName }: { review: Review; venueName:
       </Modal>
 
       <Modal open={deleting} onClose={() => setDeleting(false)} title="Видалити відгук?">
-        <p className="text-stone-600">Відгук буде видалено назавжди.</p>
+        <p className="text-muted">Відгук буде видалено назавжди.</p>
         <div className="mt-4 flex gap-2">
           <Button variant="secondary" onClick={() => setDeleting(false)}>Скасувати</Button>
           <Button onClick={remove}>Так, видалити</Button>

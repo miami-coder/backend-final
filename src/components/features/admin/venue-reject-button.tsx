@@ -39,12 +39,12 @@ export function VenueRejectButton({ venueId }: { venueId: string }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-md border border-red-200 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
+        className="rounded-full border border-danger/50 px-3 py-1.5 text-sm text-danger hover:bg-danger/10"
       >
         Відхилити
       </button>
       <Modal open={open} onClose={() => setOpen(false)} title="Відхилити заклад?">
-        <p className="text-sm text-stone-600">
+        <p className="text-sm text-muted">
           Заклад зникне з публічного каталогу. Дію не можна скасувати.
         </p>
         <div className="mt-4 flex justify-end">
@@ -52,7 +52,7 @@ export function VenueRejectButton({ venueId }: { venueId: string }) {
             type="button"
             onClick={() => void reject()}
             disabled={busy}
-            className="rounded-md bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-700 disabled:opacity-50"
+            className="rounded-full bg-danger px-3 py-1.5 text-sm font-medium text-espresso hover:bg-danger/85 disabled:opacity-50"
           >
             Підтвердити
           </button>

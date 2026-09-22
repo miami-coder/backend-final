@@ -29,7 +29,7 @@ export function FavoriteRemoveButton({ venueId }: { venueId: string }) {
       type="button"
       onClick={remove}
       disabled={removing}
-      className="text-xs text-stone-400 hover:text-red-600"
+      className="text-xs text-faint hover:text-danger"
     >
       ✕ Прибрати
     </button>

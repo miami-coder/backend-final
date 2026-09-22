@@ -60,15 +60,15 @@ export function VenuePhotoManager({ venueId, photos }: { venueId: string; photos
           {uploading ? 'Завантажуємо…' : 'Завантажити'}
         </Button>
       </div>
-      <p className="mt-2 text-sm text-stone-500">
+      <p className="mt-2 text-sm text-muted">
         Перше завантажене фото стає головним у публічній галереї.
       </p>
       {photos.length === 0 ? (
-        <p className="mt-4 text-sm text-stone-500">Фото ще немає.</p>
+        <p className="mt-4 text-sm text-muted">Фото ще немає.</p>
       ) : (
         <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {photos.map((p, i) => (
-            <li key={p.id} className="overflow-hidden rounded-xl border border-stone-200">
+            <li key={p.id} className="overflow-hidden rounded-xl border border-line">
               {/* eslint-disable-next-line @next/next/no-img-element -- зовнішній URL з бекенда */}
               <img src={p.url} alt={`Фото закладу ${i + 1}`} loading="lazy" className="h-40 w-full object-cover" />
             </li>

@@ -74,17 +74,17 @@ export function VenueAssignOwnerButton({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-md border border-stone-300 px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50"
+        className="rounded-full border border-strong px-3 py-1.5 text-sm text-muted hover:bg-raised"
       >
         {label}
       </button>
       <Modal open={open} onClose={close} title={label}>
-        <label className="block text-sm text-stone-600" htmlFor={`assign-owner-${venueId}`}>
+        <label className="block text-sm text-muted" htmlFor={`assign-owner-${venueId}`}>
           Користувач
         </label>
         <select
           id={`assign-owner-${venueId}`}
-          className="mt-1 w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900"
+          className="mt-1 w-full rounded-xl border border-strong bg-bg px-3 py-2 text-sm text-ink focus:border-amber-500 focus:outline-none"
           value={userId}
           onChange={(e) => setUserId(e.target.value)}
         >
@@ -101,7 +101,7 @@ export function VenueAssignOwnerButton({
             type="button"
             onClick={() => void assign()}
             disabled={!userId || busy}
-            className="rounded-md bg-brand-600 px-3 py-1.5 text-sm text-white hover:bg-brand-700 disabled:opacity-50"
+            className="rounded-full bg-amber-500 px-3 py-1.5 text-sm font-medium text-espresso hover:bg-amber-400 disabled:opacity-50"
           >
             Зберегти
           </button>

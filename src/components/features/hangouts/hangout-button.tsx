@@ -48,7 +48,7 @@ export function HangoutButton({ venueId, loginNext }: { venueId: string; loginNe
       // а слеші в route-значенні безпечні — патерн FavoriteButton/ReviewForm/ComplaintButton
       <Link
         href={`/auth/login?next=${loginNext}`}
-        className="inline-flex items-center rounded-lg bg-stone-800 px-4 py-2 text-sm font-medium text-white hover:bg-stone-700"
+        className="inline-flex items-center rounded-full bg-amber-500 px-4 py-2 text-sm font-medium text-espresso hover:bg-amber-400"
       >
         🍻 Знайти пиячку
       </Link>
@@ -122,8 +122,8 @@ export function HangoutButton({ venueId, loginNext }: { venueId: string; loginNe
         {!ack ? (
           // Спека §5: ПЕРШИЙ крок модалки — попередження про безпеку
           <div className="space-y-4">
-            <h3 className="font-semibold text-amber-700">⚠️ Попередження про безпеку</h3>
-            <ul className="list-disc space-y-2 pl-5 text-sm text-stone-700">
+            <h3 className="font-semibold text-amber-400">⚠️ Попередження про безпеку</h3>
+            <ul className="list-disc space-y-2 pl-5 text-sm text-muted">
               <li>Ви зустрічаєтеся з незнайомими людьми. Обирайте публічні місця.</li>
               <li>Ніколи не пересилайте гроші незнайомцям до зустрічі.</li>
               <li>Повідомте близьких, куди йдете та на який час.</li>
@@ -144,7 +144,7 @@ export function HangoutButton({ venueId, loginNext }: { venueId: string; loginNe
                   min={localToday()}
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full rounded-lg border border-stone-300 px-3 py-2"
+                  className="w-full rounded-xl border border-strong bg-bg px-3 py-2 text-ink focus:border-amber-500 focus:outline-none"
                 />
               </div>
               <div className="text-sm">
@@ -154,7 +154,7 @@ export function HangoutButton({ venueId, loginNext }: { venueId: string; loginNe
                   type="time"
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
-                  className="w-full rounded-lg border border-stone-300 px-3 py-2"
+                  className="w-full rounded-xl border border-strong bg-bg px-3 py-2 text-ink focus:border-amber-500 focus:outline-none"
                 />
               </div>
             </div>
@@ -178,7 +178,7 @@ export function HangoutButton({ venueId, loginNext }: { venueId: string; loginNe
                   id="hg-gender"
                   value={gender}
                   onChange={(e) => setGender(e.target.value as typeof gender)}
-                  className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2"
+                  className="w-full rounded-xl border border-strong bg-bg px-3 py-2 text-ink focus:border-amber-500 focus:outline-none"
                 >
                   {HANGOUT_GENDERS.map((g) => (
                     <option key={g.value} value={g.value}>{g.label}</option>
@@ -194,7 +194,7 @@ export function HangoutButton({ venueId, loginNext }: { venueId: string; loginNe
                   max={20}
                   value={groupSize}
                   onChange={(e) => setGroupSize(e.target.value)}
-                  className="w-full rounded-lg border border-stone-300 px-3 py-2"
+                  className="w-full rounded-xl border border-strong bg-bg px-3 py-2 text-ink focus:border-amber-500 focus:outline-none"
                 />
               </div>
             </div>
@@ -206,7 +206,7 @@ export function HangoutButton({ venueId, loginNext }: { venueId: string; loginNe
                   id="hg-payer"
                   value={payer}
                   onChange={(e) => setPayer(e.target.value as typeof payer)}
-                  className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2"
+                  className="w-full rounded-xl border border-strong bg-bg px-3 py-2 text-ink focus:border-amber-500 focus:outline-none"
                 >
                   {HANGOUT_PAYERS.map((p) => (
                     <option key={p.value} value={p.value}>{p.label}</option>
@@ -222,12 +222,12 @@ export function HangoutButton({ venueId, loginNext }: { venueId: string; loginNe
                   max={100000}
                   value={desiredBudget}
                   onChange={(e) => setDesiredBudget(e.target.value)}
-                  className="w-full rounded-lg border border-stone-300 px-3 py-2"
+                  className="w-full rounded-xl border border-strong bg-bg px-3 py-2 text-ink focus:border-amber-500 focus:outline-none"
                 />
               </div>
             </div>
 
-            {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+            {error && <p role="alert" className="text-sm text-danger">{error}</p>}
 
             <div className="flex justify-end gap-2">
               <Button type="button" variant="secondary" onClick={close}>

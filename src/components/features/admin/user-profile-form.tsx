@@ -99,7 +99,7 @@ export function UserProfileForm({ userId, profile }: { userId: string; profile: 
         <Input type="number" value={age} onChange={(e) => setAge(e.target.value)} className="mt-1 w-full" />
       </label>
       {error && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-danger">
           {error}
         </p>
       )}

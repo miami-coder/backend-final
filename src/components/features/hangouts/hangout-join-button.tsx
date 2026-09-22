@@ -21,7 +21,7 @@ export function HangoutJoinButton({ hangoutId, status }: { hangoutId: string; st
     return (
       // без encodeURIComponent: %2F у next проксі відкидає (нормалізація шляху),
       // а слеші в route-значенні безпечні — патерн HangoutButton/FavoriteButton
-      <Link href="/auth/login?next=/hangouts" className="text-sm text-brand-600 hover:underline">
+      <Link href="/auth/login?next=/hangouts" className="text-sm text-amber-500 hover:underline">
         Увійдіть, щоб приєднатися
       </Link>
     )
@@ -53,7 +53,7 @@ export function HangoutJoinButton({ hangoutId, status }: { hangoutId: string; st
   return (
     <div>
       <Button size="sm" onClick={join} disabled={busy}>{busy ? 'Приєднуємось…' : 'Приєднатися'}</Button>
-      {error && <p role="alert" className="mt-1 text-sm text-red-600">{error}</p>}
+      {error && <p role="alert" className="mt-1 text-sm text-danger">{error}</p>}
     </div>
   )
 }
