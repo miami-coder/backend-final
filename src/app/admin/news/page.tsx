@@ -12,6 +12,14 @@ export const revalidate = 0
 const LIMIT = 20
 const STATUSES = ['draft', 'published', 'archived'] as const
 
+// Тоновані бейджі статусів новин (Task 3): published → success, draft → warning,
+// archived → нейтральний (приглушений)
+const STATUS_BADGE: Record<NewsStatus, string> = {
+  draft: 'bg-amber-400/15 text-amber-400',
+  published: 'bg-success/15 text-success',
+  archived: 'bg-raised text-muted',
+}
+
 // Таби-лінки: без параметра = Усі (бекенд без status повертає всі статуси);
 // невідоме значення зводимо до undefined — те саме, що «Усі».
 const STATUS_TABS = [
@@ -52,41 +60,41 @@ export default async function AdminNewsPage({ searchParams }: Props) {
           <Link
             key={t.label}
             href={t.value ? `/admin/news?status=${t.value}` : '/admin/news'}
-            className={status === t.value ? 'font-semibold text-brand-600' : 'text-stone-600 hover:text-brand-600'}
+            className={status === t.value ? 'font-semibold text-amber-500' : 'text-muted hover:text-amber-500'}
           >
             {t.label}
           </Link>
         ))}
       </nav>
       {news.length === 0 ? (
-        <p className="text-stone-500">Новин немає.</p>
+        <p className="rounded-xl border border-line bg-surface p-8 text-center text-muted">Новин немає.</p>
       ) : (
-        <ul className="divide-y divide-stone-200">
+        <ul className="divide-y divide-line overflow-hidden rounded-xl border border-line bg-surface">
           {news.map((n) => {
             // невідома категорія з бекенда → бейдж узагалі не рендеримо (порожній span недопустимий)
             const categoryLabel = NEWS_CATEGORIES.find((c) => c.value === n.category)?.label
             return (
-              <li key={n.id} className="py-3">
+              <li key={n.id} className="px-4 py-3 hover:bg-raised">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-full border border-stone-300 px-2 py-0.5 text-xs text-stone-700">
+                  <span className={`rounded-full px-2 py-0.5 text-xs ${STATUS_BADGE[n.status]}`}>
                     {NEWS_STATUS_LABELS[n.status]}
                   </span>
                   {categoryLabel && (
-                    <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600">
+                    <span className="rounded-full bg-raised px-2 py-0.5 text-xs text-muted">
                       {categoryLabel}
                     </span>
                   )}
                   {n.isPromoted && (
-                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">Промо</span>
+                    <span className="rounded-full bg-amber-400/15 px-2 py-0.5 text-xs text-amber-400">Промо</span>
                   )}
                   {n.status === 'published' ? (
-                    <Link href={`/news/${n.id}`} className="font-medium text-stone-900 hover:text-brand-600">
+                    <Link href={`/news/${n.id}`} className="font-medium text-ink hover:text-amber-500">
                       {n.title}
                     </Link>
                   ) : (
-                    <span className="font-medium text-stone-900">{n.title}</span>
+                    <span className="font-medium text-ink">{n.title}</span>
                   )}
-                  <span className="text-sm text-stone-500">{formatDate(n.publishedAt ?? n.createdAt)}</span>
+                  <span className="text-sm text-muted">{formatDate(n.publishedAt ?? n.createdAt)}</span>
                 </div>
               </li>
             )

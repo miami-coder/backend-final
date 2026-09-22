@@ -8,6 +8,7 @@ import { Pagination } from '@/components/ui/pagination'
 import { VenueApproveButton } from '@/components/features/admin/venue-approve-button'
 import { VenueRejectButton } from '@/components/features/admin/venue-reject-button'
 import { VenueAssignOwnerButton } from '@/components/features/admin/venue-assign-owner-button'
+import { placeholderFor } from '@/lib/utils/placeholder'
 
 export const revalidate = 0
 
@@ -41,31 +42,31 @@ function PendingVenueCard({ v }: { v: Venue }) {
   // mainPhotoUrl у pending зазвичай null (фото не мапиться в entity) — фолбек на перше з relations
   const preview = v.mainPhotoUrl ?? v.photos[0]?.url ?? null
   return (
-    <li className="flex flex-col gap-3 rounded-2xl border border-stone-200 bg-white p-4 sm:flex-row sm:items-start sm:gap-4">
+    <li className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4 hover:bg-raised sm:flex-row sm:items-start sm:gap-4">
       {/* Прев'ю головного фото */}
-      <div className="h-20 w-28 shrink-0 overflow-hidden rounded-xl bg-stone-100 sm:h-24 sm:w-32">
+      <div className="h-20 w-28 shrink-0 overflow-hidden rounded-xl sm:h-24 sm:w-32">
         {preview ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={preview} alt={v.name} loading="lazy" className="h-full w-full object-cover" />
         ) : (
-          <div className="flex h-full items-center justify-center text-3xl">🍺</div>
+          <div style={{ background: placeholderFor(v.id) }} className="h-full w-full" />
         )}
       </div>
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <h3 className="font-semibold text-stone-900">{v.name}</h3>
+          <h3 className="font-semibold text-ink">{v.name}</h3>
           {v.types.map((t) => (
             <Badge key={t.id}>{t.name}</Badge>
           ))}
-          <span className="text-xs text-stone-500">
+          <span className="text-xs text-muted">
             подано {formatDate(v.createdAt)} · чекає {pendingDays(v.createdAt)} дн.
           </span>
         </div>
 
-        <p className="mt-1 text-sm text-stone-600">{v.address}</p>
+        <p className="mt-1 text-sm text-muted">{v.address}</p>
         {v.description && (
-          <p className="mt-1 line-clamp-2 text-sm text-stone-500">{v.description}</p>
+          <p className="mt-1 line-clamp-2 text-sm text-muted">{v.description}</p>
         )}
 
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
@@ -83,26 +84,26 @@ function PendingVenueCard({ v }: { v: Venue }) {
 
         <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
           <div className="flex gap-1.5">
-            <dt className="shrink-0 text-stone-500">Контакти:</dt>
-            <dd className="min-w-0 truncate text-stone-800">
+            <dt className="shrink-0 text-muted">Контакти:</dt>
+            <dd className="min-w-0 truncate text-ink">
               {contactItems(v).length > 0 ? contactItems(v).join(' · ') : '—'}
             </dd>
           </div>
           <div className="flex gap-1.5">
-            <dt className="shrink-0 text-stone-500">Графік:</dt>
-            <dd className="min-w-0 truncate text-stone-800">
+            <dt className="shrink-0 text-muted">Графік:</dt>
+            <dd className="min-w-0 truncate text-ink">
               {hours || '—'}
             </dd>
           </div>
           <div className="flex gap-1.5">
-            <dt className="shrink-0 text-stone-500">Власник:</dt>
-            <dd className="min-w-0 truncate text-stone-800">
+            <dt className="shrink-0 text-muted">Власник:</dt>
+            <dd className="min-w-0 truncate text-ink">
               {v.owner ? `${v.owner.name ? `${v.owner.name} · ` : ''}${v.owner.email}` : '—'}
             </dd>
           </div>
           <div className="flex gap-1.5">
-            <dt className="shrink-0 text-stone-500">Фото:</dt>
-            <dd className="text-stone-800">{v.photos.length > 0 ? `${v.photos.length} шт.` : 'немає'}</dd>
+            <dt className="shrink-0 text-muted">Фото:</dt>
+            <dd className="text-ink">{v.photos.length > 0 ? `${v.photos.length} шт.` : 'немає'}</dd>
           </div>
         </dl>
       </div>
@@ -120,16 +121,16 @@ function PendingVenueCard({ v }: { v: Venue }) {
 // Картка схваленого закладу: перегляд + передача керування іншому користувачу
 function ApprovedVenueCard({ v }: { v: Venue }) {
   return (
-    <li className="flex flex-col gap-3 rounded-2xl border border-stone-200 bg-white p-4 sm:flex-row sm:items-center sm:gap-4">
+    <li className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4 hover:bg-raised sm:flex-row sm:items-center sm:gap-4">
       <div className="min-w-0 flex-1">
         <Link
           href={`/venues/${v.id}`}
-          className="font-semibold text-stone-900 hover:text-brand-600"
+          className="font-semibold text-ink hover:text-amber-500"
         >
           {v.name}
         </Link>
-        <p className="mt-0.5 text-sm text-stone-600">{v.address}</p>
-        <p className="mt-0.5 text-sm text-stone-500">
+        <p className="mt-0.5 text-sm text-muted">{v.address}</p>
+        <p className="mt-0.5 text-sm text-muted">
           Власник: {v.owner ? `${v.owner.name ? `${v.owner.name} · ` : ''}${v.owner.email}` : '—'} ·{' '}
           схвалено {formatDate(v.createdAt)}
         </p>
@@ -168,13 +169,13 @@ export default async function AdminVenuesPage({ searchParams }: Props) {
       <nav className="flex gap-3 text-sm" aria-label="Вкладки закладів">
         <Link
           href="/admin/venues"
-          className={tab === 'moderation' ? 'font-semibold text-brand-600' : 'text-stone-600 hover:text-brand-600'}
+          className={tab === 'moderation' ? 'font-semibold text-amber-500' : 'text-muted hover:text-amber-500'}
         >
           Модерація
         </Link>
         <Link
           href="/admin/venues?tab=approved"
-          className={tab === 'approved' ? 'font-semibold text-brand-600' : 'text-stone-600 hover:text-brand-600'}
+          className={tab === 'approved' ? 'font-semibold text-amber-500' : 'text-muted hover:text-amber-500'}
         >
           Схвалені
         </Link>
@@ -182,7 +183,7 @@ export default async function AdminVenuesPage({ searchParams }: Props) {
 
       {tab === 'moderation' ? (
         venues.length === 0 ? (
-          <p className="text-stone-500">Заявок на модерації немає.</p>
+          <p className="rounded-xl border border-line bg-surface p-8 text-center text-muted">Заявок на модерації немає.</p>
         ) : (
           <ul className="space-y-3">
             {venues.map((v) => (
@@ -191,7 +192,7 @@ export default async function AdminVenuesPage({ searchParams }: Props) {
           </ul>
         )
       ) : venues.length === 0 ? (
-        <p className="text-stone-500">Схвалених закладів немає.</p>
+        <p className="rounded-xl border border-line bg-surface p-8 text-center text-muted">Схвалених закладів немає.</p>
       ) : (
         <ul className="space-y-3">
           {venues.map((v) => (

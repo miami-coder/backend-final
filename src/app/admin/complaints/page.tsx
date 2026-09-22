@@ -32,22 +32,22 @@ export default async function AdminComplaintsPage({ searchParams }: Props) {
   return (
     <section aria-label="Скарги" className="space-y-4">
       {complaints.length === 0 ? (
-        <p className="text-stone-500">Скарг немає.</p>
+        <p className="rounded-xl border border-line bg-surface p-8 text-center text-muted">Скарг немає.</p>
       ) : (
-        <ul className="divide-y divide-stone-200">
+        <ul className="divide-y divide-line overflow-hidden rounded-xl border border-line bg-surface">
           {complaints.map((c) => (
-            <li key={c.id} className="flex items-start justify-between gap-4 py-3">
+            <li key={c.id} className="flex items-start justify-between gap-4 px-4 py-3 hover:bg-raised">
               <div className="min-w-0">
-                <div className="text-sm text-stone-900">
+                <div className="text-sm text-ink">
                   {/* бейдж причини: невідомий код (парсер зводить до 'other',
                       але COMPLAINT_REASONS може відстати) → «Інше» */}
-                  <span className="rounded-full border border-stone-300 px-2 py-0.5 text-xs text-stone-700">
+                  <span className="rounded-full bg-raised px-2 py-0.5 text-xs text-muted">
                     {COMPLAINT_REASONS.find((r) => r.value === c.reason)?.label ?? 'Інше'}
                   </span>
                   {' · '}
                   {c.venueId ? 'Заклад' : c.reviewId ? 'Відгук' : '—'} · {formatDate(c.createdAt)}
                 </div>
-                <div className="mt-1 text-sm text-stone-600">
+                <div className="mt-1 text-sm text-muted">
                   {c.text.length > 140 ? c.text.slice(0, 140) + '…' : c.text}
                 </div>
               </div>

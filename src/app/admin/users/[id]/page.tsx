@@ -30,12 +30,19 @@ export default async function AdminUserPage({ params }: Props) {
     <div className="space-y-6">
       <div>
         <h2 className="text-lg font-semibold">{user.email}</h2>
-        <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-stone-600">
+        <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted">
           <span>
             {user.name ?? 'Без імені'} · {formatDate(user.createdAt)}
           </span>
           {user.roles.map((r) => (
-            <span key={r} className="rounded-full border border-stone-300 px-2 py-0.5 text-xs text-stone-700">
+            <span
+              key={r}
+              className={
+                r === 'super_admin'
+                  ? 'rounded-full bg-amber-400/15 px-2 py-0.5 text-xs text-amber-400'
+                  : 'rounded-full bg-raised px-2 py-0.5 text-xs text-muted'
+              }
+            >
               {ROLE_LABELS[r]}
             </span>
           ))}
@@ -43,23 +50,23 @@ export default async function AdminUserPage({ params }: Props) {
       </div>
 
       <section aria-label="Профіль користувача" className="space-y-2">
-        <h3 className="font-medium text-stone-900">Профіль</h3>
+        <h3 className="font-medium text-ink">Профіль</h3>
         {/* profile as-is із бекенду: avatarUrl у UpdateProfileDto відсутній —
             форма його не редагує */}
         <UserProfileForm userId={user.id} profile={res.data.profile} />
       </section>
 
       <section aria-label="Ролі користувача" className="space-y-2">
-        <h3 className="font-medium text-stone-900">Ролі</h3>
+        <h3 className="font-medium text-ink">Ролі</h3>
         <UserRolesManager userId={user.id} roles={user.roles} />
       </section>
 
-      <section aria-label="Небезпечна зона" className="space-y-2 border-t border-stone-200 pt-6">
-        <h3 className="font-medium text-red-700">Небезпечна зона</h3>
+      <section aria-label="Небезпечна зона" className="space-y-2 border-t border-line pt-6">
+        <h3 className="font-medium text-danger">Небезпечна зона</h3>
         <UserDeleteButton userId={user.id} email={user.email} />
       </section>
 
-      <Link className="text-sm text-brand-600 hover:underline" href="/admin/users">
+      <Link className="text-sm text-amber-500 hover:underline" href="/admin/users">
         ← До списку користувачів
       </Link>
     </div>

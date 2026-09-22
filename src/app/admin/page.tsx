@@ -10,9 +10,9 @@ interface RawOverview {
 // Плитка-лічильник: значення + підпис, без кліку
 function Tile({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-lg border border-stone-200 bg-white p-4">
-      <div className="text-2xl font-semibold text-stone-900">{value}</div>
-      <div className="mt-1 text-sm text-stone-600">{label}</div>
+    <div className="rounded-xl border border-line bg-surface p-4">
+      <div className="text-2xl font-semibold text-ink">{value}</div>
+      <div className="mt-1 text-sm text-muted">{label}</div>
     </div>
   )
 }

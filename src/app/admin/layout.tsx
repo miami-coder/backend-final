@@ -24,7 +24,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="mx-auto max-w-5xl py-8">
-      <h1 className="text-2xl font-bold">Адмінка</h1>
+      <h1 className="font-display text-2xl font-bold text-ink">Адмінка</h1>
       <AdminNav links={[...LINKS]} />
       <div className="mt-6">{children}</div>
     </div>

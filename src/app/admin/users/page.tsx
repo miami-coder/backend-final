@@ -31,16 +31,16 @@ export default async function AdminUsersPage({ searchParams }: Props) {
   return (
     <section aria-label="Користувачі" className="space-y-4">
       {users.length === 0 ? (
-        <p className="text-stone-500">Користувачів немає.</p>
+        <p className="rounded-xl border border-line bg-surface p-8 text-center text-muted">Користувачів немає.</p>
       ) : (
-        <ul className="divide-y divide-stone-200">
+        <ul className="divide-y divide-line overflow-hidden rounded-xl border border-line bg-surface">
           {users.map((u) => (
-            <li key={u.id} className="flex items-center justify-between gap-4 py-3">
+            <li key={u.id} className="flex items-center justify-between gap-4 px-4 py-3 hover:bg-raised">
               <div className="min-w-0">
-                <Link className="font-medium text-stone-900 hover:underline" href={`/admin/users/${u.id}`}>
+                <Link className="font-medium text-ink hover:underline" href={`/admin/users/${u.id}`}>
                   {u.email}
                 </Link>
-                <div className="text-sm text-stone-600">
+                <div className="text-sm text-muted">
                   {u.name ?? 'Без імені'} · {formatDate(u.createdAt)}
                 </div>
               </div>
@@ -48,7 +48,11 @@ export default async function AdminUsersPage({ searchParams }: Props) {
                 {u.roles.map((r) => (
                   <span
                     key={r}
-                    className="rounded-full border border-stone-300 px-2 py-0.5 text-xs text-stone-700"
+                    className={
+                      r === 'super_admin'
+                        ? 'rounded-full bg-amber-400/15 px-2 py-0.5 text-xs text-amber-400'
+                        : 'rounded-full bg-raised px-2 py-0.5 text-xs text-muted'
+                    }
                   >
                     {ROLE_LABELS[r]}
                   </span>
