@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import { serverFetchList } from '@/lib/api/server-client'
 import { getSessionTokens } from '@/lib/auth/session'
-import { parseAdminUser, ROLE_LABELS, type RawAdminUser } from '@/types/admin'
+import { parseAdminUser, type RawAdminUser } from '@/types/admin'
 import { formatDate } from '@/lib/utils/format'
 import { Pagination } from '@/components/ui/pagination'
+import { RoleBadge } from '@/components/features/admin/role-badge'
 
 export const revalidate = 0
 
@@ -46,16 +47,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
               </div>
               <div className="flex shrink-0 flex-wrap justify-end gap-1">
                 {u.roles.map((r) => (
-                  <span
-                    key={r}
-                    className={
-                      r === 'super_admin'
-                        ? 'rounded-full bg-amber-400/15 px-2 py-0.5 text-xs text-amber-400'
-                        : 'rounded-full bg-raised px-2 py-0.5 text-xs text-muted'
-                    }
-                  >
-                    {ROLE_LABELS[r]}
-                  </span>
+                  <RoleBadge key={r} role={r} />
                 ))}
               </div>
             </li>

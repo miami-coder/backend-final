@@ -5,6 +5,7 @@ import { parseNews, NEWS_STATUS_LABELS, type RawNews, type NewsStatus } from '@/
 import { NEWS_CATEGORIES } from '@/lib/validation/news'
 import { formatDate } from '@/lib/utils/format'
 import { Pagination } from '@/components/ui/pagination'
+import { Badge } from '@/components/ui/badge'
 import { AdminNewsCreateForm } from '@/components/features/admin/admin-news-create-form'
 
 export const revalidate = 0
@@ -14,10 +15,10 @@ const STATUSES = ['draft', 'published', 'archived'] as const
 
 // Тоновані бейджі статусів новин (Task 3): published → success, draft → warning,
 // archived → нейтральний (приглушений)
-const STATUS_BADGE: Record<NewsStatus, string> = {
-  draft: 'bg-amber-400/15 text-amber-400',
-  published: 'bg-success/15 text-success',
-  archived: 'bg-raised text-muted',
+const STATUS_TONE: Record<NewsStatus, 'warning' | 'success' | 'neutral'> = {
+  draft: 'warning',
+  published: 'success',
+  archived: 'neutral',
 }
 
 // Таби-лінки: без параметра = Усі (бекенд без status повертає всі статуси);
@@ -76,9 +77,7 @@ export default async function AdminNewsPage({ searchParams }: Props) {
             return (
               <li key={n.id} className="px-4 py-3 hover:bg-raised">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className={`rounded-full px-2 py-0.5 text-xs ${STATUS_BADGE[n.status]}`}>
-                    {NEWS_STATUS_LABELS[n.status]}
-                  </span>
+                  <Badge tone={STATUS_TONE[n.status]}>{NEWS_STATUS_LABELS[n.status]}</Badge>
                   {categoryLabel && (
                     <span className="rounded-full bg-raised px-2 py-0.5 text-xs text-muted">
                       {categoryLabel}

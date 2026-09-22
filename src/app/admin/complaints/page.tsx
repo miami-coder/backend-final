@@ -41,7 +41,7 @@ export default async function AdminComplaintsPage({ searchParams }: Props) {
                 <div className="text-sm text-ink">
                   {/* бейдж причини: невідомий код (парсер зводить до 'other',
                       але COMPLAINT_REASONS може відстати) → «Інше» */}
-                  <span className="rounded-full bg-raised px-2 py-0.5 text-xs text-muted">
+                  <span className="rounded-full border border-line bg-raised px-2 py-0.5 text-xs text-muted">
                     {COMPLAINT_REASONS.find((r) => r.value === c.reason)?.label ?? 'Інше'}
                   </span>
                   {' · '}

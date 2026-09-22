@@ -71,7 +71,7 @@ export async function ReviewList({ venueId, sort, page }: { venueId: string; sor
               )}
               {r.checkPhotoUrl && (
                 /* eslint-disable-next-line @next/next/no-img-element -- зовнішній URL з бекенда */
-                <img src={r.checkPhotoUrl} alt="Фото чеку" className="h-16 rounded-lg" />
+                <img src={r.checkPhotoUrl} alt="Фото чеку" className="h-16 rounded-xl" />
               )}
             </div>
           </li>

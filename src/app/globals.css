@@ -15,7 +15,7 @@
   /* Текст */
   --color-ink: #F3E9DB;
   --color-muted: #B3A493;
-  --color-faint: #8A7D6D;
+  --color-faint: #948676; /* підказки/дати: ≈4.8:1 на bg-surface */
   --color-espresso: #171310; /* текст на бурштинових кнопках */
 
   /* Дії: бурштин (primary), мідь (акценти) */

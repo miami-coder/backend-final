@@ -44,7 +44,7 @@ function PendingVenueCard({ v }: { v: Venue }) {
   return (
     <li className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4 hover:bg-raised sm:flex-row sm:items-start sm:gap-4">
       {/* Прев'ю головного фото */}
-      <div className="h-20 w-28 shrink-0 overflow-hidden rounded-xl sm:h-24 sm:w-32">
+      <div className="h-20 w-28 shrink-0 overflow-hidden rounded-xl bg-raised sm:h-24 sm:w-32">
         {preview ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={preview} alt={v.name} loading="lazy" className="h-full w-full object-cover" />

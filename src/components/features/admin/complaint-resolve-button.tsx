@@ -66,6 +66,7 @@ export function ComplaintResolveButton({ complaintId }: { complaintId: string })
               value="resolved"
               checked={status === 'resolved'}
               onChange={() => setStatus('resolved')}
+              className="accent-amber-500"
             />
             Вирішено (resolved)
           </label>
@@ -76,6 +77,7 @@ export function ComplaintResolveButton({ complaintId }: { complaintId: string })
               value="rejected"
               checked={status === 'rejected'}
               onChange={() => setStatus('rejected')}
+              className="accent-amber-500"
             />
             Відхилено (rejected)
           </label>

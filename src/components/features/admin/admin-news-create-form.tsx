@@ -89,6 +89,7 @@ export function AdminNewsCreateForm() {
             checked={isPromoted}
             onChange={(e) => setIsPromoted(e.target.checked)}
             aria-label="Промо-новина"
+            className="accent-amber-500"
           />
           Промо
         </label>
