@@ -20,12 +20,13 @@ interface Props {
 export default async function AdminUserPage({ params }: Props) {
   const { id } = await params
   const tokens = await getSessionTokens()
-  const res = await serverFetch<{ data: RawAdminUser }>(`/admin/users/${id}`, {
+  // serverFetch уже розгортає конверт { data: … } — повертається сам RawAdminUser
+  const raw = await serverFetch<RawAdminUser>(`/admin/users/${id}`, {
     tokens,
     revalidate: 0,
   }).catch(() => null)
-  if (!res) notFound()
-  const user = parseAdminUser(res.data)
+  if (!raw) notFound()
+  const user = parseAdminUser(raw)
 
   return (
     <div className="space-y-6">
@@ -45,7 +46,7 @@ export default async function AdminUserPage({ params }: Props) {
         <h3 className="font-medium text-ink">Профіль</h3>
         {/* profile as-is із бекенду: avatarUrl у UpdateProfileDto відсутній —
             форма його не редагує */}
-        <UserProfileForm userId={user.id} profile={res.data.profile} />
+        <UserProfileForm userId={user.id} profile={raw.profile} />
       </section>
 
       <section aria-label="Ролі користувача" className="space-y-2">

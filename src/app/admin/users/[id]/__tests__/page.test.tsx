@@ -56,7 +56,8 @@ async function renderPage(id = 'u1'): Promise<string> {
 describe('/admin/users/[id] — деталка користувача', () => {
   beforeEach(() => {
     serverFetch.mockReset()
-    serverFetch.mockResolvedValue({ data: rawUser })
+    // serverFetch розгортає конверт { data: … } — мокаємо саме raw-користувача
+    serverFetch.mockResolvedValue(rawUser)
   })
 
   it('успіх: GET /admin/users/:id (revalidate 0) → email, острови з пропсами', async () => {
@@ -81,7 +82,7 @@ describe('/admin/users/[id] — деталка користувача', () => {
   })
 
   it('profile: null → форма отримує profile:null (без падіння)', async () => {
-    serverFetch.mockResolvedValue({ data: { ...rawUser, profile: null } })
+    serverFetch.mockResolvedValue({ ...rawUser, profile: null })
     const html = await renderPage()
     expect(html).toContain('profile-form:u1:null')
   })
