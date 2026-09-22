@@ -45,7 +45,7 @@ export function UserMenu() {
         aria-expanded={open}
         aria-haspopup="menu"
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-2 rounded-full border border-strong px-3 py-1 text-sm text-ink hover:bg-raised"
+        className="flex items-center gap-2 rounded-xl border border-strong px-3 py-1 text-sm text-ink hover:bg-raised"
       >
         <span className="max-w-40 truncate">{displayName}</span>
         {isAdmin && <span className="rounded-full bg-amber-400/15 px-1.5 text-xs text-amber-400">admin</span>}

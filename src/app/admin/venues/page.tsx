@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { serverFetchList } from '@/lib/api/server-client'
 import { getSessionTokens } from '@/lib/auth/session'
-import { parseVenue, type Venue, type RawVenue } from '@/types/venue'
+import { parseVenue, VENUE_STATUS_LABELS, type Venue, type RawVenue } from '@/types/venue'
 import { formatDate } from '@/lib/utils/format'
 import { Badge } from '@/components/ui/badge'
 import { Pagination } from '@/components/ui/pagination'
@@ -118,27 +118,48 @@ function PendingVenueCard({ v }: { v: Venue }) {
   )
 }
 
-// Картка схваленого закладу: перегляд + передача керування іншому користувачу
-function ApprovedVenueCard({ v }: { v: Venue }) {
+// Статус → колір крапки-індикатора (токени success/danger/amber-400)
+const STATUS_DOT: Record<string, string> = {
+  pending: 'bg-amber-400',
+  approved: 'bg-success',
+  rejected: 'bg-danger',
+  archived: 'bg-faint',
+}
+
+// Бейдж-крапка статусу: обведений стиль + крапка-індикатор кольору статусу
+function StatusDotBadge({ status }: { status: Venue['status'] }) {
   return (
-    <li className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4 hover:bg-raised sm:flex-row sm:items-center sm:gap-4">
-      <div className="min-w-0 flex-1">
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-line px-2 py-0.5 text-xs text-muted">
+      <span aria-hidden className={`h-1.5 w-1.5 shrink-0 rounded-full ${STATUS_DOT[status] ?? 'bg-faint'}`} />
+      {VENUE_STATUS_LABELS[status]}
+    </span>
+  )
+}
+
+// Щільний рядок таблиці схвалених закладів: перегляд + передача керування
+function ApprovedVenueRow({ v }: { v: Venue }) {
+  return (
+    <tr className="border-t border-line">
+      <td className="px-4 py-2">
         <Link
           href={`/venues/${v.id}`}
-          className="font-semibold text-ink hover:text-amber-500"
+          className="font-medium text-ink hover:text-amber-500"
         >
           {v.name}
         </Link>
-        <p className="mt-0.5 text-sm text-muted">{v.address}</p>
-        <p className="mt-0.5 text-sm text-muted">
-          Власник: {v.owner ? `${v.owner.name ? `${v.owner.name} · ` : ''}${v.owner.email}` : '—'} ·{' '}
-          схвалено {formatDate(v.createdAt)}
-        </p>
-      </div>
-      <div className="shrink-0">
+        <p className="truncate text-sm text-muted">{v.address}</p>
+      </td>
+      <td className="max-w-[220px] truncate px-4 py-2 text-sm text-muted">
+        {v.owner ? `${v.owner.name ? `${v.owner.name} · ` : ''}${v.owner.email}` : '—'}
+      </td>
+      <td className="px-4 py-2 text-sm text-muted">{formatDate(v.createdAt)}</td>
+      <td className="px-4 py-2">
+        <StatusDotBadge status={v.status} />
+      </td>
+      <td className="px-4 py-2 text-right">
         <VenueAssignOwnerButton venueId={v.id} label="Передати керування" />
-      </div>
-    </li>
+      </td>
+    </tr>
   )
 }
 
@@ -194,11 +215,25 @@ export default async function AdminVenuesPage({ searchParams }: Props) {
       ) : venues.length === 0 ? (
         <p className="rounded-xl border border-line bg-surface p-8 text-center text-muted">Схвалених закладів немає.</p>
       ) : (
-        <ul className="space-y-3">
-          {venues.map((v) => (
-            <ApprovedVenueCard key={v.id} v={v} />
-          ))}
-        </ul>
+        // Щільна таблиця схвалених: Заклад / Власник / Схвалено / Статус / дії
+        <div className="overflow-x-auto rounded-xl border border-line bg-surface">
+          <table className="w-full min-w-[720px] text-sm">
+            <thead>
+              <tr className="border-b border-line text-left text-[11px] font-medium text-faint">
+                <th scope="col" className="px-4 py-2">Заклад</th>
+                <th scope="col" className="px-4 py-2">Власник</th>
+                <th scope="col" className="px-4 py-2">Схвалено</th>
+                <th scope="col" className="px-4 py-2">Статус</th>
+                <th scope="col" className="px-4 py-2 text-right">Дії</th>
+              </tr>
+            </thead>
+            <tbody>
+              {venues.map((v) => (
+                <ApprovedVenueRow key={v.id} v={v} />
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
       {/* Pagination сам повертає null при totalPages <= 1 */}
       <Pagination page={page} totalPages={totalPages} hrefFor={hrefFor} />

@@ -39,7 +39,7 @@ export function VenueRejectButton({ venueId }: { venueId: string }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-full border border-danger/50 px-3 py-1.5 text-sm text-danger hover:bg-danger/10"
+        className="rounded-xl border border-danger/50 px-3 py-1.5 text-sm text-danger hover:bg-danger/10"
       >
         Відхилити
       </button>
@@ -52,7 +52,7 @@ export function VenueRejectButton({ venueId }: { venueId: string }) {
             type="button"
             onClick={() => void reject()}
             disabled={busy}
-            className="rounded-full bg-danger px-3 py-1.5 text-sm font-medium text-espresso hover:bg-danger/85 disabled:opacity-50"
+            className="rounded-xl bg-danger px-3 py-1.5 text-sm font-medium text-espresso hover:bg-danger/85 disabled:opacity-50"
           >
             Підтвердити
           </button>

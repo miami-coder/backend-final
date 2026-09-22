@@ -5,9 +5,19 @@ import { Pagination } from '@/components/ui/pagination'
 import { serverFetchList } from '@/lib/api/server-client'
 import { NEWS_CATEGORIES } from '@/lib/validation/news'
 import { parseNews, type RawNews } from '@/types/news'
-import { formatDate } from '@/lib/utils/format'
+import { placeholderFor } from '@/lib/utils/placeholder'
 
 const LIMIT = 12
+
+// Датаблок «редакторської стрічки»: день великим + місяць капсом окремо
+// (Intl uk-UA; «вер.» → «ВЕР» — без крапки, капсом)
+const dayFmt = new Intl.DateTimeFormat('uk-UA', { day: 'numeric' })
+const monthFmt = new Intl.DateTimeFormat('uk-UA', { month: 'short' })
+function dateParts(iso: string): { day: string; month: string } {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return { day: '—', month: '' }
+  return { day: dayFmt.format(d), month: monthFmt.format(d).replace('.', '').toUpperCase() }
+}
 
 interface Props {
   searchParams: Promise<{ category?: string; page?: string }>
@@ -41,24 +51,35 @@ export default async function NewsPage({ searchParams }: Props) {
           <p className="text-muted">Новин ще немає.</p>
         </div>
       ) : (
-        <ul className="mt-6 grid gap-4 sm:grid-cols-2">
+        <ul className="mt-6">
           {news.map((n) => {
             // невідома категорія з бекенда → бейдж узагалі не рендеримо (порожній span недопустимий)
             const categoryLabel = NEWS_CATEGORIES.find((c) => c.value === n.category)?.label
+            const { day, month } = dateParts(n.publishedAt ?? n.createdAt)
             return (
-              <li key={n.id} className="overflow-hidden rounded-xl border border-line bg-surface">
-                <Link href={`/news/${n.id}`} className="block">
-                  {n.imageUrl && (
-                    /* eslint-disable-next-line @next/next/no-img-element -- зовнішній URL з бекенда */
-                    <img src={n.imageUrl} alt="" loading="lazy" className="h-40 w-full object-cover" />
-                  )}
-                  <div className="p-4">
-                    {n.isPromoted && <span className="mr-2 rounded-full bg-amber-400/15 px-2 py-0.5 text-xs text-amber-400">Промо</span>}
-                    {categoryLabel && (
-                      <span className="rounded-full bg-raised px-2 py-0.5 text-xs text-muted">{categoryLabel}</span>
+              <li key={n.id} className="border-b border-line">
+                <Link href={`/news/${n.id}`} className="flex items-center gap-4 py-4">
+                  <div className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl border border-line bg-raised">
+                    <span className="font-display text-xl font-bold leading-none text-amber-400">{day}</span>
+                    <span className="mt-0.5 text-[10px] uppercase tracking-wide text-faint">{month}</span>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h2 className="font-display font-semibold text-ink">{n.title}</h2>
+                    {n.content && <p className="mt-0.5 line-clamp-1 text-sm text-muted">{n.content}</p>}
+                    <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                      {n.isPromoted && <span className="rounded-full bg-amber-400/15 px-2 py-0.5 text-xs text-amber-400">Промо</span>}
+                      {categoryLabel && (
+                        <span className="rounded-full bg-raised px-2 py-0.5 text-xs text-muted">{categoryLabel}</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="aspect-[4/3] w-[120px] shrink-0 overflow-hidden rounded-xl">
+                    {n.imageUrl ? (
+                      /* eslint-disable-next-line @next/next/no-img-element -- зовнішній URL з бекенда */
+                      <img src={n.imageUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
+                    ) : (
+                      <div style={{ background: placeholderFor(n.id) }} className="h-full w-full" />
                     )}
-                    <h2 className="mt-2 font-display font-semibold">{n.title}</h2>
-                    {n.publishedAt && <p className="mt-1 text-sm text-muted">{formatDate(n.publishedAt)}</p>}
                   </div>
                 </Link>
               </li>

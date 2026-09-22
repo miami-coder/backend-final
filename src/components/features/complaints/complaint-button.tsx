@@ -36,7 +36,7 @@ export function ComplaintButton({ target, label = 'Скарга', loginNext }: P
       // а слеші в route-значенні безпечні — патерн FavoriteButton/ReviewForm
       <Link
         href={`/auth/login?next=${loginPath}`}
-        className="inline-flex items-center rounded-full border border-strong px-4 py-2 text-sm hover:bg-raised"
+        className="inline-flex items-center rounded-xl border border-strong px-4 py-2 text-sm hover:bg-raised"
       >
         ⚑ {label}
       </Link>

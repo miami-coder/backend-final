@@ -139,7 +139,13 @@ export function VenueCreateForm() {
 
   return (
     // noValidate: нативні бульбашки конфліктують з інлайн-помилками (як у register-form)
-    <form noValidate onSubmit={submit} className="space-y-3" aria-label="Створення закладу">
+    // Сітка 2 колонок у картці (кластер C2): широкі поля — col-span-2
+    <form
+      noValidate
+      onSubmit={submit}
+      className="grid grid-cols-1 gap-4 rounded-xl border border-line bg-surface p-5 sm:grid-cols-2"
+      aria-label="Створення закладу"
+    >
       <div className="text-sm">
         <label htmlFor="vn-name">Назва{req}</label>
         <Input
@@ -170,7 +176,7 @@ export function VenueCreateForm() {
           <span id="vn-address-error" role="alert" className="mt-1 block text-danger">{fieldErrors.address}</span>
         )}
       </div>
-      <div className="text-sm">
+      <div className="text-sm sm:col-span-2">
         <label htmlFor="vn-description">Опис</label>
         <Textarea
           id="vn-description"
@@ -179,7 +185,7 @@ export function VenueCreateForm() {
           className="mt-1 w-full"
         />
       </div>
-      <fieldset className="rounded-xl border border-line p-3">
+      <fieldset className="rounded-xl border border-line p-3 sm:col-span-2">
         <legend className="px-1 text-sm font-medium">Контакти</legend>
         <div className="grid gap-2 sm:grid-cols-2">
           <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Телефон" aria-label="Телефон" />
@@ -188,7 +194,7 @@ export function VenueCreateForm() {
           <Input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="Сайт" aria-label="Сайт" />
         </div>
       </fieldset>
-      <fieldset className="rounded-xl border border-line p-3">
+      <fieldset className="rounded-xl border border-line p-3 sm:col-span-2">
         <legend className="px-1 text-sm font-medium">Години роботи (формат HH:MM-HH:MM, порожнє — вихідний)</legend>
         <div className="grid gap-2 sm:grid-cols-2">
           {WH_DAYS.map((d) => (
@@ -257,7 +263,7 @@ export function VenueCreateForm() {
         />
         {err('typeSlug')}
       </div>
-      <div className="text-sm">
+      <div className="text-sm sm:col-span-2">
         <label htmlFor="vn-photos">Фото закладу</label>
         <input
           id="vn-photos"
@@ -270,9 +276,14 @@ export function VenueCreateForm() {
         />
         <p className="mt-1 text-xs text-muted">JPEG/PNG/WebP, до 5 МБ кожне. Перше фото стане головним.</p>
       </div>
-      {error && <p role="alert" className="text-sm text-danger">{error}</p>}
-      <Button type="submit" disabled={sending}>{sending ? 'Подаємо…' : 'Подати заклад'}</Button>
-      <p className="text-sm text-muted">Заклад буде відправлено на модерацію.</p>
+      {/* Футер форми: зліва підказка/глобальна помилка, праворуч submit */}
+      <div className="flex flex-wrap items-center justify-between gap-3 sm:col-span-2">
+        <div className="min-w-0 text-sm text-muted">
+          {error && <p role="alert" className="text-danger">{error}</p>}
+          <p>Заклад буде відправлено на модерацію.</p>
+        </div>
+        <Button type="submit" disabled={sending}>{sending ? 'Подаємо…' : 'Подати заклад'}</Button>
+      </div>
     </form>
   )
 }

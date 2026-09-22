@@ -4,12 +4,13 @@ export function RatingStars({ value, count }: { value: number | null; count?: nu
   const chars = [1, 2, 3, 4, 5].map((i) => (rounded >= i ? '★' : '☆')).join('')
   // rounded кратний 0.5 — floor дає кількість повних зірок
   const filled = Math.floor(rounded)
+  // «Число-гігант»: велике число попереду, зірки дрібніші поруч
   return (
-    <span className="inline-flex items-center gap-1" aria-label={`Рейтинг ${value} з 5`}>
-      <span className="text-amber-500">{chars.slice(0, filled)}</span>
-      <span className="text-strong">{chars.slice(filled)}</span>
-      <span className="text-sm font-medium">{value.toFixed(1).replace('.', ',')}</span>
-      {count !== undefined && <span className="text-sm text-muted">({count} відгуків)</span>}
+    <span className="inline-flex items-center gap-1.5" aria-label={`Рейтинг ${value} з 5`}>
+      <span className="font-display text-2xl font-bold text-amber-500">{value.toFixed(1).replace('.', ',')}</span>
+      <span className="text-sm text-amber-500">{chars.slice(0, filled)}</span>
+      <span className="text-sm text-strong">{chars.slice(filled)}</span>
+      {count !== undefined && <span className="text-sm text-faint">({count} відгуків)</span>}
     </span>
   )
 }

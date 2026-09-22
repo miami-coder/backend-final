@@ -74,7 +74,7 @@ export function VenueAssignOwnerButton({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-full border border-strong px-3 py-1.5 text-sm text-muted hover:bg-raised"
+        className="rounded-xl border border-strong px-3 py-1.5 text-sm text-muted hover:bg-raised"
       >
         {label}
       </button>
@@ -101,7 +101,7 @@ export function VenueAssignOwnerButton({
             type="button"
             onClick={() => void assign()}
             disabled={!userId || busy}
-            className="rounded-full bg-amber-500 px-3 py-1.5 text-sm font-medium text-espresso hover:bg-amber-400 disabled:opacity-50"
+            className="rounded-xl bg-amber-500 px-3 py-1.5 text-sm font-medium text-espresso hover:bg-amber-400 disabled:opacity-50"
           >
             Зберегти
           </button>

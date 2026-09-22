@@ -7,12 +7,12 @@ interface RawOverview {
   eventsByType: { eventType: string; count: number }[]
 }
 
-// Плитка-лічильник: значення + підпис, без кліку
+// Плитка-лічильник: число font-display бурштинове + faint-підпис, без кліку
 function Tile({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="rounded-xl border border-line bg-surface p-4">
-      <div className="text-2xl font-semibold text-ink">{value}</div>
-      <div className="mt-1 text-sm text-muted">{label}</div>
+      <div className="font-display text-2xl font-semibold text-amber-400">{value}</div>
+      <div className="mt-1 text-sm text-faint">{label}</div>
     </div>
   )
 }

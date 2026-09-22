@@ -4,12 +4,12 @@ type BadgeProps = HTMLAttributes<HTMLSpanElement> & {
   tone?: 'neutral' | 'brand' | 'success' | 'warning'
 }
 
-// Мапа класів для тонів бейджа
+// Мапа класів для тонів бейджа — обведені варіанти (текст кольоровий, фон прозорий)
 const toneClasses = {
-  neutral: 'border border-line bg-raised text-muted',
-  brand: 'bg-amber-500 text-espresso',
-  success: 'bg-success/15 text-success',
-  warning: 'bg-amber-400/15 text-amber-400',
+  neutral: 'border border-line text-muted',
+  brand: 'border border-amber-500 text-amber-400',
+  success: 'border border-success/50 text-success',
+  warning: 'border border-amber-400/50 text-amber-400',
 } satisfies Record<NonNullable<BadgeProps['tone']>, string>
 
 export function Badge({ tone = 'neutral', className, ...props }: BadgeProps) {

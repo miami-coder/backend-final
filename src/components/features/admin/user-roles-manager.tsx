@@ -78,7 +78,7 @@ export function UserRolesManager({ userId, roles }: { userId: string; roles: Rol
               aria-label={`Зняти роль ${ROLE_LABELS[r]}`}
               disabled={busy}
               onClick={() => request(r, 'remove')}
-              className="rounded-full px-1.5 text-faint hover:bg-raised hover:text-danger disabled:opacity-50"
+              className="rounded-xl px-1.5 text-faint hover:bg-raised hover:text-danger disabled:opacity-50"
             >
               ×
             </button>
@@ -108,7 +108,7 @@ export function UserRolesManager({ userId, roles }: { userId: string; roles: Rol
             type="button"
             onClick={() => request(roleCode as Role, 'add')}
             disabled={!roleCode || busy}
-            className="rounded-full bg-amber-500 px-3 py-2 text-sm font-medium text-espresso hover:bg-amber-400 disabled:opacity-50"
+            className="rounded-xl bg-amber-500 px-3 py-2 text-sm font-medium text-espresso hover:bg-amber-400 disabled:opacity-50"
           >
             Додати
           </button>
@@ -127,7 +127,7 @@ export function UserRolesManager({ userId, roles }: { userId: string; roles: Rol
           <button
             type="button"
             onClick={closeConfirm}
-            className="rounded-full border border-strong px-3 py-1.5 text-sm text-muted hover:bg-raised"
+            className="rounded-xl border border-strong px-3 py-1.5 text-sm text-muted hover:bg-raised"
           >
             Скасувати
           </button>
@@ -135,7 +135,7 @@ export function UserRolesManager({ userId, roles }: { userId: string; roles: Rol
             type="button"
             onClick={() => confirm && void apply(confirm)}
             disabled={busy}
-            className="rounded-full bg-amber-500 px-3 py-1.5 text-sm font-medium text-espresso hover:bg-amber-400 disabled:opacity-50"
+            className="rounded-xl bg-amber-500 px-3 py-1.5 text-sm font-medium text-espresso hover:bg-amber-400 disabled:opacity-50"
           >
             Підтвердити
           </button>

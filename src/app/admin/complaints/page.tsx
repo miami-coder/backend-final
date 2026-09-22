@@ -34,24 +34,24 @@ export default async function AdminComplaintsPage({ searchParams }: Props) {
       {complaints.length === 0 ? (
         <p className="rounded-xl border border-line bg-surface p-8 text-center text-muted">Скарг немає.</p>
       ) : (
-        <ul className="divide-y divide-line overflow-hidden rounded-xl border border-line bg-surface">
+        <ul className="grid gap-4 sm:grid-cols-2">
           {complaints.map((c) => (
-            <li key={c.id} className="flex items-start justify-between gap-4 px-4 py-3 hover:bg-raised">
-              <div className="min-w-0">
-                <div className="text-sm text-ink">
-                  {/* бейдж причини: невідомий код (парсер зводить до 'other',
-                      але COMPLAINT_REASONS може відстати) → «Інше» */}
-                  <span className="rounded-full border border-line bg-raised px-2 py-0.5 text-xs text-muted">
-                    {COMPLAINT_REASONS.find((r) => r.value === c.reason)?.label ?? 'Інше'}
-                  </span>
-                  {' · '}
-                  {c.venueId ? 'Заклад' : c.reviewId ? 'Відгук' : '—'} · {formatDate(c.createdAt)}
-                </div>
-                <div className="mt-1 text-sm text-muted">
-                  {c.text.length > 140 ? c.text.slice(0, 140) + '…' : c.text}
-                </div>
+            <li key={c.id} className="flex flex-col rounded-xl border border-line bg-surface p-4">
+              <div className="flex flex-wrap items-center gap-2">
+                {/* бейдж причини: невідомий код (парсер зводить до 'other',
+                    але COMPLAINT_REASONS може відстати) → «Інше» */}
+                <span className="rounded-full border border-line px-2 py-0.5 text-xs text-muted">
+                  {COMPLAINT_REASONS.find((r) => r.value === c.reason)?.label ?? 'Інше'}
+                </span>
+                <span className="text-sm text-muted">{c.venueId ? 'Заклад' : c.reviewId ? 'Відгук' : '—'}</span>
+                <span className="ml-auto text-xs text-faint">{formatDate(c.createdAt)}</span>
               </div>
-              <div className="shrink-0">
+              {/* Текст скарги. Цитату оскарженого відгуку бекенд не віддає
+                  (relations відсутні) — вкладений блок цитати не рендеримо */}
+              <p className="mt-2 flex-1 text-sm text-ink">
+                {c.text.length > 140 ? c.text.slice(0, 140) + '…' : c.text}
+              </p>
+              <div className="mt-3 flex justify-end border-t border-line pt-3">
                 <ComplaintResolveButton complaintId={c.id} />
               </div>
             </li>

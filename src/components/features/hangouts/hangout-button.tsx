@@ -48,7 +48,7 @@ export function HangoutButton({ venueId, loginNext }: { venueId: string; loginNe
       // а слеші в route-значенні безпечні — патерн FavoriteButton/ReviewForm/ComplaintButton
       <Link
         href={`/auth/login?next=${loginNext}`}
-        className="inline-flex items-center rounded-full bg-amber-500 px-4 py-2 text-sm font-medium text-espresso hover:bg-amber-400"
+        className="inline-flex items-center rounded-xl bg-amber-500 px-4 py-2 text-sm font-medium text-espresso hover:bg-amber-400"
       >
         🍻 Знайти пиячку
       </Link>

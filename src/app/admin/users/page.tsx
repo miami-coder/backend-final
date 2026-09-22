@@ -34,25 +34,44 @@ export default async function AdminUsersPage({ searchParams }: Props) {
       {users.length === 0 ? (
         <p className="rounded-xl border border-line bg-surface p-8 text-center text-muted">Користувачів немає.</p>
       ) : (
-        <ul className="divide-y divide-line overflow-hidden rounded-xl border border-line bg-surface">
-          {users.map((u) => (
-            <li key={u.id} className="flex items-center justify-between gap-4 px-4 py-3 hover:bg-raised">
-              <div className="min-w-0">
-                <Link className="font-medium text-ink hover:underline" href={`/admin/users/${u.id}`}>
-                  {u.email}
-                </Link>
-                <div className="text-sm text-muted">
-                  {u.name ?? 'Без імені'} · {formatDate(u.createdAt)}
-                </div>
-              </div>
-              <div className="flex shrink-0 flex-wrap justify-end gap-1">
-                {u.roles.map((r) => (
-                  <RoleBadge key={r} role={r} />
-                ))}
-              </div>
-            </li>
-          ))}
-        </ul>
+        <div className="overflow-x-auto rounded-xl border border-line bg-surface">
+          <table className="w-full min-w-[640px] text-sm">
+            <thead>
+              <tr className="border-b border-line text-left text-[11px] font-medium text-faint">
+                <th scope="col" className="px-4 py-2">Ім&apos;я</th>
+                <th scope="col" className="px-4 py-2">Email</th>
+                <th scope="col" className="px-4 py-2">Ролі</th>
+                <th scope="col" className="px-4 py-2">Реєстрація</th>
+                <th scope="col" className="px-4 py-2 text-right">Дії</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((u) => (
+                <tr key={u.id} className="border-t border-line">
+                  <td className="px-4 py-3 text-ink">{u.name ?? 'Без імені'}</td>
+                  <td className="px-4 py-3">
+                    <Link className="text-ink hover:underline" href={`/admin/users/${u.id}`}>
+                      {u.email}
+                    </Link>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap gap-1">
+                      {u.roles.map((r) => (
+                        <RoleBadge key={r} role={r} />
+                      ))}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-muted">{formatDate(u.createdAt)}</td>
+                  <td className="px-4 py-3 text-right">
+                    <Link className="text-amber-500 hover:underline" href={`/admin/users/${u.id}`}>
+                      Деталі
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
       {/* Pagination сам повертає null при totalPages <= 1 */}
       <Pagination page={page} totalPages={totalPages} hrefFor={(p) => `/admin/users?page=${p}`} />
