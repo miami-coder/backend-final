@@ -1,28 +1,46 @@
 @import "tailwindcss";
 
 @theme {
-  /* Бренд: тепла «пивна» гама */
-  --color-brand-50: #fef8ee;
-  --color-brand-100: #fcedd5;
-  --color-brand-200: #f8d8a8;
-  --color-brand-300: #f2bd73;
-  --color-brand-400: #ec9f3e;
-  --color-brand-500: #e08221;
-  --color-brand-600: #c1681a;
-  --color-brand-700: #9d4f19;
-  --color-brand-800: #7f3f1b;
-  --color-brand-900: #68341a;
+  /* Поверхні: глибина через відтінки еспресо, не через тіні */
+  --color-bg: #171310;
+  --color-surface: #211B15;
+  --color-raised: #2B241C;
+  --color-line: #3A3128;
+  --color-strong: #4A4038;
 
-  --color-surface: #faf9f7;
-  --color-ink: #1c1917;
-}
+  /* Текст */
+  --color-ink: #F3E9DB;
+  --color-muted: #B3A493;
+  --color-faint: #8A7D6D;
+  --color-espresso: #171310; /* текст на бурштинових кнопках */
 
-/* Шрифти: системні стеки (Geist-змінні видалено разом із create-next-app layout) */
-@theme {
-  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  /* Дії: бурштин (primary), мідь (акценти) */
+  --color-amber-400: #FFCA4D;
+  --color-amber-500: #F0B429;
+  --color-amber-600: #C98A0F;
+  --color-copper-500: #C1681A;
+
+  /* Статуси: теплі зелений/теракотовий */
+  --color-success: #8AA861;
+  --color-danger: #D9634D;
+
+  --font-sans: var(--font-golos), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-unbounded), var(--font-golos), ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
-  @apply bg-surface text-ink antialiased;
+  @apply bg-bg text-ink antialiased;
+}
+
+/* Фокус видимий всюди; reduced-motion прибирає пульс/масштаб */
+:focus-visible {
+  outline: 2px solid var(--color-amber-500);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
