@@ -97,12 +97,12 @@ export class ReviewsService {
     const { offset } = normalizePagination({ page, limit });
     const orderMap: Record<
       typeof sort,
-      { rating?: 'DESC' | 'ASC'; createdAt?: 'DESC' | 'ASC' }
+      { column: 'createdAt' | 'rating'; dir: 'DESC' | 'ASC' }
     > = {
-      newest: { createdAt: 'DESC' },
-      oldest: { createdAt: 'ASC' },
-      highest: { rating: 'DESC' },
-      lowest: { rating: 'ASC' },
+      newest: { column: 'createdAt', dir: 'DESC' },
+      oldest: { column: 'createdAt', dir: 'ASC' },
+      highest: { column: 'rating', dir: 'DESC' },
+      lowest: { column: 'rating', dir: 'ASC' },
     };
     const order = orderMap[sort];
     const [data, total] = await this.reviews
@@ -111,10 +111,7 @@ export class ReviewsService {
       .leftJoinAndSelect('u.profile', 'p')
       .where('r.venueId = :venueId', { venueId })
       .orderBy('r.isFeatured', 'DESC')
-      .addOrderBy(
-        order.rating ?? 'createdAt',
-        order.createdAt ? order.createdAt : 'DESC',
-      )
+      .addOrderBy(`r.${order.column}`, order.dir)
       .skip(offset)
       .take(limit)
       .getManyAndCount();

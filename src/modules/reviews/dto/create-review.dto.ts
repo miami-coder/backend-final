@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsInt,
   IsOptional,
@@ -9,7 +10,7 @@ import {
 } from 'class-validator';
 
 export class CreateReviewDto {
-  @IsInt() @Min(1) @Max(5) rating: number;
+  @Type(() => Number) @IsInt() @Min(1) @Max(5) rating: number;
   @IsString() @MinLength(10) @MaxLength(2000) text: string;
   @IsOptional() @IsString() checkPhotoUrl?: string;
 }

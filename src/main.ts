@@ -1,7 +1,9 @@
+import { join } from 'path';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 import compression from 'compression';
+import express from 'express';
 import { Logger } from 'nestjs-pino';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
@@ -25,6 +27,12 @@ async function bootstrap() {
     }),
   );
   app.useGlobalFilters(new AllExceptionsFilter());
+
+  // Роздача завантажених файлів: /static/* з uploads (гепа, яку фронтова спека очікує від проксі/nginx)
+  app.use(
+    '/static',
+    express.static(process.env.UPLOADS_DIR ?? join(process.cwd(), 'uploads')),
+  );
 
   // Swagger / OpenAPI documentation.
   if (process.env.NODE_ENV !== 'production') {

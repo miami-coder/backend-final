@@ -64,6 +64,31 @@ export class VenuesAdminController {
     return this.venues.findPending(page, limit);
   }
 
+  @Get('approved')
+  @Permissions('venue:moderate')
+  @ApiOperation({ summary: 'Список схвалених закладів (передача керування)' })
+  @ApiPaginatedResponse({
+    type: Venue,
+    description: 'Сторінкований список схвалених закладів',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Номер сторінки',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Розмір сторінки',
+  })
+  @ApiUnauthorizedResponse({ description: 'Не авторизований' })
+  @ApiForbiddenResponse({ description: 'Немає дозволу venue:moderate' })
+  listApproved(@Query('page') page: number, @Query('limit') limit: number) {
+    return this.venues.findApproved(page, limit);
+  }
+
   @Post(':id/approve')
   @Permissions('venue:moderate')
   @ApiOperation({ summary: 'Схвалити заклад' })
