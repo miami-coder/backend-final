@@ -51,20 +51,20 @@ export function AgeGate() {
     <div
       ref={dialogRef}
       tabIndex={-1}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 outline-none"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-bg p-4 outline-none"
       role="dialog"
       aria-modal="true"
     >
-      <div className="max-w-md rounded-2xl bg-white p-6 text-center shadow-xl">
+      <div className="max-w-md rounded-xl border border-line bg-surface p-8 text-center">
         {denied ? (
           <>
-            <p className="text-lg font-medium">Вийдіть із застосунку. Доступ лише для повнолітніх.</p>
+            <p className="text-lg font-medium text-ink">Вийдіть із застосунку. Доступ лише для повнолітніх.</p>
             <Button variant="ghost" className="mt-3" onClick={() => setDenied(false)}>Повернутися</Button>
           </>
         ) : (
           <>
-            <h1 className="text-xl font-semibold">Вікове обмеження</h1>
-            <p className="mt-3 text-stone-600">
+            <h1 className="font-display text-lg font-semibold text-ink">Вікове обмеження</h1>
+            <p className="mt-3 text-muted">
               Запускаючи цей застосунок, ви погоджуєтесь, що вам є 18 років.
             </p>
             <div className="mt-5 flex justify-center gap-3">
