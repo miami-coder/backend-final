@@ -43,8 +43,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             key={t.id}
             role="status"
-            className={`rounded-lg px-4 py-2 text-sm text-white shadow-lg ${
-              t.tone === 'error' ? 'bg-red-600' : 'bg-stone-800'
+            className={`rounded-full px-4 py-2 text-sm font-medium ${
+              t.tone === 'error' ? 'bg-danger text-espresso' : 'bg-success text-espresso'
             }`}
           >
             {t.message}

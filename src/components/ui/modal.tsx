@@ -70,7 +70,7 @@ export function Modal({ open, onClose, title, children }: {
   if (!open) return null
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80 p-4"
       onClick={onClose}
     >
       {/* Заголовок і «×» — плоскі елементи панелі (без обгортки-рядка):
@@ -81,7 +81,7 @@ export function Modal({ open, onClose, title, children }: {
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="relative w-full max-w-lg rounded-lg bg-white p-6 shadow-xl"
+        className="relative w-full max-w-lg rounded-xl border border-line bg-surface p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="pr-8 text-lg font-semibold">{title}</h2>
@@ -90,7 +90,7 @@ export function Modal({ open, onClose, title, children }: {
           type="button"
           aria-label="Закрити"
           onClick={onClose}
-          className="absolute right-5 top-5 rounded-lg p-1 text-stone-400 hover:bg-stone-100 hover:text-ink"
+          className="absolute right-5 top-5 rounded-lg p-1 text-faint hover:bg-raised hover:text-ink"
         >
           ×
         </button>
