@@ -4,9 +4,11 @@ import { UserProvider } from '@/components/providers/user-provider'
 import { UserMenu } from '@/components/layout/user-menu'
 import type { SessionUser } from '@/types/user'
 
-// UserProvider усередині тягне useRouter (logout робить router.push)
+// UserProvider усередині тягне useRouter (logout робить router.push),
+// UserMenu — usePathname (закриття меню після переходу)
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+  usePathname: () => '/auth/login',
 }))
 
 afterEach(() => vi.unstubAllGlobals())
@@ -92,6 +94,21 @@ describe('UserMenu', () => {
       const calls = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls.filter(([u]) => String(u).includes('/api/auth/logout'))
       expect(calls.length).toBeGreaterThan(0)
     })
+  })
+
+  it('клік по пункту меню закриває меню', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () =>
+      new Response(JSON.stringify({ data: testUser }), { status: 200, headers: { 'content-type': 'application/json' } })))
+    render(
+      <UserProvider initialUser={testUser}>
+        <UserMenu />
+      </UserProvider>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: /a@b\.c/ }))
+    expect(screen.getByRole('menu')).toBeInTheDocument()
+    // Клік по «Кабінет» і переходить, і одразу закриває меню (не чекаючи навігації)
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Кабінет' }))
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
   })
 
   it('клік поза меню закриває його', async () => {

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useUser } from '@/components/providers/user-provider'
 
 export function UserMenu() {
@@ -9,6 +10,16 @@ export function UserMenu() {
   const [open, setOpen] = useState(false)
   const wrapRef = useRef<HTMLDivElement>(null)
   const btnRef = useRef<HTMLButtonElement>(null)
+  const pathname = usePathname()
+
+  // Меню живе у хедері, що персистить між роутами, — закриваємо його
+  // після переходу (і після «Вийти»), інакше воно лишається розкритим.
+  // Коригування стану під час рендеру, а не в ефекті — так радить react-hooks
+  const [prevPath, setPrevPath] = useState(pathname)
+  if (prevPath !== pathname) {
+    setPrevPath(pathname)
+    setOpen(false)
+  }
 
   useEffect(() => {
     if (!open) return
@@ -52,9 +63,9 @@ export function UserMenu() {
       </button>
       {open && (
         <div role="menu" aria-label="Меню користувача" className="absolute right-0 z-40 mt-1 w-44 rounded-xl border border-line bg-surface py-1">
-          <Link role="menuitem" href="/account" className="block px-4 py-2 text-sm text-ink hover:bg-raised">Кабінет</Link>
-          {isAdmin && <Link role="menuitem" href="/admin" className="block px-4 py-2 text-sm text-ink hover:bg-raised">Адмінка</Link>}
-          <button role="menuitem" type="button" onClick={() => void logout()} className="block w-full px-4 py-2 text-left text-sm text-ink hover:bg-raised">Вийти</button>
+          <Link role="menuitem" href="/account" onClick={() => setOpen(false)} className="block px-4 py-2 text-sm text-ink hover:bg-raised">Кабінет</Link>
+          {isAdmin && <Link role="menuitem" href="/admin" onClick={() => setOpen(false)} className="block px-4 py-2 text-sm text-ink hover:bg-raised">Адмінка</Link>}
+          <button role="menuitem" type="button" onClick={() => { setOpen(false); void logout() }} className="block w-full px-4 py-2 text-left text-sm text-ink hover:bg-raised">Вийти</button>
         </div>
       )}
     </div>

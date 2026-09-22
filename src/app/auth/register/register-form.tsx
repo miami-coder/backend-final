@@ -195,6 +195,13 @@ export function RegisterForm() {
       </label>
       {fieldErrors.acceptEula && <span role="alert" className="block text-sm text-danger">{fieldErrors.acceptEula}</span>}
       <Button type="submit" disabled={loading} className="w-full">{loading ? 'Реєструємо…' : 'Зареєструватися'}</Button>
+      {/* Соцмережі — як на вході: обведені кнопки після розділювача */}
+      <div className="flex items-center gap-3" aria-hidden>
+        <span className="h-px flex-1 bg-line" />
+        <span className="text-xs text-faint">або</span>
+        <span className="h-px flex-1 bg-line" />
+      </div>
+      <a href="/api/auth/google" className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-strong px-5 py-2.5 text-sm font-medium text-ink transition-colors hover:border-amber-500/60 hover:bg-raised">Увійти через Google</a>
       <p className="text-center text-sm">
         Вже маєте акаунт?{' '}
         <Link className="text-amber-500 hover:underline" href="/auth/login">Увійти</Link>

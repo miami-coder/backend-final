@@ -11,9 +11,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   const confirmed = useAgeConfirmed()
   return (
     <>
-      <div inert={!confirmed}>
+      {/* flex + min-h-svh: футер mt-auto притиснутий до низу навіть на коротких сторінках */}
+      <div inert={!confirmed} className="flex min-h-svh flex-col">
         <Header />
-        <main className="mx-auto min-h-[70vh] max-w-6xl px-4 py-6">{children}</main>
+        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">{children}</main>
         <Footer />
       </div>
       <AgeGate />
