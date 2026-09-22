@@ -12,6 +12,7 @@ describe('VenuesAdminController', () => {
   beforeEach(async () => {
     venues = {
       findPending: jest.fn(),
+      findApproved: jest.fn(),
       changeStatus: jest.fn(),
       findOneOrThrow: jest.fn(),
       venues: { save: jest.fn() },
@@ -31,6 +32,12 @@ describe('VenuesAdminController', () => {
     venues.findPending.mockResolvedValue({ data: [], meta: { total: 0 } });
     await controller.list(1, 20);
     expect(venues.findPending).toHaveBeenCalledWith(1, 20);
+  });
+
+  it('listApproved delegates to findApproved', async () => {
+    venues.findApproved.mockResolvedValue({ data: [], meta: { total: 0 } });
+    await controller.listApproved(1, 20);
+    expect(venues.findApproved).toHaveBeenCalledWith(1, 20);
   });
 
   it('approve changes status to Approved and wraps in { data }', async () => {

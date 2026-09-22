@@ -268,6 +268,27 @@ export class VenuesService {
       order: { createdAt: 'ASC' },
       skip: offset,
       take: limit,
+      // Адмін має бачити заявку цілком: власник, фото, тип/теги/фічі
+      relations: {
+        owner: { profile: true },
+        photos: true,
+        featureAssignments: { feature: true },
+        venueTags: { tag: true },
+        venueTypeAssignments: { type: true },
+      },
+    });
+    return { data: rows, meta: buildMeta({ page, limit, offset }, total) };
+  }
+
+  async findApproved(page = 1, limit = 20) {
+    const { offset } = normalizePagination({ page, limit });
+    const [rows, total] = await this.venues.findAndCount({
+      where: { status: VenueStatus.Approved },
+      order: { createdAt: 'DESC' },
+      skip: offset,
+      take: limit,
+      // Для передачі керування потрібен лише поточний власник
+      relations: { owner: { profile: true } },
     });
     return { data: rows, meta: buildMeta({ page, limit, offset }, total) };
   }
