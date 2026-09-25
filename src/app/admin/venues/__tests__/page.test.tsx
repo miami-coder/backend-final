@@ -28,6 +28,10 @@ vi.mock('@/components/features/admin/venue-reject-button', async () => ({
 vi.mock('@/components/features/admin/venue-assign-owner-button', async () => ({
   VenueAssignOwnerButton: ({ venueId }: { venueId: string }) => createElement('span', null, `assign-owner:${venueId}`),
 }))
+// м'яке видалення в рядку схвалених (клієнтський, вимагає ToastProvider)
+vi.mock('@/components/features/venues/venue-delete-button', () => ({
+  VenueDeleteButton: ({ venueId }: { venueId: string }) => createElement('span', null, `delete:${venueId}`),
+}))
 
 import AdminVenuesPage from '@/app/admin/venues/page'
 import { getSessionTokens } from '@/lib/auth/session'

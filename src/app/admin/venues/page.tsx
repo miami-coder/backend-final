@@ -8,6 +8,7 @@ import { Pagination } from '@/components/ui/pagination'
 import { VenueApproveButton } from '@/components/features/admin/venue-approve-button'
 import { VenueRejectButton } from '@/components/features/admin/venue-reject-button'
 import { VenueAssignOwnerButton } from '@/components/features/admin/venue-assign-owner-button'
+import { VenueDeleteButton } from '@/components/features/venues/venue-delete-button'
 import { placeholderFor } from '@/lib/utils/placeholder'
 
 export const revalidate = 0
@@ -157,7 +158,11 @@ function ApprovedVenueRow({ v }: { v: Venue }) {
         <StatusDotBadge status={v.status} />
       </td>
       <td className="px-4 py-2 text-right">
-        <VenueAssignOwnerButton venueId={v.id} label="Передати керування" />
+        <div className="flex justify-end gap-2">
+          <VenueAssignOwnerButton venueId={v.id} label="Передати керування" />
+          {/* Супер-адмін видаляє будь-який заклад (ТЗ §16): м'яко, у архів */}
+          <VenueDeleteButton venueId={v.id} />
+        </div>
       </td>
     </tr>
   )

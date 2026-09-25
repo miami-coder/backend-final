@@ -37,6 +37,12 @@ vi.mock('@/components/features/account/venue-photo-manager', () => ({
   },
 }))
 
+// VenueDeleteButton — клієнтський компонент; заглушка (вимагає ToastProvider)
+vi.mock('@/components/features/venues/venue-delete-button', () => ({
+  VenueDeleteButton: ({ venueId }: { venueId: string }) =>
+    createElement('span', null, `delete:${venueId}`),
+}))
+
 // VenueAnalytics — серверний компонент; заглушка ловить пропси
 // (from/to з searchParams або дефолтний 30-денний період)
 let analyticsProps: { venueId: string; from: string; to: string } | null = null

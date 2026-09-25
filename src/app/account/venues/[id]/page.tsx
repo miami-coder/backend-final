@@ -4,6 +4,7 @@ import { VenueAnalytics } from '@/components/features/account/venue-analytics'
 import { VenueEditForm } from '@/components/features/account/venue-edit-form'
 import { VenueNewsManager } from '@/components/features/account/venue-news-manager'
 import { VenuePhotoManager } from '@/components/features/account/venue-photo-manager'
+import { VenueDeleteButton } from '@/components/features/venues/venue-delete-button'
 import { serverFetch, serverFetchList } from '@/lib/api/server-client'
 import { getSessionTokens } from '@/lib/auth/session'
 import { parseNews, type RawNews } from '@/types/news'
@@ -61,7 +62,9 @@ export default async function ManageVenuePage({ params, searchParams }: Props) {
         <span className="rounded-full bg-raised px-2 py-0.5 text-xs text-muted">
           {VENUE_STATUS_LABELS[venue.status]}
         </span>
-        <Link className="ml-auto text-sm text-amber-500 hover:underline" href={`/venues/${venue.id}`}>Публічна сторінка</Link>
+        <Link className="text-sm text-amber-500 hover:underline" href={`/venues/${venue.id}`}>Публічна сторінка</Link>
+        {/* М'яке видалення: після нього ця сторінка не існує → редірект у список */}
+        <VenueDeleteButton venueId={venue.id} redirectTo="/account/venues" />
       </div>
       <nav className="mb-4 flex gap-3 border-b border-line pb-2 text-sm" aria-label="Керування закладом">
         {TABS.map((t) => (
