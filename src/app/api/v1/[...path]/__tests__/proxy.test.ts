@@ -9,7 +9,7 @@ vi.mock('next/headers', () => ({
   })),
 }))
 
-import { GET as proxyGet, POST as proxyPost } from '@/app/api/v1/[...path]/route'
+import { GET as proxyGet, POST as proxyPost, DELETE as proxyDelete } from '@/app/api/v1/[...path]/route'
 import { decodeTokens } from '@/lib/auth/session'
 
 const jsonRes = (body: unknown, status = 200, headers: Record<string, string> = { 'content-type': 'application/json' }) =>
@@ -23,6 +23,18 @@ beforeEach(() => {
 })
 
 describe('проксі /api/v1', () => {
+  it('204 від бекенда (м’яке видалення) проходить крізь проксі, а не 500', async () => {
+    // NextResponse конструктором Response відкидає 204 із буферизованим тілом
+    const fetchMock = vi.fn(async () => new Response(null, { status: 204 }))
+    vi.stubGlobal('fetch', fetchMock)
+    const res = await proxyDelete(
+      new Request('http://l/api/v1/venues/v1', { method: 'DELETE' }) as never,
+      makeCtx(['venues', 'v1']) as never,
+    )
+    expect(res.status).toBe(204)
+    expect(await res.text()).toBe('')
+  })
+
   it('додає Authorization з cookie і проксує відповідь', async () => {
     const fetchMock = vi.fn(async (_url: string, init?: RequestInit) => {
       expect((init?.headers as Headers).get('Authorization')).toBe('Bearer OLD_AT')

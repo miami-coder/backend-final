@@ -33,6 +33,13 @@ async function forward(req: NextRequest, path: string[], accessToken: string | n
 }
 
 async function passthrough(res: Response, newTokens?: string): Promise<NextResponse> {
+  // 204/304 забороняють тіло: конструктор Response кидає на статус із
+  // буферизованим тілом (навіть порожнім) — віддаємо з null-тілом
+  if (res.status === 204 || res.status === 304) {
+    const empty = new NextResponse(null, { status: res.status })
+    if (newTokens) empty.cookies.set(SESSION_COOKIE, newTokens, sessionCookieOptions())
+    return empty
+  }
   const body = await res.arrayBuffer()
   const out = new NextResponse(body, {
     status: res.status,
