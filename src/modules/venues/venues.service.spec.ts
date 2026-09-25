@@ -14,6 +14,9 @@ import { VenueTypeAssignment } from './entities/venue-type-assignment.entity';
 import { PermissionsService } from '../rbac/permissions.service';
 import { CacheService } from '../../common/services/cache.service';
 import { FileStorageService } from '../../common/services/file-storage.service';
+import { Role } from '../rbac/entities/role.entity';
+import { UserRole } from '../rbac/entities/user-role.entity';
+import { AuditService } from '../admin/audit.service';
 
 function qb() {
   return {
@@ -39,6 +42,9 @@ describe('VenuesService', () => {
   let cache: any;
   let events: any;
   let storage: any;
+  let roles: any;
+  let userRoles: any;
+  let audit: any;
 
   beforeEach(async () => {
     venues = {
@@ -49,7 +55,10 @@ describe('VenuesService', () => {
       createQueryBuilder: jest.fn().mockReturnValue(qb()),
     };
     photos = { save: jest.fn(), insert: jest.fn(), count: jest.fn() };
-    perms = { hasPermission: jest.fn() };
+    perms = { hasPermission: jest.fn(), invalidate: jest.fn() };
+    roles = { findOne: jest.fn() };
+    userRoles = { findOne: jest.fn(), save: jest.fn() };
+    audit = { log: jest.fn() };
     cache = {
       get: jest.fn().mockResolvedValue(null),
       set: jest.fn(),
@@ -90,6 +99,9 @@ describe('VenuesService', () => {
         { provide: CacheService, useValue: cache },
         { provide: EventEmitter2, useValue: events },
         { provide: FileStorageService, useValue: storage },
+        { provide: getRepositoryToken(Role), useValue: roles },
+        { provide: getRepositoryToken(UserRole), useValue: userRoles },
+        { provide: AuditService, useValue: audit },
       ],
     }).compile();
     service = module.get(VenuesService);
@@ -138,6 +150,96 @@ describe('VenuesService', () => {
     perms.hasPermission.mockResolvedValueOnce(true);
     await service.update('admin', 'v1', { name: 'X' });
     expect(venues.save).toHaveBeenCalled();
+  });
+
+  it('softDelete архівує заклад власника', async () => {
+    const venue = {
+      id: 'v1',
+      ownerId: 'u1',
+      status: VenueStatus.Approved,
+    };
+    venues.findOne.mockResolvedValueOnce(venue);
+    await service.softDelete('u1', 'v1');
+    expect(venue.status).toBe(VenueStatus.Archived);
+    expect(venues.save).toHaveBeenCalledWith(venue);
+    expect(events.emit).toHaveBeenCalledWith(
+      'venue.status_changed',
+      expect.anything(),
+    );
+  });
+
+  it('softDelete дозволений супер-адміну (venue:edit:any)', async () => {
+    venues.findOne.mockResolvedValueOnce({
+      id: 'v1',
+      ownerId: 'u2',
+      status: VenueStatus.Approved,
+    });
+    perms.hasPermission.mockResolvedValueOnce(true);
+    await service.softDelete('admin', 'v1');
+    expect(venues.save).toHaveBeenCalled();
+  });
+
+  it('approve змінює статус і видає власнику роль venue_admin', async () => {
+    venues.findOne.mockResolvedValueOnce({
+      id: 'v1',
+      ownerId: 'u1',
+      status: VenueStatus.Pending,
+    });
+    roles.findOne.mockResolvedValueOnce({ id: 'r1', code: 'venue_admin' });
+    userRoles.findOne.mockResolvedValueOnce(null); // ролі ще нема
+    const v = await service.approve('admin1', 'v1');
+    expect(v.status).toBe(VenueStatus.Approved);
+    expect(userRoles.save).toHaveBeenCalledWith({
+      userId: 'u1',
+      roleId: 'r1',
+    });
+    // кеш пермішенів власника скидається — роль набирає сили одразу
+    expect(perms.invalidate).toHaveBeenCalledWith('u1');
+    expect(audit.log).toHaveBeenCalledWith(
+      'admin1',
+      'venue_approve',
+      'venue',
+      'v1',
+      null,
+      expect.anything(),
+    );
+  });
+
+  it('approve не дублює роль, якщо власник уже має venue_admin', async () => {
+    venues.findOne.mockResolvedValueOnce({
+      id: 'v1',
+      ownerId: 'u1',
+      status: VenueStatus.Pending,
+    });
+    roles.findOne.mockResolvedValueOnce({ id: 'r1', code: 'venue_admin' });
+    userRoles.findOne.mockResolvedValueOnce({ userId: 'u1', roleId: 'r1' });
+    await service.approve('admin1', 'v1');
+    expect(userRoles.save).not.toHaveBeenCalled();
+  });
+
+  it('approve за відсутності ролі venue_admin у системі — статус змінює, роль не видає', async () => {
+    venues.findOne.mockResolvedValueOnce({
+      id: 'v1',
+      ownerId: 'u1',
+      status: VenueStatus.Pending,
+    });
+    roles.findOne.mockResolvedValueOnce(null);
+    const v = await service.approve('admin1', 'v1');
+    expect(v.status).toBe(VenueStatus.Approved);
+    expect(userRoles.save).not.toHaveBeenCalled();
+    expect(perms.invalidate).not.toHaveBeenCalled();
+  });
+
+  it('softDelete кидає 403 для не-власника без права', async () => {
+    venues.findOne.mockResolvedValueOnce({
+      id: 'v1',
+      ownerId: 'u2',
+      status: VenueStatus.Approved,
+    });
+    perms.hasPermission.mockResolvedValueOnce(false);
+    await expect(service.softDelete('u1', 'v1')).rejects.toThrow(
+      ForbiddenException,
+    );
   });
 
   it('findOneOrThrow throws on missing', async () => {

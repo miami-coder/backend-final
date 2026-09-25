@@ -14,6 +14,7 @@ describe('VenuesAdminController', () => {
       findPending: jest.fn(),
       findApproved: jest.fn(),
       changeStatus: jest.fn(),
+      approve: jest.fn(),
       findOneOrThrow: jest.fn(),
       venues: { save: jest.fn() },
     };
@@ -40,13 +41,10 @@ describe('VenuesAdminController', () => {
     expect(venues.findApproved).toHaveBeenCalledWith(1, 20);
   });
 
-  it('approve changes status to Approved and wraps in { data }', async () => {
-    venues.changeStatus.mockResolvedValue({ id: 'v1', status: 'approved' });
-    const res = await controller.approve('v1');
-    expect(venues.changeStatus).toHaveBeenCalledWith(
-      'v1',
-      VenueStatus.Approved,
-    );
+  it('approve делегує в сервіс approve з актором (видача venue_admin власнику)', async () => {
+    venues.approve.mockResolvedValue({ id: 'v1', status: 'approved' });
+    const res = await controller.approve({ sub: 'a1' } as any, 'v1');
+    expect(venues.approve).toHaveBeenCalledWith('a1', 'v1');
     expect(res.data.id).toBe('v1');
   });
 

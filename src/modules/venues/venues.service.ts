@@ -18,6 +18,10 @@ import { CreateVenueDto } from './dto/create-venue.dto';
 import { UpdateVenueDto } from './dto/update-venue.dto';
 import { QueryVenuesDto, VenueSort } from './dto/query-venues.dto';
 import { PermissionsService } from '../rbac/permissions.service';
+import { Role } from '../rbac/entities/role.entity';
+import { RoleCode } from '../rbac/entities/role.enum';
+import { UserRole } from '../rbac/entities/user-role.entity';
+import { AuditService } from '../admin/audit.service';
 import { CacheService } from '../../common/services/cache.service';
 import { FileStorageService } from '../../common/services/file-storage.service';
 import {
@@ -51,7 +55,11 @@ export class VenuesService {
     private readonly venueTypes: Repository<VenueType>,
     @InjectRepository(VenueTypeAssignment)
     private readonly venueTypeAssignments: Repository<VenueTypeAssignment>,
+    @InjectRepository(Role) private readonly roles: Repository<Role>,
+    @InjectRepository(UserRole)
+    private readonly userRoles: Repository<UserRole>,
     private readonly perms: PermissionsService,
+    private readonly audit: AuditService,
     private readonly cache: CacheService,
     private readonly events: EventEmitter2,
     private readonly storage: FileStorageService,
@@ -303,6 +311,37 @@ export class VenuesService {
       new VenueStatusChangedEvent(venueId, from, to),
     );
     return venue;
+  }
+
+  // Апрув: статус → approved + власник отримує роль venue_admin (ідемпотентно).
+  // Ручна видача ролей супер-адміном лишається незалежною.
+  async approve(actorId: string, venueId: string): Promise<Venue> {
+    const venue = await this.changeStatus(venueId, VenueStatus.Approved);
+    const roleGranted = venue.ownerId
+      ? await this.grantVenueAdmin(venue.ownerId)
+      : false;
+    await this.audit.log(actorId, 'venue_approve', 'venue', venueId, null, {
+      status: 'approved',
+      ownerId: venue.ownerId,
+      roleGranted,
+    });
+    return venue;
+  }
+
+  // Ідемпотентна видача venue_admin власнику схваленого закладу
+  private async grantVenueAdmin(userId: string): Promise<boolean> {
+    const role = await this.roles.findOne({
+      where: { code: RoleCode.VenueAdmin },
+    });
+    if (!role) return false;
+    const existing = await this.userRoles.findOne({
+      where: { userId, roleId: role.id },
+    });
+    if (existing) return false;
+    await this.userRoles.save({ userId, roleId: role.id });
+    // кеш пермішенів (TTL 5 хв) треба скинути, щоб роль набрала сили одразу
+    await this.perms.invalidate(userId);
+    return true;
   }
 
   async invalidateListCache() {

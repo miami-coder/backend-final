@@ -16,6 +16,7 @@ describe('VenuesController', () => {
       update: jest.fn(),
       findOneOrThrow: jest.fn(),
       uploadPhoto: jest.fn(),
+      softDelete: jest.fn(),
     };
     storage = { save: jest.fn() };
     const module = await Test.createTestingModule({
@@ -63,5 +64,14 @@ describe('VenuesController', () => {
     );
     expect(venues.uploadPhoto).toHaveBeenCalledWith('u1', 'v1', file);
     expect(res.data.url).toBe('/static/venues/v1/abc.png');
+  });
+
+  it('delete делегує в сервіс softDelete (м’яке видалення)', async () => {
+    venues.softDelete.mockResolvedValue(undefined);
+    await controller.remove(
+      { sub: 'u1', email: 'a@b.com', roles: ['venue_admin'] } as any,
+      'v1',
+    );
+    expect(venues.softDelete).toHaveBeenCalledWith('u1', 'v1');
   });
 });

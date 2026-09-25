@@ -1,7 +1,9 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
   Param,
   Patch,
   Post,
@@ -97,6 +99,20 @@ export class VenuesController {
     @Body() dto: UpdateVenueDto,
   ) {
     return this.venues.update(u.sub, id, dto).then((v) => ({ data: v }));
+  }
+
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Delete(':id')
+  @Permissions('venue:edit:own', 'venue:edit:any')
+  @HttpCode(204)
+  @ApiOperation({ summary: 'Видалити заклад (м’яко: статус Archived)' })
+  @ApiOkResponse({ description: 'Заклад архівовано' })
+  @ApiUnauthorizedResponse({ description: 'Не авторизований' })
+  @ApiForbiddenResponse({ description: 'Немає права редагувати цей заклад' })
+  @ApiNotFoundResponse({ description: 'Заклад не знайдено' })
+  remove(@CurrentUser() u: JwtUser, @Param('id') id: string) {
+    return this.venues.softDelete(u.sub, id);
   }
 
   @ApiBearerAuth('access-token')
