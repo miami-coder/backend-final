@@ -21,6 +21,7 @@ import {
 import type { Request, Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './services/auth.service';
+import { UsersService } from '../users/users.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
@@ -38,6 +39,7 @@ export class AuthController {
   constructor(
     private readonly auth: AuthService,
     private readonly oauthHandler: OAuthHandlerService,
+    private readonly users: UsersService,
   ) {}
 
   @Public()
@@ -117,15 +119,33 @@ export class AuthController {
             id: { type: 'string', format: 'uuid' },
             email: { type: 'string' },
             roles: { type: 'array', items: { type: 'string' } },
+            profile: {
+              type: 'object',
+              nullable: true,
+              properties: {
+                firstname: { type: 'string', nullable: true },
+                lastname: { type: 'string', nullable: true },
+              },
+            },
           },
         },
       },
     },
   })
   @ApiUnauthorizedResponse({ description: 'Не авторизований' })
-  me(@CurrentUser() current: JwtUser) {
+  async me(@CurrentUser() current: JwtUser) {
+    // profile у відповіді: шапка фронта показує імʼя замість пошти
+    // (profile створюється при реєстрації; null — OAuth-крайовий випадок)
+    const profile = await this.users.getProfile(current.sub);
     return {
-      data: { id: current.sub, email: current.email, roles: current.roles },
+      data: {
+        id: current.sub,
+        email: current.email,
+        roles: current.roles,
+        profile: profile
+          ? { firstname: profile.firstname, lastname: profile.lastname }
+          : null,
+      },
     };
   }
 
