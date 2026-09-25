@@ -18,6 +18,8 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import type { JwtUser } from '../../common/decorators/current-user.decorator';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { VenuesService } from './venues.service';
@@ -91,15 +93,15 @@ export class VenuesAdminController {
 
   @Post(':id/approve')
   @Permissions('venue:moderate')
-  @ApiOperation({ summary: 'Схвалити заклад' })
+  @ApiOperation({
+    summary: 'Схвалити заклад (власник автоматично отримує venue_admin)',
+  })
   @ApiDataResponse({ type: Venue, description: 'Схвалений заклад' })
   @ApiUnauthorizedResponse({ description: 'Не авторизований' })
   @ApiForbiddenResponse({ description: 'Немає дозволу venue:moderate' })
   @ApiNotFoundResponse({ description: 'Заклад не знайдено' })
-  approve(@Param('id') id: string) {
-    return this.venues
-      .changeStatus(id, VenueStatus.Approved)
-      .then((v) => ({ data: v }));
+  approve(@CurrentUser() u: JwtUser, @Param('id') id: string) {
+    return this.venues.approve(u.sub, id).then((v) => ({ data: v }));
   }
 
   @Post(':id/reject')
