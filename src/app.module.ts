@@ -19,6 +19,7 @@ import { NewsModule } from './modules/news/news.module';
 import { ComplaintsModule } from './modules/complaints/complaints.module';
 import { HangoutsModule } from './modules/hangouts/hangouts.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { MessagesModule } from './modules/messages/messages.module';
 import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
@@ -55,6 +56,7 @@ import { AdminModule } from './modules/admin/admin.module';
     ComplaintsModule,
     HangoutsModule,
     AnalyticsModule,
+    MessagesModule,
     AdminModule,
   ],
 })

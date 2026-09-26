@@ -5,6 +5,7 @@ import { NewsService } from './news.service';
 import { News, NewsCategory, NewsStatus } from './entities/news.entity';
 import { VenuesService } from '../venues/venues.service';
 import { PermissionsService } from '../rbac/permissions.service';
+import { FileStorageService } from '../../common/services/file-storage.service';
 
 describe('NewsService', () => {
   let service: NewsService;
@@ -35,6 +36,10 @@ describe('NewsService', () => {
         { provide: getRepositoryToken(News), useValue: news },
         { provide: VenuesService, useValue: venues },
         { provide: PermissionsService, useValue: perms },
+        {
+          provide: FileStorageService,
+          useValue: { save: jest.fn() },
+        },
       ],
     }).compile();
     service = module.get(NewsService);
@@ -69,6 +74,50 @@ describe('NewsService', () => {
       content: 'Щось сталось у місті',
     });
     expect(r.venueId).toBeNull();
+  });
+
+  it('update дозволяє власнику закладу новини', async () => {
+    news.findOne.mockResolvedValueOnce({ id: 'n1', venueId: 'v1' });
+    venues.findOneOrThrow.mockResolvedValueOnce({ ownerId: 'u1' });
+    await service.update('n1', 'u1', { title: 'Оновлено' });
+    expect(news.save).toHaveBeenCalled();
+  });
+
+  it('update забороняє чужу новину без news:manage:any', async () => {
+    news.findOne.mockResolvedValueOnce({ id: 'n1', venueId: 'v1' });
+    venues.findOneOrThrow.mockResolvedValueOnce({ ownerId: 'u2' });
+    perms.hasPermission.mockResolvedValueOnce(false);
+    await expect(
+      service.update('n1', 'u1', { title: 'Оновлено' }),
+    ).rejects.toThrow(ForbiddenException);
+  });
+
+  it('update глобальної новини вимагає news:manage:any', async () => {
+    news.findOne.mockResolvedValueOnce({ id: 'n1', venueId: null });
+    perms.hasPermission.mockResolvedValueOnce(false);
+    await expect(
+      service.update('n1', 'u1', { title: 'Оновлено' }),
+    ).rejects.toThrow(ForbiddenException);
+  });
+
+  it('softDelete забороняє чужу новину без news:manage:any', async () => {
+    news.findOne.mockResolvedValueOnce({ id: 'n1', venueId: 'v1' });
+    venues.findOneOrThrow.mockResolvedValueOnce({ ownerId: 'u2' });
+    perms.hasPermission.mockResolvedValueOnce(false);
+    await expect(service.softDelete('n1', 'u1')).rejects.toThrow(
+      ForbiddenException,
+    );
+  });
+
+  it('softDelete дозволяє суперадміну', async () => {
+    news.findOne.mockResolvedValueOnce({
+      id: 'n1',
+      venueId: 'v1',
+      status: NewsStatus.Published,
+    });
+    perms.hasPermission.mockResolvedValueOnce(true);
+    const r = await service.softDelete('n1', 'u1');
+    expect(r.status).toBe(NewsStatus.Archived);
   });
 
   it('listAdmin без status не фільтрує статус', async () => {

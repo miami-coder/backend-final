@@ -195,4 +195,22 @@ export class ReviewsController {
   myReviews(@CurrentUser() u: JwtUser) {
     return this.reviews.listForUser(u.sub).then((data) => ({ data }));
   }
+
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Get('admin/reviews')
+  @Permissions('review:edit:any')
+  @ApiOperation({ summary: 'Усі відгуки (суперадмін)' })
+  @ApiPaginatedResponse({
+    type: Review,
+    description: 'Сторінкований список відгуків',
+  })
+  @ApiQuery({ name: 'venueId', required: false, type: String })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiUnauthorizedResponse({ description: 'Не авторизований' })
+  @ApiForbiddenResponse({ description: 'Немає дозволу review:edit:any' })
+  listAdmin(@Query() q: { venueId?: string; page?: number; limit?: number }) {
+    return this.reviews.listAdmin(q);
+  }
 }

@@ -65,6 +65,23 @@ export class VenuesService {
     private readonly storage: FileStorageService,
   ) {}
 
+  /** Довідник тегів: тег + кількість закладів, де він використаний. */
+  async listTags(): Promise<
+    { id: string; name: string; slug: string; venueCount: number }[]
+  > {
+    return this.tags
+      .createQueryBuilder('t')
+      .select('t.id', 'id')
+      .addSelect('t.name', 'name')
+      .addSelect('t.slug', 'slug')
+      .addSelect('COUNT(vt."venueId")::int', 'venueCount')
+      .leftJoin(VenueTag, 'vt', 'vt."tagId" = t."id"')
+      .groupBy('t.id')
+      .orderBy('venueCount', 'DESC')
+      .addOrderBy('t.name', 'ASC')
+      .getRawMany<{ id: string; name: string; slug: string; venueCount: number }>();
+  }
+
   async create(ownerId: string, dto: CreateVenueDto): Promise<Venue> {
     const venue = this.venues.create({
       ownerId,

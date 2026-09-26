@@ -58,6 +58,33 @@ export class VenuesController {
   }
 
   @Public()
+  @Get('tags')
+  @ApiOperation({ summary: 'Довідник тегів закладів (з кількістю закладів)' })
+  @ApiOkResponse({
+    description: 'Список тегів',
+    schema: {
+      type: 'object',
+      properties: {
+        data: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              name: { type: 'string' },
+              slug: { type: 'string' },
+              venueCount: { type: 'number' },
+            },
+          },
+        },
+      },
+    },
+  })
+  listTags() {
+    return this.venues.listTags().then((data) => ({ data }));
+  }
+
+  @Public()
   @Get(':id')
   @ApiOperation({ summary: 'Публічні деталі закладу' })
   @ApiDataResponse({ type: Venue, description: 'Деталі закладу' })

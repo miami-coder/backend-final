@@ -125,6 +125,21 @@ export class ReviewsService {
     });
   }
 
+  /** Список усіх відгуків для адмінки (суперадмін). */
+  async listAdmin(opts: { venueId?: string; page?: number; limit?: number }) {
+    const { page, limit, offset } = normalizePagination(opts);
+    const qb = this.reviews
+      .createQueryBuilder('r')
+      .leftJoinAndSelect('r.user', 'u')
+      .leftJoinAndSelect('u.profile', 'p')
+      .leftJoinAndSelect('r.venue', 'v');
+    if (opts.venueId)
+      qb.where('r.venueId = :venueId', { venueId: opts.venueId });
+    qb.orderBy('r.createdAt', 'DESC').skip(offset).take(limit);
+    const [data, total] = await qb.getManyAndCount();
+    return { data, meta: buildMeta({ page, limit, offset }, total) };
+  }
+
   async feature(reviewId: string) {
     const r = await this.findOneOrThrow(reviewId);
     r.isFeatured = true;
