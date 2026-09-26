@@ -16,6 +16,7 @@ vi.mock('next/navigation', () => ({
   notFound: () => {
     throw new Error('NOT_FOUND')
   },
+  useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }),
 }))
 
 // Острови — клієнтські (useToast/useRouter): у статичному рендері сторінки
@@ -31,6 +32,10 @@ vi.mock('@/components/features/admin/user-roles-manager', async () => ({
 vi.mock('@/components/features/admin/user-delete-button', async () => ({
   UserDeleteButton: (props: { userId: string; email: string }) =>
     createElement('span', null, `delete-button:${props.userId}:${props.email}`),
+}))
+vi.mock('@/components/features/admin/user-message-button', async () => ({
+  UserMessageButton: (props: { userId: string }) =>
+    createElement('span', null, `message-button:${props.userId}`),
 }))
 
 import AdminUserPage from '@/app/admin/users/[id]/page'

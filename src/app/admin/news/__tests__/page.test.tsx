@@ -15,11 +15,15 @@ vi.mock('next/navigation', () => ({
   redirect: vi.fn((url: string) => {
     throw new Error(`REDIRECT:${url}`)
   }),
+  useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }),
 }))
 
 // island — клієнтський (useToast): у server-тесті замінюємо на стаб
 vi.mock('@/components/features/admin/admin-news-create-form', () => ({
   AdminNewsCreateForm: () => createElement('div', null, 'create-form-stub'),
+}))
+vi.mock('@/components/features/admin/admin-news-actions', () => ({
+  AdminNewsActions: () => createElement('div', null, 'news-actions-stub'),
 }))
 
 import AdminNewsPage from '@/app/admin/news/page'

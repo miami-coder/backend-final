@@ -65,6 +65,7 @@ export function UserMenu() {
         <div role="menu" aria-label="Меню користувача" className="absolute right-0 z-40 mt-1 w-44 rounded-xl border border-line bg-surface py-1">
           <Link role="menuitem" href="/account" onClick={() => setOpen(false)} className="block px-4 py-2 text-sm text-ink hover:bg-raised">Кабінет</Link>
           {isAdmin && <Link role="menuitem" href="/admin" onClick={() => setOpen(false)} className="block px-4 py-2 text-sm text-ink hover:bg-raised">Адмінка</Link>}
+          <Link role="menuitem" href="/contact" onClick={() => setOpen(false)} className="block px-4 py-2 text-sm text-ink hover:bg-raised">Написати нам</Link>
           <button role="menuitem" type="button" onClick={() => { setOpen(false); void logout() }} className="block w-full px-4 py-2 text-left text-sm text-ink hover:bg-raised">Вийти</button>
         </div>
       )}

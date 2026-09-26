@@ -13,8 +13,12 @@
 // Відхилення від референс-імплементації брифа: saveEdit ресендить наявний
 // imageUrl (модалка його не редагує) — без цього PATCH без поля міг би
 // витерти зображення, залежно від семантики бекенда.
+//
+// Фото новини: файловий upload POST /news/:id/photo (multipart, як у фото
+// закладу) ПІСЛЯ створення новини — ендпоінту без id немає. Якщо файл не
+// вибрано, новина створюється без фото.
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -34,7 +38,7 @@ export function VenueNewsManager({ venueId, news }: { venueId: string; news: New
   const [category, setCategory] = useState<NewsCategory>('general')
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
-  const [imageUrl, setImageUrl] = useState('')
+  const fileRef = useRef<HTMLInputElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [sending, setSending] = useState(false)
   const [editing, setEditing] = useState<News | null>(null)
@@ -47,7 +51,6 @@ export function VenueNewsManager({ venueId, news }: { venueId: string; news: New
       category,
       title,
       content,
-      ...(imageUrl.trim() ? { imageUrl: imageUrl.trim() } : {}),
     })
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? 'Перевірте поля')
@@ -56,11 +59,21 @@ export function VenueNewsManager({ venueId, news }: { venueId: string; news: New
     setSending(true)
     try {
       // venueId лише в URL — у body його бекенд не очікує
-      await api(`/me/venues/${venueId}/news`, { method: 'POST', body: JSON.stringify(parsed.data) })
+      const created = await api<News>(`/me/venues/${venueId}/news`, {
+        method: 'POST',
+        body: JSON.stringify(parsed.data),
+      })
+      // Фото — файловий upload після створення (ендпоінт адресує новину за id)
+      const file = fileRef.current?.files?.[0]
+      if (file && created?.id) {
+        const fd = new FormData()
+        fd.append('file', file)
+        await api(`/news/${created.id}/photo`, { method: 'POST', body: fd })
+      }
       toast('Новину додано')
       setTitle('')
       setContent('')
-      setImageUrl('')
+      if (fileRef.current) fileRef.current.value = ''
       router.refresh()
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Не вдалося додати новину')
@@ -114,7 +127,13 @@ export function VenueNewsManager({ venueId, news }: { venueId: string; news: New
         </Select>
         <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Заголовок (від 5 символів)" aria-label="Заголовок новини" />
         <Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="Текст (від 20 символів)" aria-label="Текст новини" />
-        <Input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="URL зображення (опційно)" aria-label="URL зображення" />
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          aria-label="Фото новини (опційно)"
+          className="text-sm"
+        />
         {error && <p role="alert" className="text-sm text-danger">{error}</p>}
         <Button type="submit" disabled={sending}>{sending ? 'Додаємо…' : 'Додати новину'}</Button>
       </form>

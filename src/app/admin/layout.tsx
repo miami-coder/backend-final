@@ -9,7 +9,10 @@ const LINKS = [
   { href: '/admin/venues', label: 'Заклади' },
   { href: '/admin/users', label: 'Користувачі' },
   { href: '/admin/complaints', label: 'Скарги' },
+  { href: '/admin/reviews', label: 'Відгуки' },
   { href: '/admin/news', label: 'Новини' },
+  { href: '/admin/analytics', label: 'Аналітика' },
+  { href: '/admin/messages', label: 'Повідомлення' },
 ] as const
 
 export const revalidate = 0

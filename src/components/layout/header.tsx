@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useUser } from '@/components/providers/user-provider'
 import { UserMenu } from '@/components/layout/user-menu'
+import { NotificationBell } from '@/components/layout/notification-bell'
 
 const NAV = [
   { href: '/', label: 'Каталог' },
@@ -52,6 +53,7 @@ export function Header() {
             className="w-56 rounded-full border border-strong bg-bg px-4 py-1.5 text-sm text-ink placeholder:text-faint focus:border-amber-500 focus:outline-none"
           />
         </form>
+        {user && <NotificationBell />}
         {user ? <UserMenu /> : (
           // Посилання, а не Link>Button: <button> всередині <a> — невалідний HTML.
           // Класи — як primary-кнопка (sm).

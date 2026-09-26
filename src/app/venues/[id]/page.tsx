@@ -8,6 +8,7 @@ import { ViewRecorder } from '@/components/features/venues/view-recorder'
 import { WorkingHours } from '@/components/features/venues/working-hours'
 import { getSessionTokens } from '@/lib/auth/session'
 import { ComplaintButton } from '@/components/features/complaints/complaint-button'
+import { MessageToManagerButton } from '@/components/features/messages/message-to-manager-button'
 import { FavoriteButton } from '@/components/features/venues/favorite-button'
 import { HangoutButton } from '@/components/features/hangouts/hangout-button'
 import { ReviewForm } from '@/components/features/venues/review-form'
@@ -114,6 +115,7 @@ export default async function VenuePage({ params, searchParams }: Props) {
         <FavoriteButton venueId={venue.id} initialFavorite={initialFavorite} />
         <RouteButton venue={venue} />
         <HangoutButton venueId={venue.id} loginNext={`/venues/${venue.id}`} />
+        <MessageToManagerButton venueId={venue.id} />
         <ComplaintButton target={{ venueId: venue.id }} loginNext={`/venues/${venue.id}`} />
       </div>
 

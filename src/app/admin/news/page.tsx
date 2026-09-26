@@ -7,6 +7,7 @@ import { formatDate } from '@/lib/utils/format'
 import { Pagination } from '@/components/ui/pagination'
 import { Badge } from '@/components/ui/badge'
 import { AdminNewsCreateForm } from '@/components/features/admin/admin-news-create-form'
+import { AdminNewsActions } from '@/components/features/admin/admin-news-actions'
 
 export const revalidate = 0
 
@@ -94,6 +95,9 @@ export default async function AdminNewsPage({ searchParams }: Props) {
                     <span className="font-medium text-ink">{n.title}</span>
                   )}
                   <span className="text-sm text-muted">{formatDate(n.publishedAt ?? n.createdAt)}</span>
+                  <div className="ml-auto flex gap-2">
+                    <AdminNewsActions item={n} />
+                  </div>
                 </div>
               </li>
             )

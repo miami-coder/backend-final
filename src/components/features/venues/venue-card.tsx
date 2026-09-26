@@ -38,6 +38,18 @@ export function VenueCard({ venue }: { venue: Venue }) {
           )}
           {venue.types.map((t) => <Badge key={t.id}>{t.name}</Badge>)}
         </div>
+        {/* Теги — неклікабельні бейджі: вся картка один <Link>, вкладені
+            посилання всередині невалідні. Клік-фільтр за тегом — на сторінці
+            закладу і в чипах панелі фільтрів. */}
+        {venue.tags.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {venue.tags.map((t) => (
+              <span key={t.id} className="rounded-full bg-raised px-2 py-0.5 text-xs text-muted">
+                #{t.name}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </Link>
   )

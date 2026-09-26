@@ -6,7 +6,7 @@
 // горизонтальною стрічкою фільтрів над сіткою. Пошук — у хедері (sm+); тут він
 // лишений тільки для мобільних, бо хедерний інпут схований до sm.
 
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,12 +16,21 @@ import type { CatalogQuery } from '@/lib/venues/query'
 // Рейтинг-фільтр зірками: цілі значення 1..5 (у URL досі можна 0.5-крок)
 const RATING_STARS = [1, 2, 3, 4, 5] as const
 
+// Довідник тегів GET /venues/tags — публічний; чип-клік перемикає slug у CSV
+interface TagRef {
+  id: string
+  name: string
+  slug: string
+  venueCount: number
+}
+
 export function VenueFilters({ initial }: { initial: CatalogQuery }) {
   const router = useRouter()
   const [q, setQ] = useState(initial.q ?? '')
   const [sort, setSort] = useState(initial.sort)
   const [type, setType] = useState(initial.type ?? '')
   const [tag, setTag] = useState(initial.tag.join(', '))
+  const [tags, setTags] = useState<TagRef[]>([])
   const [feature, setFeature] = useState(initial.feature.join(', '))
   const [minCheck, setMinCheck] = useState(initial.minCheck?.toString() ?? '')
   const [maxCheck, setMaxCheck] = useState(initial.maxCheck?.toString() ?? '')
@@ -31,6 +40,23 @@ export function VenueFilters({ initial }: { initial: CatalogQuery }) {
     initial.lat !== undefined && initial.lng !== undefined ? { lat: initial.lat, lng: initial.lng } : null,
   )
   const [geoError, setGeoError] = useState<string | null>(null)
+
+  // Довідник тегів для чипів (публічний ендпоінт, без авторизації)
+  useEffect(() => {
+    fetch('/api/v1/venues/tags')
+      .then((r) => r.json())
+      .then((j) => setTags(j?.data ?? []))
+      .catch(() => undefined)
+  }, [])
+
+  // Перемикання чипа: додає/забирає slug у CSV-стані тегів
+  function toggleTagSlug(slug: string) {
+    const active = tag.split(',').map((s) => s.trim()).filter(Boolean)
+    const next = active.includes(slug)
+      ? active.filter((s) => s !== slug)
+      : [...active, slug]
+    setTag(next.join(', '))
+  }
 
   function apply(e: FormEvent) {
     e.preventDefault()
@@ -89,10 +115,36 @@ export function VenueFilters({ initial }: { initial: CatalogQuery }) {
           Тип закладу (slug)
           <Input value={type} onChange={(e) => setType(e.target.value)} placeholder="напр. bar" className="mt-1" />
         </label>
-        <label className="w-44 shrink-0 text-sm lg:w-auto">
-          Теги (через кому)
-          <Input value={tag} onChange={(e) => setTag(e.target.value)} placeholder="pyvo, sport" className="mt-1" />
-        </label>
+        <div className="w-44 shrink-0 text-sm lg:w-auto">
+          <span>Теги</span>
+          {tags.length > 0 && (
+            <div className="mt-1 flex flex-wrap gap-1" role="group" aria-label="Теги">
+              {tags.map((t) => {
+                const active = tag.split(',').map((s) => s.trim()).includes(t.slug)
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => toggleTagSlug(t.slug)}
+                    className={`rounded-full border px-2 py-0.5 text-xs leading-none transition-colors focus:outline-none focus-visible:border-amber-500 ${
+                      active ? 'border-amber-500 text-amber-400' : 'border-line text-muted hover:text-amber-400'
+                    }`}
+                  >
+                    #{t.name}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+          <Input
+            value={tag}
+            onChange={(e) => setTag(e.target.value)}
+            placeholder="pyvo, sport"
+            aria-label="Теги вручну (через кому)"
+            className="mt-2"
+          />
+        </div>
         <label className="w-44 shrink-0 text-sm lg:w-auto">
           Фічі (через кому)
           <Input value={feature} onChange={(e) => setFeature(e.target.value)} placeholder="wifi, parking" className="mt-1" />

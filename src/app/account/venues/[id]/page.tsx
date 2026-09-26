@@ -2,11 +2,13 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { VenueAnalytics } from '@/components/features/account/venue-analytics'
 import { VenueEditForm } from '@/components/features/account/venue-edit-form'
+import { VenueMessagesManager } from '@/components/features/account/venue-messages-manager'
 import { VenueNewsManager } from '@/components/features/account/venue-news-manager'
 import { VenuePhotoManager } from '@/components/features/account/venue-photo-manager'
 import { VenueDeleteButton } from '@/components/features/venues/venue-delete-button'
 import { serverFetch, serverFetchList } from '@/lib/api/server-client'
 import { getSessionTokens } from '@/lib/auth/session'
+import { parseMessage, type RawMessage } from '@/types/message'
 import { parseNews, type RawNews } from '@/types/news'
 import { parseVenue, VENUE_STATUS_LABELS, type RawVenue } from '@/types/venue'
 
@@ -19,6 +21,7 @@ const TABS = [
   { key: 'edit', label: 'Редагування' },
   { key: 'photos', label: 'Фото' },
   { key: 'news', label: 'Новини' },
+  { key: 'messages', label: 'Повідомлення' },
   { key: 'analytics', label: 'Аналітика' },
 ] as const
 
@@ -54,6 +57,12 @@ export default async function ManageVenuePage({ params, searchParams }: Props) {
   const news = tab === 'news'
     ? (await serverFetchList<RawNews>(`/news?venueId=${venue.id}`, { tokens, revalidate: 0 })).data.map(parseNews)
     : []
+  // Скринька власника: повідомлення користувачів про заклад
+  const messages = tab === 'messages'
+    ? (
+      await serverFetchList<RawMessage>(`/me/venues/${venue.id}/messages`, { tokens, revalidate: 0 })
+    ).data.map(parseMessage)
+    : []
 
   return (
     <div>
@@ -81,6 +90,7 @@ export default async function ManageVenuePage({ params, searchParams }: Props) {
       {tab === 'edit' && <VenueEditForm venue={venue} />}
       {tab === 'photos' && <VenuePhotoManager venueId={venue.id} photos={venue.photos} />}
       {tab === 'news' && <VenueNewsManager venueId={venue.id} news={news} />}
+      {tab === 'messages' && <VenueMessagesManager venueId={venue.id} messages={messages} />}
       {tab === 'analytics' && (
         // діапазон із URL (YYYY-MM-DD, en-CA); дефолт — сьогодні / сьогодні − 30 днів
         <VenueAnalytics

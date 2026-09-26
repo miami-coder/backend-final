@@ -25,6 +25,9 @@ export default async function AccountLayout({ children }: { children: React.Reac
         <Link className="text-amber-500 hover:underline" href="/account/reviews">
           Відгуки
         </Link>
+        <Link className="text-amber-500 hover:underline" href="/account/messages">
+          Повідомлення
+        </Link>
         <Link className="text-amber-500 hover:underline" href="/account/hangouts">
           Пиячки
         </Link>

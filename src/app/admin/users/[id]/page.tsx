@@ -7,6 +7,7 @@ import { formatDate } from '@/lib/utils/format'
 import { UserProfileForm } from '@/components/features/admin/user-profile-form'
 import { UserRolesManager } from '@/components/features/admin/user-roles-manager'
 import { UserDeleteButton } from '@/components/features/admin/user-delete-button'
+import { UserMessageButton } from '@/components/features/admin/user-message-button'
 import { RoleBadge } from '@/components/features/admin/role-badge'
 
 export const revalidate = 0
@@ -52,6 +53,11 @@ export default async function AdminUserPage({ params }: Props) {
       <section aria-label="Ролі користувача" className="space-y-2">
         <h3 className="font-medium text-ink">Ролі</h3>
         <UserRolesManager userId={user.id} roles={user.roles} />
+      </section>
+
+      <section aria-label="Повідомлення" className="space-y-2">
+        <h3 className="font-medium text-ink">Повідомлення</h3>
+        <UserMessageButton userId={user.id} />
       </section>
 
       <section aria-label="Небезпечна зона" className="space-y-2 border-t border-line pt-6">

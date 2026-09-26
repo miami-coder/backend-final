@@ -17,6 +17,8 @@ export interface RawReview {
     roles: string[]
     profile?: { firstname: string | null; lastname: string | null } | null
   } | null
+  // /admin/reviews приєднує заклад (leftJoinAndSelect) — для адмін-списку
+  venue?: { id: string; name: string } | null
 }
 
 // --- Типи після парсингу (для UI) ---
@@ -47,4 +49,13 @@ export function parseReview(raw: RawReview): Review {
       lastname: raw.user?.profile?.lastname ?? null,
     },
   }
+}
+
+// Варіант для адмінки: разом з іменем закладу
+export interface AdminReview extends Review {
+  venueName: string | null
+}
+
+export function parseAdminReview(raw: RawReview): AdminReview {
+  return { ...parseReview(raw), venueName: raw.venue?.name ?? null }
 }
