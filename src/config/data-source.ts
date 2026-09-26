@@ -33,6 +33,7 @@ import { AnalyticsEvent } from '../modules/analytics/entities/analytics-event.en
 import { Analytics1700000007000 } from '../migrations/1700000007000-Analytics';
 import { AuditLog } from '../modules/admin/entities/audit-log.entity';
 import { Admin1700000008000 } from '../migrations/1700000008000-Admin';
+import { Messages1700000009000 } from '../migrations/1700000009000-Messages';
 
 loadEnv();
 
@@ -79,6 +80,7 @@ export default new DataSource({
     Hangouts1700000006000,
     Analytics1700000007000,
     Admin1700000008000,
+    Messages1700000009000,
   ],
   synchronize: false,
 });

@@ -9,6 +9,7 @@ import { News, NewsStatus } from './entities/news.entity';
 import { CreateNewsDto } from './dto/create-news.dto';
 import { VenuesService } from '../venues/venues.service';
 import { PermissionsService } from '../rbac/permissions.service';
+import { FileStorageService } from '../../common/services/file-storage.service';
 import {
   buildMeta,
   normalizePagination,
@@ -20,6 +21,7 @@ export class NewsService {
     @InjectRepository(News) private readonly news: Repository<News>,
     private readonly venues: VenuesService,
     private readonly perms: PermissionsService,
+    private readonly storage: FileStorageService,
   ) {}
 
   async createForVenue(userId: string, venueId: string, dto: CreateNewsDto) {
@@ -107,15 +109,50 @@ export class NewsService {
     return n;
   }
 
-  async update(id: string, dto: Partial<CreateNewsDto>) {
+  async update(id: string, userId: string, dto: Partial<CreateNewsDto>) {
     const n = await this.get(id);
+    await this.assertCanManage(userId, n);
     Object.assign(n, dto);
     return this.news.save(n);
   }
 
-  async softDelete(id: string) {
+  async softDelete(id: string, userId: string) {
     const n = await this.get(id);
+    await this.assertCanManage(userId, n);
     n.status = NewsStatus.Archived;
     return this.news.save(n);
+  }
+
+  /** Завантажити фото новини: файл у storage + imageUrl. */
+  async uploadPhoto(
+    id: string,
+    userId: string,
+    file: {
+      originalname: string;
+      mimetype: string;
+      size: number;
+      buffer: Buffer;
+    },
+  ) {
+    const n = await this.get(id);
+    await this.assertCanManage(userId, n);
+    const stored = await this.storage.save(`news/${id}`, file);
+    n.imageUrl = stored.url;
+    await this.news.save(n);
+    return stored;
+  }
+
+  /**
+   * Керувати новиною може власник закладу новини або той,
+   * хто має news:manage:any. Глобальні (платформені) новини —
+   * лише news:manage:any.
+   */
+  private async assertCanManage(userId: string, news: News) {
+    if (await this.perms.hasPermission(userId, 'news:manage:any')) return;
+    if (!news.venueId)
+      throw new ForbiddenException('Немає дозволу news:manage:any');
+    const venue = await this.venues.findOneOrThrow(news.venueId);
+    if (venue.ownerId !== userId)
+      throw new ForbiddenException('Не можна керувати новинами цього закладу');
   }
 }

@@ -7,11 +7,16 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -131,8 +136,12 @@ export class NewsController {
   @ApiForbiddenResponse({ description: 'Немає дозволу news:manage' })
   @ApiNotFoundResponse({ description: 'Новину не знайдено' })
   @ApiBadRequestResponse({ description: 'Невалідні дані' })
-  update(@Param('id') id: string, @Body() dto: Partial<CreateNewsDto>) {
-    return this.news.update(id, dto).then((data) => ({ data }));
+  update(
+    @CurrentUser() u: JwtUser,
+    @Param('id') id: string,
+    @Body() dto: Partial<CreateNewsDto>,
+  ) {
+    return this.news.update(id, u.sub, dto).then((data) => ({ data }));
   }
 
   @ApiBearerAuth('access-token')
@@ -144,7 +153,41 @@ export class NewsController {
   @ApiUnauthorizedResponse({ description: 'Не авторизований' })
   @ApiForbiddenResponse({ description: 'Немає дозволу news:manage' })
   @ApiNotFoundResponse({ description: 'Новину не знайдено' })
-  remove(@Param('id') id: string) {
-    return this.news.softDelete(id);
+  remove(@CurrentUser() u: JwtUser, @Param('id') id: string) {
+    return this.news.softDelete(id, u.sub);
+  }
+
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Post('news/:id/photo')
+  @Permissions('news:manage:own', 'news:manage:any')
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({ summary: 'Завантажити фото новини' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: { file: { type: 'string', format: 'binary' } },
+      required: ['file'],
+    },
+  })
+  @ApiOkResponse({
+    description: 'URL завантаженого фото',
+    schema: {
+      type: 'object',
+      properties: {
+        data: { type: 'object', properties: { url: { type: 'string' } } },
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({ description: 'Не авторизований' })
+  @ApiForbiddenResponse({ description: 'Немає дозволу news:manage' })
+  @ApiNotFoundResponse({ description: 'Новину не знайдено' })
+  async uploadPhoto(
+    @CurrentUser() u: JwtUser,
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return { data: await this.news.uploadPhoto(id, u.sub, file) };
   }
 }

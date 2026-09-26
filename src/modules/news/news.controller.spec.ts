@@ -65,14 +65,20 @@ describe('NewsController', () => {
 
   it('update wraps result in { data }', async () => {
     news.update.mockResolvedValue({ id: 'n1' });
-    const res = await controller.update('n1', { title: 'Оновлено' } as any);
-    expect(news.update).toHaveBeenCalledWith('n1', { title: 'Оновлено' });
+    const res = await controller.update(
+      { sub: 'u1' } as any,
+      'n1',
+      { title: 'Оновлено' } as any,
+    );
+    expect(news.update).toHaveBeenCalledWith('n1', 'u1', {
+      title: 'Оновлено',
+    });
     expect(res.data.id).toBe('n1');
   });
 
-  it('remove delegates to softDelete', async () => {
+  it('remove delegates to softDelete with user id', async () => {
     news.softDelete.mockResolvedValue(undefined);
-    await controller.remove('n1');
-    expect(news.softDelete).toHaveBeenCalledWith('n1');
+    await controller.remove({ sub: 'u1' } as any, 'n1');
+    expect(news.softDelete).toHaveBeenCalledWith('n1', 'u1');
   });
 });

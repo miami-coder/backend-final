@@ -3,7 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { VenueView } from './entities/venue-view.entity';
 import { AnalyticsEvent } from './entities/analytics-event.entity';
+import { Venue } from '../venues/entities/venue.entity';
 import { CacheService } from '../../common/services/cache.service';
+import {
+  buildMeta,
+  normalizePagination,
+} from '../../common/utils/pagination.util';
+
+export type Granularity = 'day' | 'week' | 'month';
 
 const VIEW_DEDUP_TTL = 1800; // 30 хвилин
 
@@ -102,5 +109,62 @@ export class AnalyticsService {
       .orderBy('count', 'DESC')
       .getRawMany<{ eventType: string; count: number }>();
     return { totalViews, totalEvents, eventsByType };
+  }
+
+  /** Перегляди по всій системі в розрізі часу (суперадмін). */
+  async getTimeseries(opts: {
+    from?: string;
+    to?: string;
+    granularity: Granularity;
+  }): Promise<{ date: string; count: number }[]> {
+    // granularity проходить whitelist-валідацію в контролері
+    const qb = this.views
+      .createQueryBuilder('v')
+      .select(
+        `to_char(date_trunc('${opts.granularity}', v."viewedAt"), 'YYYY-MM-DD')`,
+        'date',
+      )
+      .addSelect('COUNT(*)::int', 'count')
+      .groupBy('date')
+      .orderBy('date', 'ASC');
+    if (opts.from) qb.andWhere('v."viewedAt" >= :from', { from: opts.from });
+    if (opts.to) qb.andWhere('v."viewedAt" <= :to', { to: opts.to });
+    return qb.getRawMany<{ date: string; count: number }>();
+  }
+
+  /** Перегляди в розрізі закладів (суперадмін). */
+  async getVenueStats(opts: {
+    from?: string;
+    to?: string;
+    page?: number;
+    limit?: number;
+  }) {
+    const { page, limit, offset } = normalizePagination(opts);
+    const qb = this.views
+      .createQueryBuilder('v')
+      .select('v."venueId"', 'venueId')
+      .addSelect('v2."name"', 'venueName')
+      .addSelect('COUNT(*)::int', 'views')
+      .leftJoin(Venue, 'v2', 'v2."id" = v."venueId"')
+      .groupBy('v."venueId"')
+      .addGroupBy('v2."name"')
+      .orderBy('views', 'DESC')
+      .offset(offset)
+      .limit(limit);
+    if (opts.from) qb.andWhere('v."viewedAt" >= :from', { from: opts.from });
+    if (opts.to) qb.andWhere('v."viewedAt" <= :to', { to: opts.to });
+    const data = await qb.getRawMany<{
+      venueId: string;
+      venueName: string | null;
+      views: number;
+    }>();
+
+    const totalQb = this.views
+      .createQueryBuilder('v')
+      .select('COUNT(DISTINCT v."venueId")::int', 'total');
+    if (opts.from) totalQb.andWhere('v."viewedAt" >= :from', { from: opts.from });
+    if (opts.to) totalQb.andWhere('v."viewedAt" <= :to', { to: opts.to });
+    const row = await totalQb.getRawOne<{ total: number }>();
+    return { data, meta: buildMeta({ page, limit, offset }, row?.total ?? 0) };
   }
 }
