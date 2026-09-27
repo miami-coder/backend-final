@@ -10,8 +10,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useUser } from '@/components/providers/user-provider'
+import { authLogin, authMe } from '@/services/auth'
 import { loginSchema } from '@/lib/validation/auth'
-import type { SessionUser } from '@/types/user'
 
 export function LoginForm() {
   const router = useRouter()
@@ -33,17 +33,13 @@ export function LoginForm() {
     }
     setLoading(true)
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(parsed.data),
-      })
+      const res = await authLogin(parsed.data)
       if (res.ok) {
         // Сесія ВЖЕ встановлена — /auth/me лише для UI-стану; його падіння
         // не повинно блокувати редірект (інакше «Сервіс недоступний» при живій сесії)
         try {
-          const me = await fetch('/api/v1/auth/me').then((r) => (r.ok ? r.json() : null))
-          if (me?.data) setUser(me.data as SessionUser)
+          const me = await authMe()
+          if (me) setUser(me)
         } catch {
           // пропускаємо — router.refresh() добуде користувача в layout
         }

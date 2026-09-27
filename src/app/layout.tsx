@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { Golos_Text, Unbounded } from 'next/font/google'
 import { getSessionTokens } from '@/lib/auth/session'
-import { serverFetch } from '@/lib/api/server-client'
+import { getMeSession } from '@/services/auth.server'
 import { UserProvider } from '@/components/providers/user-provider'
 import { ToastProvider } from '@/components/ui/toast'
 import { AppShell } from '@/components/layout/app-shell'
@@ -23,7 +23,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const tokens = await getSessionTokens()
   if (tokens) {
     try {
-      user = await serverFetch<SessionUser>('/auth/me', { tokens, revalidate: 0 })
+      user = await getMeSession(tokens)
     } catch {
       user = null
     }

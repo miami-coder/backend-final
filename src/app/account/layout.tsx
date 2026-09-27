@@ -1,14 +1,13 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { serverFetch } from '@/lib/api/server-client'
+import { getMeSession } from '@/services/auth.server'
 import { getSessionTokens } from '@/lib/auth/session'
-import type { SessionUser } from '@/types/user'
 
 // Захищена зона: сесії немає або вона мертва → логін із поверненням
 export default async function AccountLayout({ children }: { children: React.ReactNode }) {
   const tokens = await getSessionTokens()
   const user = tokens
-    ? await serverFetch<SessionUser>('/auth/me', { tokens, revalidate: 0 }).catch(() => null)
+    ? await getMeSession(tokens).catch(() => null)
     : null
   if (!user) redirect('/auth/login?next=/account')
 

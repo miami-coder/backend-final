@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
+import { authLogout, authMe } from '@/services/auth'
 import type { SessionUser } from '@/types/user'
 
 interface UserContextValue {
@@ -20,11 +21,9 @@ export function UserProvider({ initialUser, children }: { initialUser: SessionUs
   // access-токен, проксі тут зробить refresh і поверне користувача.
   useEffect(() => {
     let cancelled = false
-    fetch('/api/v1/auth/me')
-      .then((res) => (res.ok ? res.json() : null))
-      .then((body) => {
-        if (cancelled || !body?.data) return
-        const next = body.data as SessionUser
+    authMe()
+      .then((next) => {
+        if (cancelled || !next) return
         setUser((prev) => (prev?.id === next.id ? prev : next))
       })
       .catch(() => null)
@@ -32,7 +31,7 @@ export function UserProvider({ initialUser, children }: { initialUser: SessionUs
   }, [])
 
   const logout = useCallback(async () => {
-    await fetch('/api/auth/logout', { method: 'POST' }).catch(() => null)
+    await authLogout()
     setUser(null)
     router.push('/')
     router.refresh()
