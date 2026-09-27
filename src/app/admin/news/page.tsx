@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { serverFetchList } from '@/lib/api/server-client'
+import { getAdminNewsPage } from '@/services/news.server'
 import { getSessionTokens } from '@/lib/auth/session'
 import { parseNews, NEWS_STATUS_LABELS, type RawNews, type NewsStatus } from '@/types/news'
 import { NEWS_CATEGORIES } from '@/lib/validation/news'
@@ -46,10 +46,7 @@ export default async function AdminNewsPage({ searchParams }: Props) {
   const statusQuery = status ? `&status=${status}` : ''
 
   const tokens = await getSessionTokens()
-  const list = await serverFetchList<RawNews>(`/admin/news?page=${page}${statusQuery}`, {
-    tokens,
-    revalidate: 0,
-  })
+  const list = await getAdminNewsPage(page, LIMIT, status, tokens)
   const news = list.data.map(parseNews)
   // meta без totalPages — рахуємо з total/limit (бекендова limit, інакше LIMIT)
   const totalPages = Math.max(1, Math.ceil((list.meta?.total ?? 0) / (list.meta?.limit || LIMIT)))

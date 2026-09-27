@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Modal } from '@/components/ui/modal'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/components/ui/toast'
-import { api } from '@/lib/api/client'
+import { replyToFeedback } from '@/services/messages'
 import { ApiError } from '@/lib/api/parse'
 import { messageFormSchema } from '@/lib/validation/message'
 
@@ -31,11 +31,7 @@ export function AdminFeedbackReply({ feedbackId }: { feedbackId: string }) {
     }
     setSending(true)
     try {
-      await api(`/admin/messages/feedback/${feedbackId}/reply`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(parsed.data),
-      })
+      await replyToFeedback(feedbackId, parsed.data)
       toast('Відповідь надіслано користувачу')
       setOpen(false)
       setBody('')

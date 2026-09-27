@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
 import { Modal } from '@/components/ui/modal'
 import { useToast } from '@/components/ui/toast'
-import { api, apiVoid } from '@/lib/api/client'
+import { deleteReview, updateReview } from '@/services/reviews'
 import { ApiError } from '@/lib/api/parse'
 import type { AdminReview } from '@/types/review'
 
@@ -39,11 +39,7 @@ export function AdminReviewActions({ item }: { item: AdminReview }) {
     }
     setSaving(true)
     try {
-      await api(`/reviews/${item.id}`, {
-        method: 'PATCH',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ rating: ratingNum, text: text.trim() }),
-      })
+      await updateReview(item.id, { rating: ratingNum, text: text.trim() })
       toast('Відгук оновлено — рейтинг закладу перераховано')
       setEditing(false)
       router.refresh()
@@ -56,7 +52,7 @@ export function AdminReviewActions({ item }: { item: AdminReview }) {
 
   async function remove() {
     try {
-      await apiVoid(`/reviews/${item.id}`, { method: 'DELETE' })
+      await deleteReview(item.id)
       toast('Відгук видалено')
       setDeleting(false)
       router.refresh()

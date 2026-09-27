@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Modal } from '@/components/ui/modal'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/components/ui/toast'
-import { api } from '@/lib/api/client'
+import { messageAdminUser } from '@/services/users'
 import { ApiError } from '@/lib/api/parse'
 import { messageFormSchema } from '@/lib/validation/message'
 
@@ -31,11 +31,7 @@ export function UserMessageButton({ userId }: { userId: string }) {
     }
     setSending(true)
     try {
-      await api(`/admin/users/${userId}/message`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(parsed.data),
-      })
+      await messageAdminUser(userId, parsed.data)
       toast('Системне повідомлення надіслано')
       setOpen(false)
       setBody('')

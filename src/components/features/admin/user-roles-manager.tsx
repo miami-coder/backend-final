@@ -8,7 +8,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Modal } from '@/components/ui/modal'
 import { useToast } from '@/components/ui/toast'
-import { api, authApiError } from '@/lib/api/client'
+import { authApiError } from '@/lib/api/client'
+import { setUserRole } from '@/services/users'
 import { ROLE_LABELS } from '@/types/admin'
 import type { Role } from '@/types/user'
 
@@ -39,11 +40,7 @@ export function UserRolesManager({ userId, roles }: { userId: string; roles: Rol
     if (busy) return // in-flight гард
     setBusy(true)
     try {
-      await api(`/admin/users/${userId}/roles`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roleCode: code, action }),
-      })
+      await setUserRole(userId, { roleCode: code, action })
       toast(action === 'add' ? 'Роль надано' : 'Роль знято')
       router.refresh()
       setConfirm(null)

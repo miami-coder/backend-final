@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
 import { Modal } from '@/components/ui/modal'
 import { useToast } from '@/components/ui/toast'
-import { api, apiVoid } from '@/lib/api/client'
+import { deleteNews, updateNews } from '@/services/news'
 import { ApiError } from '@/lib/api/parse'
 import { NEWS_CATEGORIES } from '@/lib/validation/news'
 import { NEWS_STATUS_LABELS, type News, type NewsStatus } from '@/types/news'
@@ -42,11 +42,7 @@ export function AdminNewsActions({ item }: { item: News }) {
     }
     setSaving(true)
     try {
-      await api(`/news/${item.id}`, {
-        method: 'PATCH',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ title: title.trim(), content: content.trim(), category, status }),
-      })
+      await updateNews(item.id, { title: title.trim(), content: content.trim(), category, status })
       toast('Новину оновлено')
       setEditing(false)
       router.refresh()
@@ -59,7 +55,7 @@ export function AdminNewsActions({ item }: { item: News }) {
 
   async function remove() {
     try {
-      await apiVoid(`/news/${item.id}`, { method: 'DELETE' })
+      await deleteNews(item.id)
       toast('Новину заархівовано')
       setDeleting(false)
       router.refresh()

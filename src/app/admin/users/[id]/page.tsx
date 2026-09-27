@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { serverFetch } from '@/lib/api/server-client'
+import { getAdminUser } from '@/services/users.server'
 import { getSessionTokens } from '@/lib/auth/session'
 import { parseAdminUser, type RawAdminUser } from '@/types/admin'
 import { formatDate } from '@/lib/utils/format'
@@ -22,10 +22,7 @@ export default async function AdminUserPage({ params }: Props) {
   const { id } = await params
   const tokens = await getSessionTokens()
   // serverFetch уже розгортає конверт { data: … } — повертається сам RawAdminUser
-  const raw = await serverFetch<RawAdminUser>(`/admin/users/${id}`, {
-    tokens,
-    revalidate: 0,
-  }).catch(() => null)
+  const raw = await getAdminUser(id, tokens)
   if (!raw) notFound()
   const user = parseAdminUser(raw)
 

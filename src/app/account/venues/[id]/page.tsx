@@ -6,11 +6,13 @@ import { VenueMessagesManager } from '@/components/features/account/venue-messag
 import { VenueNewsManager } from '@/components/features/account/venue-news-manager'
 import { VenuePhotoManager } from '@/components/features/account/venue-photo-manager'
 import { VenueDeleteButton } from '@/components/features/venues/venue-delete-button'
-import { serverFetch, serverFetchList } from '@/lib/api/server-client'
+import { getVenueNews } from '@/services/news.server'
+import { getOwnerVenue } from '@/services/venues.server'
+import { getVenueMessages } from '@/services/messages.server'
 import { getSessionTokens } from '@/lib/auth/session'
 import { parseMessage, type RawMessage } from '@/types/message'
 import { parseNews, type RawNews } from '@/types/news'
-import { parseVenue, VENUE_STATUS_LABELS, type RawVenue } from '@/types/venue'
+import { parseVenue, VENUE_STATUS_LABELS } from '@/types/venue'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -46,22 +48,19 @@ export default async function ManageVenuePage({ params, searchParams }: Props) {
   const { id } = await params
   // serverFetch розгортає {data}-конверт сам; будь-яка помилка (403 чужий
   // заклад / 404 не існує / мережа) → notFound (глобальний 404 достатній)
-  const raw = await serverFetch<RawVenue>(`/me/venues/${id}`, { tokens, revalidate: 0 }).catch(() => null)
+  const raw = await getOwnerVenue(id, tokens).catch(() => null)
   if (!raw) notFound()
   const venue = parseVenue(raw)
 
   const sp = await searchParams
   const tab: TabKey = TABS.some((t) => t.key === sp?.tab) ? (sp.tab as TabKey) : 'edit'
-  // Публічний список /news?venueId= → only published (заархівовані зникають):
-  // serverFetchList повертає {data, meta?}-конверт (на відміну від serverFetch)
+  // Публічний список /news?venueId= → only published (заархівовані зникають)
   const news = tab === 'news'
-    ? (await serverFetchList<RawNews>(`/news?venueId=${venue.id}`, { tokens, revalidate: 0 })).data.map(parseNews)
+    ? (await getVenueNews(venue.id, tokens)).data.map(parseNews)
     : []
   // Скринька власника: повідомлення користувачів про заклад
   const messages = tab === 'messages'
-    ? (
-      await serverFetchList<RawMessage>(`/me/venues/${venue.id}/messages`, { tokens, revalidate: 0 })
-    ).data.map(parseMessage)
+    ? (await getVenueMessages(venue.id, tokens)).data.map(parseMessage)
     : []
 
   return (

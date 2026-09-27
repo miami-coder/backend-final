@@ -30,3 +30,11 @@ export async function findMyReviewForVenue(venueId: string, tokens: SessionToken
   )
   return mine.data.find((r) => r.venueId === venueId) ?? null
 }
+
+/** Список відгуків для адмінки (пагінація, фільтр за закладом). */
+export function getAdminReviewsPage(page: number, limit: number, venueQuery: string, tokens: SessionTokens | null) {
+  return serverFetchList<RawReview>(`/admin/reviews?page=${page}&limit=${limit}${venueQuery}`, {
+    tokens,
+    revalidate: 0,
+  })
+}

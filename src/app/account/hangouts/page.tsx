@@ -1,12 +1,12 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { HangoutActions } from '@/components/features/hangouts/hangout-actions'
-import { serverFetch } from '@/lib/api/server-client'
+import { getMyHangouts } from '@/services/hangouts.server'
+import { getMeSession } from '@/services/auth.server'
 import { getSessionTokens } from '@/lib/auth/session'
 import { HANGOUT_GENDERS, HANGOUT_PAYERS } from '@/lib/validation/hangout'
 import { formatMoney } from '@/lib/utils/format'
 import { parseHangout, HANGOUT_STATUS_LABELS, type RawHangout, type Hangout, type HangoutGender, type HangoutPayer } from '@/types/hangout'
-import type { SessionUser } from '@/types/user'
 
 const ROLES = ['created', 'joined', 'all'] as const
 
@@ -54,9 +54,9 @@ export default async function MyHangoutsPage({ searchParams }: Props) {
   const sp = await searchParams
   const role = ROLES.includes(sp?.role as (typeof ROLES)[number]) ? (sp?.role as (typeof ROLES)[number]) : 'created'
 
-  const raw = await serverFetch<RawHangout[]>(`/me/hangouts?role=${role}`, { tokens, revalidate: 0 })
+  const raw = await getMyHangouts(role, tokens)
   const hangouts = raw.map(parseHangout)
-  const user = await serverFetch<SessionUser>('/auth/me', { tokens, revalidate: 0 })
+  const user = await getMeSession(tokens)
 
   // Групування за датою (h.date — 'YYYY-MM-DD', порівняння лексикографічне):
   // сьогоднішні й майбутні — «Майбутні», решта — «Минулі» (приглушені).

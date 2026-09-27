@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Pagination } from '@/components/ui/pagination'
-import { serverFetchList } from '@/lib/api/server-client'
+import { getNewsPage } from '@/services/news.server'
 import { NEWS_CATEGORIES } from '@/lib/validation/news'
 import { parseNews, type RawNews } from '@/types/news'
 import { placeholderFor } from '@/lib/utils/placeholder'
@@ -30,7 +30,7 @@ export default async function NewsPage({ searchParams }: Props) {
   const page = Math.max(1, Number(sp?.page ?? 1) || 1)
   const category = NEWS_CATEGORIES.some((c) => c.value === sp?.category) ? sp!.category : undefined
 
-  const raw = await serverFetchList<RawNews>(`/news?page=${page}&limit=${LIMIT}${category ? `&category=${category}` : ''}`, { revalidate: 60 })
+  const raw = await getNewsPage(page, LIMIT, category)
   const news = raw.data.map(parseNews)
   const totalPages = Math.max(1, Math.ceil((raw.meta?.total ?? 0) / (raw.meta?.limit || LIMIT)))
 

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { serverFetchList } from '@/lib/api/server-client'
+import { getAdminVenuesPage } from '@/services/venues.server'
 import { getSessionTokens } from '@/lib/auth/session'
 import { parseVenue, VENUE_STATUS_LABELS, type Venue, type RawVenue } from '@/types/venue'
 import { formatDate } from '@/lib/utils/format'
@@ -181,10 +181,7 @@ export default async function AdminVenuesPage({ searchParams }: Props) {
   const tab: Tab = sp?.tab === 'approved' ? 'approved' : 'moderation'
 
   const tokens = await getSessionTokens()
-  const list = await serverFetchList<RawVenue>(
-    tab === 'approved' ? `/admin/venues/approved?page=${page}` : `/admin/venues/pending?page=${page}`,
-    { tokens, revalidate: 0 },
-  )
+  const list = await getAdminVenuesPage(tab, page, tokens)
   const venues = list.data.map(parseVenue)
   // meta без totalPages — рахуємо з total/limit (бекендова limit, інакше LIMIT)
   const totalPages = Math.max(1, Math.ceil((list.meta?.total ?? 0) / (list.meta?.limit || LIMIT)))

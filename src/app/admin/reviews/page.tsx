@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { serverFetchList } from '@/lib/api/server-client'
+import { getAdminReviewsPage } from '@/services/reviews.server'
 import { getSessionTokens } from '@/lib/auth/session'
 import { parseAdminReview, type RawReview } from '@/types/review'
 import { formatDate } from '@/lib/utils/format'
@@ -25,10 +25,7 @@ export default async function AdminReviewsPage({ searchParams }: Props) {
   const venueQuery = sp?.venueId ? `&venueId=${sp.venueId}` : ''
 
   const tokens = await getSessionTokens()
-  const list = await serverFetchList<RawReview>(
-    `/admin/reviews?page=${page}&limit=${LIMIT}${venueQuery}`,
-    { tokens, revalidate: 0 },
-  )
+  const list = await getAdminReviewsPage(page, LIMIT, venueQuery, tokens)
   const reviews = list.data.map(parseAdminReview)
   const totalPages = Math.max(1, Math.ceil((list.meta?.total ?? 0) / (list.meta?.limit || LIMIT)))
 

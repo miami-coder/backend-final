@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { api, authApiError } from '@/lib/api/client'
+import { authApiError } from '@/lib/api/client'
+import { rejectVenue } from '@/services/venues'
 import { Modal } from '@/components/ui/modal'
 import { useToast } from '@/components/ui/toast'
 
@@ -18,11 +19,7 @@ export function VenueRejectButton({ venueId }: { venueId: string }) {
     if (busy) return // in-flight гард: подвійний клік не шле другий запит
     setBusy(true)
     try {
-      await api(`/admin/venues/${venueId}/reject`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: '{}',
-      })
+      await rejectVenue(venueId)
       toast('Заклад відхилено')
       router.refresh()
       setOpen(false)

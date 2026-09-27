@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Modal } from '@/components/ui/modal'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/components/ui/toast'
-import { api } from '@/lib/api/client'
+import { createVenueHangout } from '@/services/hangouts'
 import { ApiError } from '@/lib/api/parse'
 import { HANGOUT_GENDERS, HANGOUT_PAYERS, hangoutFormSchema } from '@/lib/validation/hangout'
 
@@ -98,11 +98,7 @@ export function HangoutButton({ venueId, loginNext }: { venueId: string; loginNe
     }
     setSending(true)
     try {
-      await api(`/venues/${venueId}/hangouts`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(parsed.data),
-      })
+      await createVenueHangout(venueId, parsed.data)
       toast('Пиячок створено! Очікуйте на компанію.')
       close()
     } catch (e) {

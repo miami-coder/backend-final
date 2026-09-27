@@ -3,9 +3,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { serverFetch } from '@/lib/api/server-client'
-import { parseNews, type RawNews } from '@/types/news'
-import { parseVenue, type RawVenue } from '@/types/venue'
+import { getPublishedNews } from '@/services/news.server'
+import { getVenueById } from '@/services/venues.server'
+import { parseVenue } from '@/types/venue'
 import { NEWS_CATEGORIES } from '@/lib/validation/news'
 import { formatDate } from '@/lib/utils/format'
 
@@ -15,28 +15,21 @@ interface Props {
 
 export const revalidate = 60
 
-async function getNews(id: string) {
-  const raw = await serverFetch<RawNews>(`/news/${id}`, { revalidate: 60 }).catch(() => null)
-  // Бекенд (news.service.get, @Public() GET /news/:id) віддає і draft/archived
-  // зі статусом 200 — публічна деталка мусить показувати лише published
-  return raw && raw.status === 'published' ? parseNews(raw) : null
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
-  const news = await getNews(id)
+  const news = await getPublishedNews(id)
   return { title: news ? `${news.title} — Пиячок` : 'Новина — Пиячок' }
 }
 
 export default async function NewsPage({ params }: Props) {
   const { id } = await params
-  const news = await getNews(id)
+  const news = await getPublishedNews(id)
   if (!news) notFound()
 
   // ⚠️ бриф: GET /venues/:id віддає лише approved-заклади (не-approved → 404),
   // тому падіння запиту (включно з 404) тихо ігноруємо — рядок не показуємо
   const venue = news.venueId
-    ? await serverFetch<RawVenue>(`/venues/${news.venueId}`, { revalidate: 60 }).then(parseVenue).catch(() => null)
+    ? await getVenueById(news.venueId).then((v) => (v ? parseVenue(v) : null))
     : null
 
   const categoryLabel = NEWS_CATEGORIES.find((c) => c.value === news.category)?.label

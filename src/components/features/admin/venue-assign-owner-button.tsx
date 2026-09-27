@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { api, apiList, authApiError } from '@/lib/api/client'
+import { authApiError } from '@/lib/api/client'
+import { assignVenueOwner } from '@/services/venues'
+import { getAdminUserOptions } from '@/services/users'
 import { Modal } from '@/components/ui/modal'
 import { useToast } from '@/components/ui/toast'
 import { parseAdminUser, type AdminUser, type RawAdminUser } from '@/types/admin'
@@ -30,7 +32,7 @@ export function VenueAssignOwnerButton({
   useEffect(() => {
     if (!open) return
     let cancelled = false
-    apiList<RawAdminUser>('/admin/users?limit=100')
+    getAdminUserOptions()
       .then((res) => {
         if (!cancelled) setUsers(res.data.map(parseAdminUser))
       })
@@ -52,11 +54,7 @@ export function VenueAssignOwnerButton({
     if (busy || !userId) return // in-flight гард + гард на порожній вибір
     setBusy(true)
     try {
-      await api(`/admin/venues/${venueId}/assign-owner`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId }),
-      })
+      await assignVenueOwner(venueId, userId)
       toast('Власника призначено')
       router.refresh()
       setOpen(false)

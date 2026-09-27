@@ -70,3 +70,28 @@ export function addFavorite(venueId: string): Promise<unknown> {
 export function removeFavorite(venueId: string): Promise<void> {
   return apiVoid(`/me/favorites/${venueId}`, { method: 'DELETE' })
 }
+
+// --- адмінські дії над закладами (суперадмін) ---
+
+/** POST /admin/venues/:id/approve — бекенд approve приймає запит без тіла. */
+export function approveVenue(venueId: string): Promise<unknown> {
+  return api(`/admin/venues/${venueId}/approve`, { method: 'POST' })
+}
+
+/** POST /admin/venues/:id/reject — відхилення з причиною (тіло '{}'). */
+export function rejectVenue(venueId: string): Promise<unknown> {
+  return api(`/admin/venues/${venueId}/reject`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+}
+
+/** POST /admin/venues/:id/assign-owner — призначити власника. */
+export function assignVenueOwner(venueId: string, userId: string): Promise<unknown> {
+  return api(`/admin/venues/${venueId}/assign-owner`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId }),
+  })
+}

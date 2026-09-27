@@ -7,6 +7,14 @@ import type { RawVenueAnalytics } from '@/types/analytics'
 import type { SessionTokens } from '@/lib/auth/session'
 
 /**
+ * Прості деталі закладу одним запитом (без збагачення) — для сайд-барів,
+ * де потрібне лише ім'я/посилання; null, якщо заклад недоступний.
+ */
+export function getVenueById(id: string, revalidate = 60): Promise<RawVenue | null> {
+  return serverFetch<RawVenue>(`/venues/${id}`, { revalidate }).catch(() => null)
+}
+
+/**
  * Деталі закладу зі збагаченням: GET /venues/:id не повертає
  * photos/tags/types/features (лише owner) — добираємо через list-пошук за
  * назвою; деградація тиха, якщо не знайшли. Повертає null, якщо заклад
@@ -65,4 +73,13 @@ export function getFavoritesPage(tokens: SessionTokens | null, page: number, lim
 export async function getFavoriteIds(tokens: SessionTokens | null): Promise<Set<string>> {
   const favs = await serverFetchList<{ id: string }>('/me/favorites?limit=100', { tokens, revalidate: 0 })
   return new Set(favs.data.map((f) => f.id))
+}
+
+/** Список закладів для адмінки (вкладки «модерація»/«схвалені», пагінація). */
+export function getAdminVenuesPage(tab: 'moderation' | 'approved', page: number, tokens: SessionTokens | null) {
+  // вкладка «модерація» — це бекендовий pending
+  return serverFetchList<RawVenue>(`/admin/venues/${tab === 'moderation' ? 'pending' : tab}?page=${page}`, {
+    tokens,
+    revalidate: 0,
+  })
 }

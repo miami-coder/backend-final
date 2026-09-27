@@ -8,9 +8,9 @@ import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/toast'
-import { api, apiList } from '@/lib/api/client'
+import { getMyMessages, markMessageRead } from '@/services/messages'
 import { ApiError } from '@/lib/api/parse'
-import { MESSAGE_KIND_LABELS, parseMessage, type Message, type RawMessage } from '@/types/message'
+import { MESSAGE_KIND_LABELS, parseMessage, type Message } from '@/types/message'
 import { formatDate } from '@/lib/utils/format'
 
 const LIMIT = 20
@@ -25,7 +25,7 @@ export default function AccountMessagesPage() {
   const load = useCallback(async (p: number) => {
     setError(null)
     try {
-      const list = await apiList<RawMessage>(`/me/messages?page=${p}&limit=${LIMIT}`)
+      const list = await getMyMessages(p, LIMIT)
       setMessages(list.data.map(parseMessage))
       setTotal(list.meta?.total ?? list.data.length)
       setPage(p)
@@ -43,7 +43,7 @@ export default function AccountMessagesPage() {
   async function markRead(m: Message) {
     if (m.isRead) return
     try {
-      await api(`/me/messages/${m.id}/read`, { method: 'PATCH' })
+      await markMessageRead(m.id)
       setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, isRead: true } : x)))
     } catch {
       // не критично: позначка читання повториться при наступному кліку

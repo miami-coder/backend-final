@@ -1,4 +1,4 @@
-import { serverFetch, serverFetchList } from '@/lib/api/server-client'
+import { getAdminOverview } from '@/services/admin.server'
 import { getSessionTokens } from '@/lib/auth/session'
 
 interface RawOverview {
@@ -22,13 +22,7 @@ export const revalidate = 0
 // «Огляд»: плитки аналітики (overview падає тихо → «—») + лічильники секцій з meta.total
 export default async function AdminOverviewPage() {
   const tokens = await getSessionTokens()
-  const [overview, venues, users, complaints, news] = await Promise.all([
-    serverFetch<RawOverview>('/admin/analytics/overview', { tokens, revalidate: 0 }).catch(() => null),
-    serverFetchList('/admin/venues/pending?limit=1', { tokens, revalidate: 0 }),
-    serverFetchList('/admin/users?limit=1', { tokens, revalidate: 0 }),
-    serverFetchList('/admin/complaints?limit=1', { tokens, revalidate: 0 }),
-    serverFetchList('/admin/news?limit=1', { tokens, revalidate: 0 }),
-  ])
+  const { overview, venues, users, complaints, news } = await getAdminOverview(tokens)
   return (
     <section aria-label="Огляд системи" className="grid grid-cols-2 gap-4 sm:grid-cols-3">
       <Tile label="Перегляди" value={overview ? overview.totalViews : '—'} />

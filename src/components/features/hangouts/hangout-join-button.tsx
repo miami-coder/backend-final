@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useUser } from '@/components/providers/user-provider'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/toast'
-import { apiVoid } from '@/lib/api/client'
+import { joinHangout } from '@/services/hangouts'
 import { ApiError } from '@/lib/api/parse'
 import type { HangoutStatus } from '@/types/hangout'
 
@@ -38,7 +38,7 @@ export function HangoutJoinButton({ hangoutId, status }: { hangoutId: string; st
     setBusy(true)
     setError(null)
     try {
-      await apiVoid(`/hangouts/${hangoutId}/join`, { method: 'POST' })
+      await joinHangout(hangoutId)
       // router.refresh(): після join список учасників на сервері змінився —
       // RSC-перевитяг оновить лічильник/статус картки (патерн HangoutActions)
       router.refresh()
