@@ -1,9 +1,9 @@
 import Link from 'next/link'
 import { RatingStars } from '@/components/ui/rating-stars'
 import { Pagination } from '@/components/ui/pagination'
-import { serverFetchList } from '@/lib/api/server-client'
+import { getVenueReviews } from '@/services/reviews.server'
 import { formatDateTime } from '@/lib/utils/format'
-import { parseReview, type RawReview, type Review } from '@/types/review'
+import { parseReview, type Review } from '@/types/review'
 
 // Бекенд валідує sort жорстко (інше значення → 500), тож фронт сам обмежує вибір
 const SORTS = [
@@ -17,10 +17,7 @@ export const REVIEW_LIMIT = 10
 
 export async function ReviewList({ venueId, sort, page }: { venueId: string; sort: string; page: number }) {
   const safeSort = SORTS.some((s) => s.value === sort) ? sort : 'newest'
-  const raw = await serverFetchList<RawReview>(
-    `/venues/${venueId}/reviews?sort=${safeSort}&page=${page}&limit=${REVIEW_LIMIT}`,
-    { revalidate: 0 },
-  )
+  const raw = await getVenueReviews(venueId, safeSort, page, REVIEW_LIMIT)
   const reviews: Review[] = raw.data.map(parseReview)
   // meta опціональна за типом serverFetchList — дефолт без неї: одна порожня сторінка
   const totalPages = Math.max(1, Math.ceil((raw.meta?.total ?? 0) / (raw.meta?.limit || REVIEW_LIMIT)))

@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useToast } from '@/components/ui/toast'
-import { apiVoid } from '@/lib/api/client'
+import { removeFavorite } from '@/services/venues'
 import { ApiError } from '@/lib/api/parse'
 
 export function FavoriteRemoveButton({ venueId }: { venueId: string }) {
@@ -14,7 +14,7 @@ export function FavoriteRemoveButton({ venueId }: { venueId: string }) {
   async function remove() {
     setRemoving(true)
     try {
-      await apiVoid(`/me/favorites/${venueId}`, { method: 'DELETE' })
+      await removeFavorite(venueId)
       toast('Прибрано з обраного')
       router.refresh()
     } catch (e) {

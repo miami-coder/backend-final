@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import { recordVenueView } from '@/services/venues'
 
 // Лічильник переглядів: публічний POST /venues/:id/view (BFF-проксі).
 // Fire-and-forget: помилки ігноруємо — лічильник не критичний для UI.
@@ -43,11 +44,7 @@ export function ViewRecorder({ venueId }: { venueId: string }) {
       // немає sessionStorage — ref-гuard все одно захищає від дубля в цьому інстансі
     }
 
-    fetch(`/api/v1/venues/${venueId}/view`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ sessionId: sessionId.slice(0, 64) }),
-    }).catch(() => {})
+    recordVenueView(venueId, sessionId)
   }, [venueId])
 
   return null

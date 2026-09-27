@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { useUser } from '@/components/providers/user-provider'
 import { useToast } from '@/components/ui/toast'
-import { api } from '@/lib/api/client'
+import { addFavorite, removeFavorite } from '@/services/venues'
 
 export function FavoriteButton({ venueId, initialFavorite }: { venueId: string; initialFavorite: boolean }) {
   const { user } = useUser()
@@ -36,10 +36,10 @@ export function FavoriteButton({ venueId, initialFavorite }: { venueId: string; 
     setFavorite(!was) // оптимістично
     try {
       if (!was) {
-        await api(`/me/favorites/${venueId}`, { method: 'POST' })
+        await addFavorite(venueId)
       } else {
-        // DELETE → 200 з порожнім тілом: api() парсить через parseEmpty
-        await api(`/me/favorites/${venueId}`, { method: 'DELETE' })
+        // DELETE → 200 з порожнім тілом: парсимо через parseEmpty
+        await removeFavorite(venueId)
       }
       startTransition(() => router.refresh())
     } catch {

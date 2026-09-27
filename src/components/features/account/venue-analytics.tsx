@@ -1,13 +1,11 @@
-import { serverFetch } from '@/lib/api/server-client'
-import { parseVenueAnalytics, type RawVenueAnalytics } from '@/types/analytics'
+import { getVenueAnalytics } from '@/services/venues.server'
+import { parseVenueAnalytics } from '@/types/analytics'
 import { AnalyticsRangeForm } from '@/components/features/account/analytics-range-form'
 import { getSessionTokens } from '@/lib/auth/session'
 
 export async function VenueAnalytics({ venueId, from, to }: { venueId: string; from: string; to: string }) {
   const tokens = await getSessionTokens()
-  const raw = await serverFetch<RawVenueAnalytics>(`/me/venues/${venueId}/analytics?from=${from}&to=${to}`, {
-    tokens, revalidate: 0,
-  }).catch(() => null)
+  const raw = await getVenueAnalytics(venueId, from, to, tokens).catch(() => null)
   if (!raw) {
     return <p className="text-sm text-danger">Не вдалося завантажити аналітику.</p>
   }

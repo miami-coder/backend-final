@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { MyReviewItem } from '@/components/features/account/my-review-item'
-import { serverFetch } from '@/lib/api/server-client'
+import { getMyReviews } from '@/services/reviews.server'
 import { getSessionTokens } from '@/lib/auth/session'
 import { parseReview, type RawReview } from '@/types/review'
 
@@ -9,7 +9,7 @@ export default async function MyReviewsPage() {
   const tokens = await getSessionTokens()
   if (!tokens) redirect('/auth/login?next=/account/reviews')
   // бекенд віддає {data: RawReview[]} без meta — serverFetch (parseData), не serverFetchList
-  const raw = await serverFetch<RawReview[]>('/me/reviews', { tokens, revalidate: 0 })
+  const raw = await getMyReviews(tokens)
   const reviews = raw.map(parseReview)
 
   if (reviews.length === 0) {

@@ -3,9 +3,9 @@ import { redirect } from 'next/navigation'
 import { FavoriteRemoveButton } from '@/components/features/venues/favorite-remove-button'
 import { RatingStars } from '@/components/ui/rating-stars'
 import { Pagination } from '@/components/ui/pagination'
-import { serverFetchList } from '@/lib/api/server-client'
+import { getFavoritesPage } from '@/services/venues.server'
 import { getSessionTokens } from '@/lib/auth/session'
-import { parseFavoriteVenue, type RawFavoriteVenue } from '@/types/favorite'
+import { parseFavoriteVenue } from '@/types/favorite'
 import { placeholderFor } from '@/lib/utils/placeholder'
 
 const LIMIT = 20
@@ -21,10 +21,7 @@ export default async function FavoritesPage({ searchParams }: Props) {
   const sp = await searchParams
   const page = Math.max(1, Number(sp?.page ?? 1) || 1)
 
-  const raw = await serverFetchList<RawFavoriteVenue>(`/me/favorites?page=${page}&limit=${LIMIT}`, {
-    tokens,
-    revalidate: 0,
-  })
+  const raw = await getFavoritesPage(tokens, page, LIMIT)
   const favorites = raw.data.map(parseFavoriteVenue)
   const totalPages = Math.max(1, Math.ceil((raw.meta?.total ?? 0) / (raw.meta?.limit || LIMIT)))
 

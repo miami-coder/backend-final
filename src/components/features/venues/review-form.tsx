@@ -7,8 +7,8 @@ import { useUser } from '@/components/providers/user-provider'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/components/ui/toast'
-import { api, apiVoid } from '@/lib/api/client'
 import { ApiError } from '@/lib/api/parse'
+import { createVenueReview, deleteReview, updateReview } from '@/services/reviews'
 import { reviewFormSchema } from '@/lib/validation/review'
 
 const MAX_FILE = 5 * 1024 * 1024
@@ -65,17 +65,9 @@ export function ReviewForm({ venueId, myReview }: { venueId: string; myReview: M
         fd.set('rating', String(parsed.data.rating))
         fd.set('text', parsed.data.text)
         if (file) fd.set('checkPhoto', file)
-        // multipart БЕЗ content-type (браузер сам ставить boundary) — тому сирий fetch,
-        // а не api(): той не ставить заголовків, але тут важливо не зіпсувати multipart;
-        // !ok розбираємо вручну в errMessage
-        const res = await fetch(`/api/v1/venues/${venueId}/reviews`, { method: 'POST', body: fd })
-        if (!res.ok) throw new ApiError(res.status, 'ERROR', await errMessage(res))
+        await createVenueReview(venueId, fd)
       } else {
-        await api(`/reviews/${myReview.id}`, {
-          method: 'PATCH',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify(parsed.data),
-        })
+        await updateReview(myReview.id, parsed.data)
       }
       toast(myReview ? 'Відгук оновлено' : 'Дякуємо за відгук!')
       router.refresh()
@@ -91,7 +83,7 @@ export function ReviewForm({ venueId, myReview }: { venueId: string; myReview: M
     if (!window.confirm('Видалити ваш відгук?')) return
     try {
       // DELETE → 200 з порожнім тілом: парсимо через parseEmpty (apiVoid), не parseData
-      await apiVoid(`/reviews/${myReview.id}`, { method: 'DELETE' })
+      await deleteReview(myReview.id)
       toast('Відгук видалено')
       router.refresh()
     } catch (e) {
@@ -162,14 +154,4 @@ export function ReviewForm({ venueId, myReview }: { venueId: string; myReview: M
       </div>
     </div>
   )
-}
-
-// витягнути message з помилкового тіла (може бути не-JSON)
-async function errMessage(res: Response): Promise<string> {
-  try {
-    const body = (await res.clone().json()) as { error?: { message?: string } } | null
-    return body?.error?.message ?? 'Сервіс тимчасово недоступний'
-  } catch {
-    return 'Сервіс тимчасово недоступний'
-  }
 }

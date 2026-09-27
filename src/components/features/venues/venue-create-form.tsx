@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { api } from '@/lib/api/client'
+import { createVenue, uploadVenuePhoto } from '@/services/venues'
 import { ApiError } from '@/lib/api/parse'
 import { venueCreateSchema, WH_DAYS, csvToArray } from '@/lib/validation/venue'
 
@@ -102,20 +102,14 @@ export function VenueCreateForm() {
     }
     setSending(true)
     try {
-      // content-type обовʼязковий: BFF-проксі не проставляє його сам
-      const created = await api<{ id: string }>('/venues', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(parsed.data),
-      })
+      const created = await createVenue(parsed.data)
       // Фото — після створення (ендпоінт привʼязаний до id): по одному файлу
       // на запит. Помилка окремого фото не скасовує подання (заклад уже
       // створений) — редірект іде далі, повторно завантажити можна у
       // вкладці «Фото» кабінету.
       for (const file of photos) {
-        const fd = new FormData()
-        fd.append('file', file)
-        await api(`/venues/${created?.id}/photos`, { method: 'POST', body: fd })
+        if (!created) break // id немає (напр., порожнє тіло) — фото нікуди слати
+        await uploadVenuePhoto(created.id, file)
       }
       router.push('/account/venues?created=1')
     } catch (err) {
