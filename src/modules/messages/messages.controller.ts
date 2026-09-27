@@ -57,6 +57,15 @@ export class MessagesController {
     }));
   }
 
+  @Post('feedback')
+  @ApiOperation({ summary: "Зворотний зв'язок «написати нам» (→ скринька адмінки)" })
+  @ApiDataResponse({ status: 201, type: Message, description: 'Створене звернення (kind=feedback)' })
+  @ApiUnauthorizedResponse({ description: 'Не авторизований' })
+  @ApiBadRequestResponse({ description: 'Невалідні дані' })
+  sendFeedback(@CurrentUser() u: JwtUser, @Body() dto: SendMessageDto) {
+    return this.messages.sendFeedback(u.sub, dto).then((data) => ({ data }));
+  }
+
   @Get('me/messages')
   @ApiOperation({ summary: 'Вхідні повідомлення користувача' })
   @ApiPaginatedResponse({ type: Message, description: 'Вхідні повідомлення' })
