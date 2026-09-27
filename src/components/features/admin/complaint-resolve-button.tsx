@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { api, authApiError } from '@/lib/api/client'
+import { authApiError } from '@/lib/api/client'
+import { resolveComplaint } from '@/services/complaints'
 import { Modal } from '@/components/ui/modal'
 import { useToast } from '@/components/ui/toast'
 
@@ -32,11 +33,7 @@ export function ComplaintResolveButton({ complaintId }: { complaintId: string })
     setError(null)
     const trimmed = note.trim()
     try {
-      await api(`/admin/complaints/${complaintId}/resolve`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(trimmed ? { status, note: trimmed } : { status }),
-      })
+      await resolveComplaint(complaintId, trimmed ? { status, note: trimmed } : { status })
       toast('Скаргу вирішено')
       router.refresh()
       setOpen(false)

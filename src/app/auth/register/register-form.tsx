@@ -11,8 +11,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useUser } from '@/components/providers/user-provider'
+import { authMe, authRegister } from '@/services/auth'
 import { registerSchema } from '@/lib/validation/auth'
-import type { SessionUser } from '@/types/user'
 
 export function RegisterForm() {
   const router = useRouter()
@@ -56,14 +56,10 @@ export function RegisterForm() {
     }
     setLoading(true)
     try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(parsed.data),
-      })
+      const res = await authRegister(parsed.data)
       if (res.ok) {
-        const me = await fetch('/api/v1/auth/me').then((r) => (r.ok ? r.json() : null))
-        if (me?.data) setUser(me.data as SessionUser)
+        const me = await authMe()
+        if (me) setUser(me)
         // Редірект лише на внутрішні шляхи — захист від open-redirect
         const next = searchParams.get('next')
         const safeNext = next && next.startsWith('/') && !next.startsWith('//') ? next : '/'

@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { api, authApiError } from '@/lib/api/client'
+import { authApiError } from '@/lib/api/client'
+import { approveVenue } from '@/services/venues'
 import { useToast } from '@/components/ui/toast'
 
 // Схвалення pending-закладу в адмінці: POST без тіла → toast + refresh списку
@@ -16,7 +17,7 @@ export function VenueApproveButton({ venueId }: { venueId: string }) {
     setBusy(true)
     try {
       // бекенд approve приймає запит без тіла
-      await api(`/admin/venues/${venueId}/approve`, { method: 'POST' })
+      await approveVenue(venueId)
       toast('Заклад схвалено')
       router.refresh()
     } catch (e) {

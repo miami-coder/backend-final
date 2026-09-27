@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Modal } from '@/components/ui/modal'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/components/ui/toast'
-import { api } from '@/lib/api/client'
+import { createComplaint } from '@/services/complaints'
 import { ApiError } from '@/lib/api/parse'
 import { COMPLAINT_REASONS, complaintFormSchema } from '@/lib/validation/complaint'
 
@@ -54,11 +54,7 @@ export function ComplaintButton({ target, label = 'Скарга', loginNext }: P
     }
     setSending(true)
     try {
-      await api('/complaints', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(parsed.data),
-      })
+      await createComplaint(parsed.data)
       toast('Скаргу надіслано. Модератори розглянуть її.')
       setOpen(false)
       setText('')

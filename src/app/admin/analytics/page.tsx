@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { serverFetch } from '@/lib/api/server-client'
+import { getAnalyticsTimeseries, getAnalyticsVenues } from '@/services/admin.server'
 import { getSessionTokens } from '@/lib/auth/session'
 import {
   AdminAnalyticsControls,
@@ -47,14 +47,8 @@ export default async function AdminAnalyticsPage({ searchParams }: Props) {
   // serverFetch уже розгортає конверт {data} — повертається одразу масив
   // (venues → {data,meta}, parseData бере data; meta тут не потрібна)
   const [timeseries, venueStats] = await Promise.all([
-    serverFetch<TimeseriesPoint[]>(
-      `/admin/analytics/timeseries?${qs}&granularity=${granularity}`,
-      { tokens, revalidate: 0 },
-    ).catch(() => null),
-    serverFetch<VenueStat[]>(`/admin/analytics/venues?${qs}&limit=50`, {
-      tokens,
-      revalidate: 0,
-    }).catch(() => null),
+    getAnalyticsTimeseries<TimeseriesPoint>(from, to, granularity, tokens),
+    getAnalyticsVenues<VenueStat>(qs, tokens),
   ])
 
   return (

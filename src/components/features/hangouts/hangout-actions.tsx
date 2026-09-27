@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/toast'
-import { apiVoid } from '@/lib/api/client'
+import { hangoutAction } from '@/services/hangouts'
 import { ApiError } from '@/lib/api/parse'
 
 // Дія виконується одразу натисканням кнопки (контракт тесту: один клік →
@@ -18,7 +18,7 @@ export function HangoutActions({ hangoutId, isCreator, canLeave }: { hangoutId: 
   async function act(kind: 'cancel' | 'leave') {
     setBusy(true)
     try {
-      await apiVoid(`/hangouts/${hangoutId}/${kind}`, { method: 'POST' })
+      await hangoutAction(hangoutId, kind)
       router.refresh()
     } catch (e) {
       toast(e instanceof ApiError ? e.message : 'Не вдалося виконати дію', 'error')

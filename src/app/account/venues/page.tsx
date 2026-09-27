@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { serverFetch } from '@/lib/api/server-client'
+import { getMyVenues } from '@/services/venues.server'
 import { getSessionTokens } from '@/lib/auth/session'
 import { parseVenue, VENUE_STATUS_LABELS, type RawVenue, type Venue } from '@/types/venue'
 import { Badge } from '@/components/ui/badge'
@@ -71,7 +71,7 @@ export default async function MyVenuesPage({
   if (!tokens) redirect('/auth/login?next=/account/venues')
   // searchParams опційний: у тестах компонент викликається без пропсів
   const { created } = (await searchParams) ?? {}
-  const raw = await serverFetch<RawVenue[]>('/me/venues', { tokens, revalidate: 0 })
+  const raw = await getMyVenues(tokens)
   const venues = raw.map(parseVenue)
 
   return (

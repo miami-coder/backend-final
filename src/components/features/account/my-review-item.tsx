@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Modal } from '@/components/ui/modal'
 import { RatingStars } from '@/components/ui/rating-stars'
 import { ReviewForm } from '@/components/features/venues/review-form'
-import { apiVoid } from '@/lib/api/client'
+import { deleteReview } from '@/services/reviews'
 import { ApiError } from '@/lib/api/parse'
 import { formatDate } from '@/lib/utils/format'
 import { useToast } from '@/components/ui/toast'
@@ -22,7 +22,7 @@ export function MyReviewItem({ review, venueName }: { review: Review; venueName:
   async function remove() {
     try {
       // DELETE → 200 з порожнім тілом (apiVoid), далі оновлюємо серверні дані
-      await apiVoid(`/reviews/${review.id}`, { method: 'DELETE' })
+      await deleteReview(review.id)
       // закриваємо лише за успіху: при помилці модалка лишається — можна повторити/скасувати
       setDeleting(false)
       router.refresh()

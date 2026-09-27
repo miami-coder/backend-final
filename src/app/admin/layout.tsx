@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
-import { serverFetch } from '@/lib/api/server-client'
+import { getMeSession } from '@/services/auth.server'
 import { getSessionTokens } from '@/lib/auth/session'
-import type { SessionUser } from '@/types/user'
 import { AdminNav } from '@/components/layout/admin-nav'
 
 const LINKS = [
@@ -21,7 +20,7 @@ export const revalidate = 0
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const tokens = await getSessionTokens()
   const user = tokens
-    ? await serverFetch<SessionUser>('/auth/me', { tokens, revalidate: 0 }).catch(() => null)
+    ? await getMeSession(tokens).catch(() => null)
     : null
   if (!user || !user.roles.includes('super_admin')) redirect('/')
 

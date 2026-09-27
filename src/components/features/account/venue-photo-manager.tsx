@@ -16,7 +16,7 @@ import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/toast'
-import { api } from '@/lib/api/client'
+import { uploadVenuePhoto } from '@/services/venues'
 import { ApiError } from '@/lib/api/parse'
 import type { VenuePhoto } from '@/types/venue'
 
@@ -31,9 +31,7 @@ export function VenuePhotoManager({ venueId, photos }: { venueId: string; photos
     if (!file) return
     setUploading(true)
     try {
-      const fd = new FormData()
-      fd.append('file', file)
-      await api(`/venues/${venueId}/photos`, { method: 'POST', body: fd })
+      await uploadVenuePhoto(venueId, file)
       toast('Фото завантажено')
       if (fileRef.current) fileRef.current.value = ''
       router.refresh()

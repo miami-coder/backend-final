@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { HangoutJoinButton } from '@/components/features/hangouts/hangout-join-button'
 import { Pagination } from '@/components/ui/pagination'
-import { serverFetchList } from '@/lib/api/server-client'
+import { getHangouts } from '@/services/hangouts.server'
 import { parseHangout, HANGOUT_STATUS_LABELS, type HangoutStatus, type RawHangout } from '@/types/hangout'
 import { formatMoney } from '@/lib/utils/format'
 // Лейбл payer — та сама константа, що й у формі створення/кабінеті (єдине джерело копірайту)
@@ -36,7 +36,7 @@ export default async function HangoutsPage({ searchParams }: Props) {
   const qs = [`page=${page}`, `limit=${LIMIT}`, `status=${status}`]
   if (venueId) qs.push(`venueId=${encodeURIComponent(venueId)}`)
   if (date) qs.push(`date=${date}`)
-  const raw = await serverFetchList<RawHangout>(`/hangouts?${qs.join('&')}`, { revalidate: 30 })
+  const raw = await getHangouts(qs.join('&'))
   const hangouts = raw.data.map(parseHangout)
   const totalPages = Math.max(1, Math.ceil((raw.meta?.total ?? 0) / (raw.meta?.limit || LIMIT)))
 

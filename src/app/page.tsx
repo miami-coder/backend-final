@@ -1,6 +1,6 @@
 // Головна сторінка — каталог закладів із пошуком, фільтрами, сортуванням і пагінацією
 
-import { serverFetchList } from '@/lib/api/server-client'
+import { getVenuesCatalog } from '@/services/venues.server'
 import { parseVenue, type RawVenue } from '@/types/venue'
 import { parseCatalogQuery, catalogHref, toSearch, type CatalogQuery } from '@/lib/venues/query'
 import { VenueCard } from '@/components/features/venues/venue-card'
@@ -16,7 +16,7 @@ export default async function CatalogPage({ searchParams }: PageProps) {
   const sp = await searchParams
   const query: CatalogQuery = parseCatalogQuery(sp)
 
-  const raw = await serverFetchList<RawVenue>(`/venues?${toSearch(query)}`, { revalidate: 60 })
+  const raw = await getVenuesCatalog(toSearch(query))
   const venues = raw.data.map(parseVenue)
 
   const totalPages = raw.meta ? Math.max(1, Math.ceil(raw.meta.total / raw.meta.limit)) : 1

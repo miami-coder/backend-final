@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/components/ui/toast'
-import { api } from '@/lib/api/client'
+import { updateVenue } from '@/services/venues'
 import { ApiError } from '@/lib/api/parse'
 import { venueUpdateSchema, WH_DAYS } from '@/lib/validation/venue'
 import type { Venue } from '@/types/venue'
@@ -98,11 +98,7 @@ export function VenueEditForm({ venue }: { venue: Venue }) {
     setSending(true)
     try {
       // content-type обовʼязковий: BFF-проксі не проставляє його сам
-      await api(`/venues/${venue.id}`, {
-        method: 'PATCH',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(parsed.data),
-      })
+      await updateVenue(venue.id, parsed.data)
       toast('Зміни збережено')
       router.refresh()
     } catch (err) {

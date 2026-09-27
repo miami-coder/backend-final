@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { apiVoid, authApiError } from '@/lib/api/client'
+import { authApiError } from '@/lib/api/client'
+import { deleteVenue } from '@/services/venues'
 import { Modal } from '@/components/ui/modal'
 import { useToast } from '@/components/ui/toast'
 
@@ -28,7 +29,7 @@ export function VenueDeleteButton({
     setBusy(true)
     try {
       // DELETE → 204 з порожнім тілом: apiVoid без тіла відповіді
-      await apiVoid(`/venues/${venueId}`, { method: 'DELETE' })
+      await deleteVenue(venueId)
       toast('Заклад видалено')
       if (redirectTo) {
         router.push(redirectTo)

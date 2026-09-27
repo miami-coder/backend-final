@@ -13,45 +13,25 @@ import { FavoriteButton } from '@/components/features/venues/favorite-button'
 import { HangoutButton } from '@/components/features/hangouts/hangout-button'
 import { ReviewForm } from '@/components/features/venues/review-form'
 import { ReviewList } from '@/components/features/venues/review-list'
-import { serverFetch, serverFetchList } from '@/lib/api/server-client'
+import { getFavoriteIds, getVenueDetail } from '@/services/venues.server'
+import { findMyReviewForVenue } from '@/services/reviews.server'
 import { formatMoney } from '@/lib/utils/format'
-import { parseVenue, type RawVenue } from '@/types/venue'
+import type { Venue } from '@/types/venue'
 
 interface Props {
   params: Promise<{ id: string }>
   searchParams: Promise<{ sort?: string; page?: string }>
 }
 
-async function getVenue(id: string) {
-  // Авторитетне джерело з 404-семантикою (не-approved → 404 на бекенді)
-  const detail = await serverFetch<RawVenue>(`/venues/${id}`, { revalidate: 60 }).catch(() => null)
-  if (!detail) return null
-
-  // GET /venues/:id не повертає photos/tags/types/features (лише owner) —
-  // збагачуємо через list-пошук за назвою; деградація тиха, якщо не знайшли
-  let relations: RawVenue | null = null
-  try {
-    const list = await serverFetchList<RawVenue>(
-      `/venues?q=${encodeURIComponent(detail.name)}&limit=100`,
-      { revalidate: 60 },
-    )
-    relations = list.data.find((v) => v.id === detail.id) ?? null
-  } catch {
-    relations = null
-  }
-
-  return parseVenue(relations ?? detail)
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
-  const venue = await getVenue(id)
+  const venue = await getVenueDetail(id)
   return { title: venue ? `${venue.name} — Пиячок` : 'Заклад — Пиячок' }
 }
 
 export default async function VenuePage({ params, searchParams }: Props) {
   const { id } = await params
-  const venue = await getVenue(id)
+  const venue = await getVenueDetail(id)
   if (!venue) notFound()
 
   const sp = await searchParams
@@ -64,11 +44,7 @@ export default async function VenuePage({ params, searchParams }: Props) {
   let initialFavorite = false
   if (tokens) {
     try {
-      const favs = await serverFetchList<{ id: string }>('/me/favorites?limit=100', {
-        tokens,
-        revalidate: 0,
-      })
-      initialFavorite = favs.data.some((f) => f.id === id)
+      initialFavorite = (await getFavoriteIds(tokens)).has(id)
     } catch {
       initialFavorite = false
     }
@@ -78,11 +54,7 @@ export default async function VenuePage({ params, searchParams }: Props) {
   let myReview: { id: string; rating: number; text: string } | null = null
   if (tokens) {
     try {
-      const mine = await serverFetchList<{ id: string; venueId: string; rating: number; text: string }>(
-        '/me/reviews?limit=100',
-        { tokens, revalidate: 0 },
-      )
-      const found = mine.data.find((r) => r.venueId === id)
+      const found = await findMyReviewForVenue(id, tokens)
       if (found) myReview = { id: found.id, rating: found.rating, text: found.text }
     } catch {
       myReview = null

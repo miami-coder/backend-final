@@ -1,4 +1,4 @@
-import { serverFetchList } from '@/lib/api/server-client'
+import { getAdminComplaintsPage } from '@/services/complaints.server'
 import { getSessionTokens } from '@/lib/auth/session'
 import { parseComplaint, type RawComplaint } from '@/types/admin'
 import { COMPLAINT_REASONS } from '@/lib/validation/complaint'
@@ -21,10 +21,7 @@ export default async function AdminComplaintsPage({ searchParams }: Props) {
   const page = Math.max(1, Number(sp?.page ?? 1) || 1)
 
   const tokens = await getSessionTokens()
-  const list = await serverFetchList<RawComplaint>(`/admin/complaints?page=${page}`, {
-    tokens,
-    revalidate: 0,
-  })
+  const list = await getAdminComplaintsPage(page, tokens)
   const complaints = list.data.map(parseComplaint)
   // meta без totalPages — рахуємо з total/limit (бекендова limit, інакше LIMIT)
   const totalPages = Math.max(1, Math.ceil((list.meta?.total ?? 0) / (list.meta?.limit || LIMIT)))

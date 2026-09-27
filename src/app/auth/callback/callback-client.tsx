@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { authOauth } from '@/services/auth'
 
 export function CallbackClient() {
   const router = useRouter()
@@ -18,12 +19,8 @@ export function CallbackClient() {
       let ok = false
       if (access && refresh) {
         try {
-          const res = await fetch('/api/auth/oauth', {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            // токени йдуть тілом, щоб не потрапити в жоден URL
-            body: JSON.stringify({ accessToken: access, refreshToken: refresh }),
-          })
+          // токени йдуть тілом, щоб не потрапити в жоден URL
+          const res = await authOauth({ accessToken: access, refreshToken: refresh })
           ok = res.ok
         } catch {
           ok = false

@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Modal } from '@/components/ui/modal'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/components/ui/toast'
-import { api } from '@/lib/api/client'
+import { sendMessageToManager } from '@/services/messages'
 import { ApiError } from '@/lib/api/parse'
 import { messageFormSchema } from '@/lib/validation/message'
 
@@ -51,11 +51,7 @@ export function MessageToManagerButton({
     }
     setSending(true)
     try {
-      await api(`/venues/${venueId}/messages`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(parsed.data),
-      })
+      await sendMessageToManager(venueId, parsed.data)
       toast('Повідомлення надіслано менеджеру закладу.')
       setOpen(false)
       setBody('')

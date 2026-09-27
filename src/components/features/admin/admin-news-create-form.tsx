@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
 import { useToast } from '@/components/ui/toast'
-import { api } from '@/lib/api/client'
+import { createAdminNews } from '@/services/news'
 import { ApiError } from '@/lib/api/parse'
 import { NEWS_CATEGORIES, adminNewsFormSchema } from '@/lib/validation/news'
 import { NEWS_STATUS_LABELS } from '@/types/news'
@@ -56,11 +56,7 @@ export function AdminNewsCreateForm() {
     }
     setBusy(true)
     try {
-      await api('/admin/news', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(parsed.data),
-      })
+      await createAdminNews(parsed.data)
       toast('Новину створено')
       reset()
       router.refresh()

@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useToast } from '@/components/ui/toast'
-import { api } from '@/lib/api/client'
+import { updateMyProfile } from '@/services/users'
 import { ApiError } from '@/lib/api/parse'
 import { profileUpdateSchema } from '@/lib/validation/profile'
 
@@ -49,11 +49,7 @@ export function ProfileForm({ profile }: { profile: ProfileFields }) {
     }
     setSaving(true)
     try {
-      await api('/me/profile', {
-        method: 'PATCH',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(parsed.data),
-      })
+      await updateMyProfile(parsed.data)
       toast('Профіль збережено')
       router.refresh()
     } catch (err) {

@@ -8,7 +8,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Modal } from '@/components/ui/modal'
 import { useToast } from '@/components/ui/toast'
-import { apiVoid, authApiError } from '@/lib/api/client'
+import { authApiError } from '@/lib/api/client'
+import { deleteAdminUser } from '@/services/users'
 
 export function UserDeleteButton({ userId, email }: { userId: string; email: string }) {
   const router = useRouter()
@@ -29,7 +30,7 @@ export function UserDeleteButton({ userId, email }: { userId: string; email: str
     if (busy || !matched) return // in-flight гард + гард на неточний email
     setBusy(true)
     try {
-      await apiVoid(`/admin/users/${userId}`, { method: 'DELETE' })
+      await deleteAdminUser(userId)
       toast('Користувача видалено')
       router.push('/admin/users')
     } catch (e) {

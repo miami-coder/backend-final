@@ -26,7 +26,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
 import { Modal } from '@/components/ui/modal'
 import { useToast } from '@/components/ui/toast'
-import { api, apiVoid } from '@/lib/api/client'
+import { createVenueNews, deleteNews, updateNews, uploadNewsPhoto } from '@/services/news'
 import { ApiError } from '@/lib/api/parse'
 import { NEWS_CATEGORIES, newsFormSchema } from '@/lib/validation/news'
 import { formatDate } from '@/lib/utils/format'
@@ -59,16 +59,11 @@ export function VenueNewsManager({ venueId, news }: { venueId: string; news: New
     setSending(true)
     try {
       // venueId лише в URL — у body його бекенд не очікує
-      const created = await api<News>(`/me/venues/${venueId}/news`, {
-        method: 'POST',
-        body: JSON.stringify(parsed.data),
-      })
+      const created = await createVenueNews(venueId, parsed.data)
       // Фото — файловий upload після створення (ендпоінт адресує новину за id)
       const file = fileRef.current?.files?.[0]
       if (file && created?.id) {
-        const fd = new FormData()
-        fd.append('file', file)
-        await api(`/news/${created.id}/photo`, { method: 'POST', body: fd })
+        await uploadNewsPhoto(created.id, file)
       }
       toast('Новину додано')
       setTitle('')
@@ -96,7 +91,7 @@ export function VenueNewsManager({ venueId, news }: { venueId: string; news: New
       return
     }
     try {
-      await api(`/news/${editing.id}`, { method: 'PATCH', body: JSON.stringify(parsed.data) })
+      await updateNews(editing.id, parsed.data)
       toast('Новину оновлено')
       setEditing(null)
       router.refresh()
@@ -109,7 +104,7 @@ export function VenueNewsManager({ venueId, news }: { venueId: string; news: New
     if (!deleting) return
     try {
       // DELETE → 200 з {data} або порожнім тілом — apiVoid tolerate обидва
-      await apiVoid(`/news/${deleting.id}`, { method: 'DELETE' })
+      await deleteNews(deleting.id)
       setDeleting(null)
       router.refresh()
     } catch (err) {

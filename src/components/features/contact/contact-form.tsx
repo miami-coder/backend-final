@@ -10,7 +10,7 @@ import { useUser } from '@/components/providers/user-provider'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/components/ui/toast'
-import { api } from '@/lib/api/client'
+import { sendFeedback } from '@/services/messages'
 import { ApiError } from '@/lib/api/parse'
 import { messageFormSchema } from '@/lib/validation/message'
 
@@ -48,11 +48,7 @@ export function ContactForm() {
     }
     setSending(true)
     try {
-      await api('/feedback', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(parsed.data),
-      })
+      await sendFeedback(parsed.data)
       toast('Повідомлення надіслано. Відповідь прийде у ваші Повідомлення.')
       setBody('')
     } catch (err) {

@@ -1,4 +1,4 @@
-import { serverFetchList } from '@/lib/api/server-client'
+import { getAdminFeedback } from '@/services/messages.server'
 import { getSessionTokens } from '@/lib/auth/session'
 import { parseMessage, type RawMessage } from '@/types/message'
 import { formatDate } from '@/lib/utils/format'
@@ -21,10 +21,7 @@ export default async function AdminMessagesPage({ searchParams }: Props) {
   const page = Math.max(1, Number(sp?.page ?? 1) || 1)
 
   const tokens = await getSessionTokens()
-  const list = await serverFetchList<RawMessage>(`/admin/messages/feedback?page=${page}&limit=${LIMIT}`, {
-    tokens,
-    revalidate: 0,
-  })
+  const list = await getAdminFeedback(page, LIMIT, tokens)
   const messages = list.data.map(parseMessage)
   const totalPages = Math.max(1, Math.ceil((list.meta?.total ?? 0) / (list.meta?.limit || LIMIT)))
 

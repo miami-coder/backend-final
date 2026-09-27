@@ -12,17 +12,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import type { CatalogQuery } from '@/lib/venues/query'
+import { getVenueTags, type TagRef } from '@/services/venues'
 
 // Рейтинг-фільтр зірками: цілі значення 1..5 (у URL досі можна 0.5-крок)
 const RATING_STARS = [1, 2, 3, 4, 5] as const
 
 // Довідник тегів GET /venues/tags — публічний; чип-клік перемикає slug у CSV
-interface TagRef {
-  id: string
-  name: string
-  slug: string
-  venueCount: number
-}
 
 export function VenueFilters({ initial }: { initial: CatalogQuery }) {
   const router = useRouter()
@@ -43,9 +38,8 @@ export function VenueFilters({ initial }: { initial: CatalogQuery }) {
 
   // Довідник тегів для чипів (публічний ендпоінт, без авторизації)
   useEffect(() => {
-    fetch('/api/v1/venues/tags')
-      .then((r) => r.json())
-      .then((j) => setTags(j?.data ?? []))
+    getVenueTags()
+      .then(setTags)
       .catch(() => undefined)
   }, [])
 

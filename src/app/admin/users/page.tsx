@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { serverFetchList } from '@/lib/api/server-client'
+import { getAdminUsersPage } from '@/services/users.server'
 import { getSessionTokens } from '@/lib/auth/session'
 import { parseAdminUser, type RawAdminUser } from '@/types/admin'
 import { formatDate } from '@/lib/utils/format'
@@ -21,10 +21,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
   const page = Math.max(1, Number(sp?.page ?? 1) || 1)
 
   const tokens = await getSessionTokens()
-  const list = await serverFetchList<RawAdminUser>(`/admin/users?page=${page}`, {
-    tokens,
-    revalidate: 0,
-  })
+  const list = await getAdminUsersPage(page, tokens)
   const users = list.data.map(parseAdminUser)
   // meta без totalPages — рахуємо з total/limit (бекендова limit, інакше LIMIT)
   const totalPages = Math.max(1, Math.ceil((list.meta?.total ?? 0) / (list.meta?.limit || LIMIT)))
