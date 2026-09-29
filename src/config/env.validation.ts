@@ -1,5 +1,12 @@
 import { plainToInstance } from 'class-transformer';
-import { IsEnum, IsNumber, IsString, validateSync } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  MinLength,
+  validateSync,
+} from 'class-validator';
 
 export enum NodeEnv {
   Development = 'development',
@@ -13,16 +20,18 @@ export class EnvVars {
 
   @IsString() DATABASE_HOST: string = 'localhost';
   @IsNumber() DATABASE_PORT: number = 5432;
-  @IsString() DATABASE_USER: string = 'piyachok';
-  @IsString() DATABASE_PASS: string = 'piyachok_dev';
-  @IsString() DATABASE_NAME: string = 'piyachok';
+
+  // Кредів БД немає у дефолтах: задаються лише через .env (можуть відрізнятись між середовищами)
+  @IsString() @IsNotEmpty() DATABASE_USER!: string;
+  @IsString() @IsNotEmpty() DATABASE_PASS!: string;
+  @IsString() @IsNotEmpty() DATABASE_NAME!: string;
 
   @IsString() REDIS_HOST: string = 'localhost';
   @IsNumber() REDIS_PORT: number = 6379;
 
-  @IsString() JWT_ACCESS_SECRET: string =
-    'dev_access_secret_min_32_chars_xxxxxx';
-  @IsString() JWT_REFRESH_SECRET: string = 'dev_refresh_secret_min_32_chars_xx';
+  // Секрети обов'язкові і не мають дефолтів: без них конфігурація не повинна валідуватись
+  @IsString() @IsNotEmpty() @MinLength(16) JWT_ACCESS_SECRET!: string;
+  @IsString() @IsNotEmpty() @MinLength(16) JWT_REFRESH_SECRET!: string;
   @IsString() JWT_ACCESS_TTL: string = '15m';
   @IsString() JWT_REFRESH_TTL: string = '30d';
 
