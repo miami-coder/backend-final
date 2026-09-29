@@ -41,9 +41,10 @@ export default new DataSource({
   type: 'postgres',
   host: process.env.DATABASE_HOST ?? 'localhost',
   port: Number(process.env.DATABASE_PORT ?? 5432),
-  username: process.env.DATABASE_USER ?? 'piyachok',
-  password: process.env.DATABASE_PASS ?? 'piyachok_dev',
-  database: process.env.DATABASE_NAME ?? 'piyachok',
+  // Кредів БД взято лише з .env — без захардкоджених фолбеків
+  username: process.env.DATABASE_USER!,
+  password: process.env.DATABASE_PASS!,
+  database: process.env.DATABASE_NAME!,
   entities: [
     Role,
     Permission,
