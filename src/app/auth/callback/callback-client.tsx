@@ -27,11 +27,18 @@ export function CallbackClient() {
         }
       }
       if (cancelled) return
-      // ВИТИРАЄМО callback-URL (з токенами) з поточного запису історії ДО переходу
       const destination = ok ? '/' : '/auth/login'
+      if (ok) {
+        // ПОВНЕ перевантаження: cookie вже в контейнері, а router.replace('/')
+        // робить soft-nav — layout не перевитягує /auth/me, і хедер лишається
+        // «Увійти» (дефект «другий вхід працює»). location.replace заодно
+        // витирає callback-URL (з токенами) з історії.
+        window.location.replace(destination)
+        return
+      }
+      // невалідні токени: лишаємось на сторінці, URL лише витираємо
       window.history.replaceState(null, '', destination)
-      if (ok) router.replace(destination)
-      else setFailed(true)
+      setFailed(true)
     }
 
     finish()

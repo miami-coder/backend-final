@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server'
 
 export const backendUrl = process.env.BACKEND_URL ?? 'http://localhost:3000'
 
+/** URL бекенда для 302 БРАУЗЕРА (OAuth-старт): BACKEND_URL може бути docker-імʼям
+ *  (host.docker.internal), яке браузер на хості не резолвить — редірект ведемо
+ *  на публікований порт бекенда. */
+export const browserBackendUrl = process.env.PUBLIC_BACKEND_URL ?? 'http://localhost:3000'
+
 /** Викликає auth-ендпоінт бекенда; повертає NextResponse або JSON-помилку бекенда. */
 export async function postBackend(path: string, body: unknown): Promise<NextResponse> {
   let res: Response
