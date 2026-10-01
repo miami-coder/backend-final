@@ -66,7 +66,7 @@ export class AnalyticsController {
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Get('me/venues/:id/analytics')
   @Permissions('analytics:view:own', 'analytics:view:all')
-  @ApiOperation({ summary: 'Аналітика закладу (власник або модератор)' })
+  @ApiOperation({ summary: 'Аналітика закладу (власник або супер-адмін)' })
   @ApiOkResponse({
     description: 'Метрики переглядів та подій',
     schema: {
@@ -119,9 +119,9 @@ export class AnalyticsController {
     @Query('from') from?: string,
     @Query('to') to?: string,
   ) {
-    return this.assertOwnerOrAll(u.sub, id).then(() =>
-      this.analytics.getForVenue(id, from, to),
-    );
+    return this.assertOwnerOrAll(u.sub, id)
+      .then(() => this.analytics.getForVenue(id, from, to))
+      .then((data) => ({ data }));
   }
 
   @ApiBearerAuth('access-token')
@@ -152,7 +152,7 @@ export class AnalyticsController {
   @ApiUnauthorizedResponse({ description: 'Не авторизований' })
   @ApiForbiddenResponse({ description: 'Немає дозволу analytics:view:all' })
   getOverview() {
-    return this.analytics.getOverview();
+    return this.analytics.getOverview().then((data) => ({ data }));
   }
 
   @ApiBearerAuth('access-token')

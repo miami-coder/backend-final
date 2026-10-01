@@ -55,7 +55,7 @@ describe('AnalyticsController', () => {
       '2024-01-01',
       '2024-01-31',
     );
-    expect(res).toEqual({ total: 5 });
+    expect(res.data).toEqual({ total: 5 });
   });
 
   it('getForVenue allows owner without analytics:view:all', async () => {
@@ -69,7 +69,7 @@ describe('AnalyticsController', () => {
       undefined,
       undefined,
     );
-    expect(res).toEqual({ total: 2 });
+    expect(res.data).toEqual({ total: 2 });
   });
 
   it('getForVenue throws ForbiddenException for non-owner', async () => {
@@ -85,6 +85,6 @@ describe('AnalyticsController', () => {
     analytics.getOverview.mockResolvedValue({ total: 10 });
     const res = await controller.getOverview();
     expect(analytics.getOverview).toHaveBeenCalled();
-    expect(res).toEqual({ total: 10 });
+    expect(res.data).toEqual({ total: 10 });
   });
 });
