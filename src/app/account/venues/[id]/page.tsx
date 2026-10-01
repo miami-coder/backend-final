@@ -8,15 +8,20 @@ import { VenuePhotoManager } from '@/components/features/account/venue-photo-man
 import { VenueDeleteButton } from '@/components/features/venues/venue-delete-button'
 import { getVenueNews } from '@/services/news.server'
 import { getOwnerVenue } from '@/services/venues.server'
+import { getVenueComplaintsPage } from '@/services/complaints.server'
 import { getVenueMessages } from '@/services/messages.server'
 import { getSessionTokens } from '@/lib/auth/session'
 import { parseMessage, type RawMessage } from '@/types/message'
 import { parseNews, type RawNews } from '@/types/news'
 import { parseVenue, VENUE_STATUS_LABELS } from '@/types/venue'
+import { parseComplaint, type AdminComplaint } from '@/types/admin'
+import { COMPLAINT_REASONS } from '@/lib/validation/complaint'
+import { formatDate } from '@/lib/utils/format'
+import { Pagination } from '@/components/ui/pagination'
 
 interface Props {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ tab?: string; from?: string; to?: string }>
+  searchParams: Promise<{ tab?: string; from?: string; to?: string; page?: string }>
 }
 
 const TABS = [
@@ -25,6 +30,7 @@ const TABS = [
   { key: 'news', label: 'Новини' },
   { key: 'messages', label: 'Повідомлення' },
   { key: 'analytics', label: 'Аналітика' },
+  { key: 'complaints', label: 'Скарги' },
 ] as const
 
 type TabKey = (typeof TABS)[number]['key']
@@ -62,6 +68,20 @@ export default async function ManageVenuePage({ params, searchParams }: Props) {
   const messages = tab === 'messages'
     ? (await getVenueMessages(venue.id, tokens)).data.map(parseMessage)
     : []
+  // Скарги до закладу (черга New/InReview, читає лише власник/супер-адмін);
+  // вирішення — лише в супер-адміна, тому тут список без кнопок дій
+  let complaints: AdminComplaint[] = []
+  let complaintsTotal = 0
+  if (tab === 'complaints') {
+    const page = Math.max(1, Number(sp?.page ?? 1) || 1)
+    try {
+      const list = await getVenueComplaintsPage(venue.id, page, tokens)
+      complaints = list.data.map(parseComplaint)
+      complaintsTotal = list.meta?.total ?? 0
+    } catch {
+      complaints = []
+    }
+  }
 
   return (
     <div>
@@ -97,6 +117,37 @@ export default async function ManageVenuePage({ params, searchParams }: Props) {
           from={sp?.from && DATE_RE.test(sp.from) ? sp.from : defaultAnalyticsRange().from}
           to={sp?.to && DATE_RE.test(sp.to) ? sp.to : defaultAnalyticsRange().to}
         />
+      )}
+      {tab === 'complaints' && (
+        complaints.length === 0 ? (
+          <p className="rounded-xl border border-line bg-surface p-8 text-center text-muted">Скарг немає.</p>
+        ) : (
+          <section aria-label="Скарги до закладу" className="space-y-4">
+            <ul className="grid gap-4 sm:grid-cols-2">
+              {complaints.map((c) => (
+                <li key={c.id} className="rounded-xl border border-line bg-surface p-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="rounded-full border border-line px-2 py-0.5 text-xs text-muted">
+                      {COMPLAINT_REASONS.find((r) => r.value === c.reason)?.label ?? 'Інше'}
+                    </span>
+                    <span className="text-sm text-muted">{c.venueId ? 'Заклад' : c.reviewId ? 'Відгук' : '—'}</span>
+                    <span className="ml-auto text-xs text-faint">{formatDate(c.createdAt)}</span>
+                  </div>
+                  <p className="mt-2 text-sm text-ink">
+                    {c.text.length > 140 ? c.text.slice(0, 140) + '…' : c.text}
+                  </p>
+                </li>
+              ))}
+            </ul>
+            {Math.ceil(complaintsTotal / 20) > 1 && (
+              <Pagination
+                page={Number(sp?.page ?? 1) || 1}
+                totalPages={Math.ceil(complaintsTotal / 20)}
+                hrefFor={(p) => `/account/venues/${venue.id}?tab=complaints&page=${p}`}
+              />
+            )}
+          </section>
+        )
       )}
     </div>
   )

@@ -1,5 +1,5 @@
 import { getVenueAnalytics } from '@/services/venues.server'
-import { parseVenueAnalytics } from '@/types/analytics'
+import { parseVenueAnalytics, EVENT_TYPE_LABELS } from '@/types/analytics'
 import { AnalyticsRangeForm } from '@/components/features/account/analytics-range-form'
 import { getSessionTokens } from '@/lib/auth/session'
 
@@ -28,7 +28,7 @@ export async function VenueAnalytics({ venueId, from, to }: { venueId: string; f
             <ul className="mt-1 text-sm">
               {a.eventsByType.map((e) => (
                 <li key={e.eventType} className="flex justify-between">
-                  <span>{e.eventType}</span><span>{e.count}</span>
+                  <span>{EVENT_TYPE_LABELS[e.eventType] ?? e.eventType}</span><span>{e.count}</span>
                 </li>
               ))}
             </ul>

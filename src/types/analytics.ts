@@ -4,6 +4,14 @@ export interface RawVenueAnalytics {
   eventsByType: { eventType: string; count: string | number }[]
 }
 
+/** Коди подій пише бекенд (analytics/listeners/event-listener.ts); для невідомих — fallback на сирий код. */
+export const EVENT_TYPE_LABELS: Record<string, string> = {
+  venue_created: 'Створення закладу',
+  venue_status_changed: 'Зміна статусу закладу',
+  review_created: 'Новий відгук',
+  hangout_filled: 'Заповнена пиячка',
+}
+
 export interface VenueAnalytics {
   totalViews: number
   viewsByDay: { date: string; count: number }[]

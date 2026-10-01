@@ -7,8 +7,10 @@ vi.mock('@/lib/auth/session', () => ({
 }))
 
 const serverFetch = vi.fn()
+const serverFetchList = vi.fn()
 vi.mock('@/lib/api/server-client', () => ({
   serverFetch: (...args: unknown[]) => serverFetch(...args),
+  serverFetchList: (...args: unknown[]) => serverFetchList(...args),
 }))
 
 const redirect = vi.fn((url: string) => { throw new Error(`REDIRECT:${url}`) })
@@ -132,6 +134,34 @@ describe('/account/venues/[id]', () => {
   it('?tab=analytics&from&to → діапазон із URL передається без змін', async () => {
     await renderPage('analytics', { from: '2026-09-01', to: '2026-09-10' })
     expect(analyticsProps).toEqual({ venueId: 'v1', from: '2026-09-01', to: '2026-09-10' })
+  })
+
+  it('default → вкладка «Скарги» присутня', async () => {
+    const html = await renderPage()
+    expect(html).toContain('href="/account/venues/v1?tab=complaints"')
+  })
+
+  it('?tab=complaints → скарги закладу з бекенда, без кнопки вирішення', async () => {
+    serverFetchList.mockResolvedValueOnce({
+      data: [{
+        id: 'c1', venueId: 'v1', reviewId: null, reason: 'fraud',
+        text: 'Тут продають квитки за пів ціни, а пивом не наливають',
+        status: 'new', createdAt: '2026-10-01T09:00:00Z',
+      }],
+      meta: { page: 1, limit: 20, total: 1, hasMore: false },
+    })
+    const html = await renderPage('complaints')
+    // запит саме за цим закладом
+    expect(serverFetchList).toHaveBeenCalledWith('/me/venues/v1/complaints?page=1', { tokens, revalidate: 0 })
+    expect(html).toContain('Шахрайство')
+    // вирішувати скарги може лише супер-адмін → власник бачить лише список
+    expect(html).not.toContain('Розвʼязати')
+  })
+
+  it('?tab=complaints без скарг → «Скарг немає.»', async () => {
+    serverFetchList.mockResolvedValueOnce({ data: [], meta: { page: 1, limit: 20, total: 0, hasMore: false } })
+    const html = await renderPage('complaints')
+    expect(html).toContain('Скарг немає.')
   })
 
   it('без сесії → redirect на логін', async () => {
