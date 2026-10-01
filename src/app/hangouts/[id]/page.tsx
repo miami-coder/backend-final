@@ -9,7 +9,7 @@ import { HangoutJoinButton } from '@/components/features/hangouts/hangout-join-b
 import { api } from '@/lib/api/client'
 import { ApiError } from '@/lib/api/parse'
 import { parseHangout, HANGOUT_STATUS_LABELS, type RawHangout, type Hangout } from '@/types/hangout'
-import { formatMoney } from '@/lib/utils/format'
+import { formatDate, formatMoney } from '@/lib/utils/format'
 // Лейбли gender/payer — ті самі константи, що й у формі створення/кабінеті (єдине джерело копірайту)
 import { HANGOUT_GENDERS, HANGOUT_PAYERS } from '@/lib/validation/hangout'
 import { useUser } from '@/components/providers/user-provider'
@@ -94,17 +94,22 @@ export default function HangoutDetailPage() {
         <h2 className="font-display text-lg font-semibold">Учасники ({participants.length})</h2>
         <ul className="mt-2 space-y-1 text-sm text-muted">
           {participants.map((p) => (
-            <li key={p.userId}>Учасник (приєднався {p.joinedAt?.slice(0, 10)})</li>
+            <li key={p.userId}>
+              {/* Імʼя/прізвище з profile бекенда; без нього (старі дані) → «Учасник» */}
+              {[p.firstname, p.lastname].filter(Boolean).join(' ') || 'Учасник'}
+              {p.joinedAt && <span> (приєднався {formatDate(p.joinedAt)})</span>}
+            </li>
           ))}
         </ul>
       </div>
 
       <div className="mt-6 flex items-center gap-3">
-        {!isParticipant && <HangoutJoinButton hangoutId={hangout.id} status={hangout.status} />}
+        {!isParticipant && <HangoutJoinButton hangoutId={hangout.id} status={hangout.status} joinRedirect="/hangouts" />}
         <HangoutActions
           hangoutId={hangout.id}
           isCreator={isCreatorActive}
           canLeave={Boolean(user) && !isCreator && hangout.status !== 'cancelled' && hangout.status !== 'completed'}
+          leaveRedirect="/hangouts"
         />
         <Link href="/hangouts" className="text-sm text-muted hover:underline">До списку</Link>
       </div>

@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { UserProvider } from '@/components/providers/user-provider'
 import { ToastProvider } from '@/components/ui/toast'
 import { HangoutActions } from '@/components/features/hangouts/hangout-actions'
@@ -7,8 +7,14 @@ import type { SessionUser } from '@/types/user'
 
 afterEach(() => vi.unstubAllGlobals())
 
-const refresh = vi.fn()
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh }) }))
+const routerFns = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn() }))
+vi.mock('next/navigation', () => ({ useRouter: () => routerFns }))
+const refresh = routerFns.refresh
+
+beforeEach(() => {
+  routerFns.push.mockClear()
+  routerFns.refresh.mockClear()
+})
 
 const testUser: SessionUser = { id: 'u1', email: 'a@b.c', roles: ['user'] }
 
@@ -57,6 +63,27 @@ describe('HangoutActions', () => {
     fireEvent.click(screen.getByRole('button', { name: /Покинути/i }))
     await waitFor(() => expect(refresh).toHaveBeenCalled())
     expect(String(apiCalls()[0][0])).toBe('/api/v1/hangouts/h2/leave')
+  })
+
+  // Страница деталей передає leaveRedirect: після виходу — перехід на список
+  it('leaveRedirect → після «Покинути» перехід на вказану сторінку', async () => {
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+      if (String(input).endsWith('/auth/me')) {
+        return new Response(JSON.stringify({ data: testUser }), { status: 200, headers: { 'content-type': 'application/json' } })
+      }
+      return new Response(null, { status: 200 })
+    }))
+    render(
+      <UserProvider initialUser={testUser}>
+        <ToastProvider>
+          <HangoutActions hangoutId="h2" isCreator={false} canLeave leaveRedirect="/hangouts" />
+        </ToastProvider>
+      </UserProvider>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Покинути/i }))
+    await waitFor(() => expect(routerFns.push).toHaveBeenCalledWith('/hangouts'))
+    // перехід замінює перевитяг поточної сторінки
+    expect(refresh).not.toHaveBeenCalled()
   })
 
   it('помилка → toast, без refresh', async () => {

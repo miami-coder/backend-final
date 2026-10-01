@@ -24,7 +24,7 @@ export interface RawHangout {
   desiredBudget: string | null // числова колонка прибуває рядком
   status: HangoutStatus
   venue?: { id: string; name: string; address: string; mainPhotoUrl: string | null }
-  participants?: { hangoutId: string; userId: string; joinedAt: string }[]
+  participants?: { hangoutId: string; userId: string; joinedAt: string; firstname: string; lastname: string }[]
   createdAt: string
 }
 
@@ -42,7 +42,7 @@ export interface Hangout {
   desiredBudget: number | null
   status: HangoutStatus
   venue?: { id: string; name: string; address: string; mainPhotoUrl: string | null }
-  participants?: { hangoutId: string; userId: string; joinedAt: string }[]
+  participants?: { hangoutId: string; userId: string; joinedAt: string; firstname: string; lastname: string }[]
   createdAt: string
 }
 

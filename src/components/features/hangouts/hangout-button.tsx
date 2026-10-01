@@ -50,7 +50,7 @@ export function HangoutButton({ venueId, loginNext }: { venueId: string; loginNe
         href={`/auth/login?next=${loginNext}`}
         className="inline-flex items-center rounded-xl bg-amber-500 px-4 py-2 text-sm font-medium text-espresso hover:bg-amber-400"
       >
-        🍻 Знайти пиячку
+        🍻 Знайти пиячок
       </Link>
     )
   }
@@ -111,10 +111,10 @@ export function HangoutButton({ venueId, loginNext }: { venueId: string; loginNe
   return (
     <>
       <Button type="button" variant="primary" onClick={() => setOpen(true)}>
-        🍻 Знайти пиячку
+        🍻 Знайти пиячок
       </Button>
 
-      <Modal open={open} onClose={close} title="Знайти пиячку">
+      <Modal open={open} onClose={close} title="Знайти пиячок">
         {!ack ? (
           // Спека §5: ПЕРШИЙ крок модалки — попередження про безпеку
           <div className="space-y-4">

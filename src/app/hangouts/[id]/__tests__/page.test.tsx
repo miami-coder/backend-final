@@ -21,13 +21,13 @@ const rawHangout = {
   desiredBudget: '500', status: 'open', createdAt: '2026-09-01T00:00:00Z',
   venue: { id: 'v1', name: 'Бар «Пиво»', address: 'вул. Липова, 1', mainPhotoUrl: null },
   participants: [
-    { hangoutId: 'h1', userId: 'u1', joinedAt: '2026-09-01T00:00:00Z' },
-    { hangoutId: 'h1', userId: 'u2', joinedAt: '2026-09-02T00:00:00Z' },
+    { hangoutId: 'h1', userId: 'u1', joinedAt: '2026-09-01T00:00:00Z', firstname: 'Іван', lastname: 'Петренко' },
+    { hangoutId: 'h1', userId: 'u2', joinedAt: '2026-09-02T00:00:00Z', firstname: 'Олена', lastname: 'Коваленко' },
   ],
 }
 
 describe('/hangouts/[id]', () => {
-  it('учасник бачить деталі і список учасників', async () => {
+  it('учасник бачить деталі і список учасників з іменами і датами', async () => {
     vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
       if (String(input).endsWith('/auth/me')) {
         return new Response(JSON.stringify({ data: testUser }), { status: 200, headers: { 'content-type': 'application/json' } })
@@ -45,21 +45,31 @@ describe('/hangouts/[id]', () => {
     expect(screen.getByText('Будь-хто')).toBeInTheDocument()
     expect(screen.getByText('Ділити порівну')).toBeInTheDocument()
     expect(screen.getByText(/Учасники \(2\)/)).toBeInTheDocument()
+    // учасники — імʼя і прізвище + дата приєднання (не «Учасник»)
+    expect(screen.getByText(/Іван Петренко/)).toBeInTheDocument()
+    expect(screen.getByText(/Олена Коваленко/)).toBeInTheDocument()
+    expect(screen.getAllByText(/приєднався/)).toHaveLength(2)
+    // без сирих userId-рядків у списку
+    expect(screen.queryByText(/^Учасник \(/)).not.toBeInTheDocument()
   })
 
-  it('403 → error-стан «Ви не учасник цієї зустрічі»', async () => {
+  // Гейт «тільки для учасників» знято: не-учасник бачить деталі і кнопку приєднання
+  it('не-учасник бачить деталі зустрічі і «Приєднатися»', async () => {
+    const otherUser: SessionUser = { id: 'u9', email: 'z@b.c', roles: ['user'] }
     vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
       if (String(input).endsWith('/auth/me')) {
-        return new Response(JSON.stringify({ data: testUser }), { status: 200, headers: { 'content-type': 'application/json' } })
+        return new Response(JSON.stringify({ data: otherUser }), { status: 200, headers: { 'content-type': 'application/json' } })
       }
-      return new Response(JSON.stringify({ error: { code: 'FORBIDDEN', message: 'Ви не учасник цієї заявки' } }), { status: 403, headers: { 'content-type': 'application/json' } })
+      return new Response(JSON.stringify({ data: rawHangout }), { status: 200, headers: { 'content-type': 'application/json' } })
     }))
     render(
-      <UserProvider initialUser={testUser}>
+      <UserProvider initialUser={otherUser}>
         <ToastProvider><Page /></ToastProvider>
       </UserProvider>,
     )
-    await waitFor(() => expect(screen.getByText(/не учасник/i)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText(/Посидіти з пивом/)).toBeInTheDocument())
+    expect(screen.getByText(/Учасники \(2\)/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Приєднатися/i })).toBeInTheDocument()
   })
 
   it('мережева помилка → retry-стан', async () => {

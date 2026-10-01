@@ -1,12 +1,22 @@
+import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 
-const serverFetchList = vi.fn()
-vi.mock('@/lib/api/server-client', () => ({ serverFetchList: (...args: unknown[]) => serverFetchList(...args) }))
+const getHangouts = vi.fn()
+const getMyHangoutIds = vi.fn()
+vi.mock('@/services/hangouts.server', () => ({
+  getHangouts: (...args: unknown[]) => getHangouts(...args),
+  getMyHangoutIds: (...args: unknown[]) => getMyHangoutIds(...args),
+}))
 // клієнтський острів (useUser кидає поза UserProvider у renderToStaticMarkup):
 // серверний тест фокусується на серверних турботах, поведінку кнопки вкрито
-// hangout-join-button.test.tsx
-vi.mock('@/components/features/hangouts/hangout-join-button', () => ({ HangoutJoinButton: () => null }))
+// hangout-join-button.test.tsx — тут ловимо проп initialJoined (стан «В тусовці!»)
+vi.mock('@/components/features/hangouts/hangout-join-button', () => ({
+  HangoutJoinButton: (props: { hangoutId: string; initialJoined?: boolean }) =>
+    createElement('span', null, `JOIN:${props.hangoutId}:${props.initialJoined ? 'joined' : 'open'}`),
+}))
+
+vi.mock('@/lib/auth/session', () => ({ getSessionTokens: async () => ({ accessToken: 'a', refreshToken: 'r' }) }))
 
 import HangoutsPage from '@/app/hangouts/page'
 
@@ -22,18 +32,21 @@ const rawHangout = {
 
 describe('/hangouts', () => {
   beforeEach(() => {
-    serverFetchList.mockReset()
-    serverFetchList.mockResolvedValue({
+    getHangouts.mockReset().mockResolvedValue({
       data: [rawHangout],
       meta: { page: 1, limit: 12, total: 13, hasMore: true },
     })
+    getMyHangoutIds.mockReset().mockResolvedValue(new Set<string>(['h1']))
   })
 
   // ⚠️ бриф: твердження звірено з фактичним форматом шляху — конкатенація
   // `?page=&limit=&status=` (дефолт status=open), далі venueId/date
   it('дефолтний фільтр status=open, картка з purpose/датою/закладом і лінком', async () => {
     const html = renderToStaticMarkup(await HangoutsPage({ searchParams: Promise.resolve({}) }))
-    expect(serverFetchList).toHaveBeenCalledWith('/hangouts?page=1&limit=12&status=open', expect.objectContaining({ revalidate: 30 }))
+    expect(getHangouts).toHaveBeenCalledWith('page=1&limit=12&status=open')
+    // стан «В тусовці!» — id з моїх зустрічей долетіли до кнопки
+    expect(getMyHangoutIds).toHaveBeenCalledWith({ accessToken: 'a', refreshToken: 'r' })
+    expect(html).toContain('JOIN:h1:joined')
     expect(html).toContain('Дегустація крафтового пива')
     expect(html).toContain('2026-09-20')
     expect(html).toContain('Кварцяна Лузга')
@@ -50,18 +63,24 @@ describe('/hangouts', () => {
 
   it('?status=filled, ?date та ?venueId передаються у запит', async () => {
     renderToStaticMarkup(await HangoutsPage({ searchParams: Promise.resolve({ status: 'filled' }) }))
-    expect(serverFetchList).toHaveBeenCalledWith('/hangouts?page=1&limit=12&status=filled', expect.anything())
+    expect(getHangouts).toHaveBeenCalledWith('page=1&limit=12&status=filled')
     renderToStaticMarkup(await HangoutsPage({ searchParams: Promise.resolve({ date: '2026-09-10', venueId: 'v1' }) }))
-    expect(serverFetchList).toHaveBeenCalledWith('/hangouts?page=1&limit=12&status=open&venueId=v1&date=2026-09-10', expect.anything())
+    expect(getHangouts).toHaveBeenCalledWith('page=1&limit=12&status=open&venueId=v1&date=2026-09-10')
   })
 
   it('невідомий status відкидається на дефолт open', async () => {
     renderToStaticMarkup(await HangoutsPage({ searchParams: Promise.resolve({ status: 'hacked' }) }))
-    expect(serverFetchList).toHaveBeenCalledWith('/hangouts?page=1&limit=12&status=open', expect.anything())
+    expect(getHangouts).toHaveBeenCalledWith('page=1&limit=12&status=open')
+  })
+
+  it('не в моїх зустрічах → кнопка «Приєднатися» (open)', async () => {
+    getMyHangoutIds.mockResolvedValueOnce(new Set<string>())
+    const html = renderToStaticMarkup(await HangoutsPage({ searchParams: Promise.resolve({}) }))
+    expect(html).toContain('JOIN:h1:open')
   })
 
   it('порожньо → «Немає відкритих зустрічей»', async () => {
-    serverFetchList.mockResolvedValue({ data: [] })
+    getHangouts.mockResolvedValue({ data: [] })
     const html = renderToStaticMarkup(await HangoutsPage({ searchParams: Promise.resolve({}) }))
     expect(html).toContain('Немає відкритих зустрічей')
   })

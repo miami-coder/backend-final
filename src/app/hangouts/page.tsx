@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import { HangoutJoinButton } from '@/components/features/hangouts/hangout-join-button'
 import { Pagination } from '@/components/ui/pagination'
-import { getHangouts } from '@/services/hangouts.server'
+import { getHangouts, getMyHangoutIds } from '@/services/hangouts.server'
+import { getSessionTokens } from '@/lib/auth/session'
 import { parseHangout, HANGOUT_STATUS_LABELS, type HangoutStatus, type RawHangout } from '@/types/hangout'
 import { formatMoney } from '@/lib/utils/format'
 // Лейбл payer — та сама константа, що й у формі створення/кабінеті (єдине джерело копірайту)
@@ -39,6 +40,10 @@ export default async function HangoutsPage({ searchParams }: Props) {
   const raw = await getHangouts(qs.join('&'))
   const hangouts = raw.data.map(parseHangout)
   const totalPages = Math.max(1, Math.ceil((raw.meta?.total ?? 0) / (raw.meta?.limit || LIMIT)))
+
+  // стан «В тусовці!» живе і після релоаду: id моїх зустрічей (created+joined)
+  const tokens = await getSessionTokens()
+  const myIds = await getMyHangoutIds(tokens)
 
   // пагінація зберігає активні фільтри (status/venueId/date), скидаючи лише сторінку
   const qsBase = (p: number) => {
@@ -82,7 +87,7 @@ export default async function HangoutsPage({ searchParams }: Props) {
                 {h.venue && (
                   <Link className="text-sm text-amber-500 hover:underline" href={`/venues/${h.venue.id}`}>{h.venue.name}</Link>
                 )}
-                <div className="ml-auto"><HangoutJoinButton hangoutId={h.id} status={h.status} /></div>
+                <div className="ml-auto"><HangoutJoinButton hangoutId={h.id} status={h.status} initialJoined={myIds.has(h.id)} /></div>
               </div>
               <p className="mt-2 text-muted">{h.purpose}</p>
               <p className="mt-1 text-sm text-muted">

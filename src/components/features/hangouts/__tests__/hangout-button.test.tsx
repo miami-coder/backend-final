@@ -63,12 +63,12 @@ function fillForm() {
 describe('HangoutButton', () => {
   it('гість → посилання на логін', () => {
     renderWithProviders(<HangoutButton venueId="v1" loginNext="/venues/v1" />, null)
-    expect(screen.getByRole('link', { name: /пиячку/i })).toHaveAttribute('href', '/auth/login?next=/venues/v1')
+    expect(screen.getByRole('link', { name: /пиячок/i })).toHaveAttribute('href', '/auth/login?next=/venues/v1')
   })
 
   it('перше відкриття → попередження про безпеку; підтвердження → форма; прапор у localStorage', () => {
     renderWithProviders(<HangoutButton venueId="v1" loginNext="/venues/v1" />, testUser)
-    fireEvent.click(screen.getByRole('button', { name: /пиячку/i }))
+    fireEvent.click(screen.getByRole('button', { name: /пиячок/i }))
     expect(screen.getByText(/безпек/i)).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: /Зрозуміло, продовжити/i }))
     expect(screen.getByLabelText(/Мета/i)).toBeInTheDocument()
@@ -78,7 +78,7 @@ describe('HangoutButton', () => {
   it('повторне відкриття (прапор збережено) → форма одразу', () => {
     window.localStorage.setItem('hangout-safety-ack', '1')
     renderWithProviders(<HangoutButton venueId="v1" loginNext="/venues/v1" />, testUser)
-    fireEvent.click(screen.getByRole('button', { name: /пиячку/i }))
+    fireEvent.click(screen.getByRole('button', { name: /пиячок/i }))
     expect(screen.getByLabelText(/Мета/i)).toBeInTheDocument()
     expect(screen.queryByText(/попередженн/i)).not.toBeInTheDocument()
   })
@@ -88,7 +88,7 @@ describe('HangoutButton', () => {
     vi.stubGlobal('fetch', fetchMock)
     window.localStorage.setItem('hangout-safety-ack', '1')
     renderWithProviders(<HangoutButton venueId="v1" loginNext="/venues/v1" />, testUser)
-    fireEvent.click(screen.getByRole('button', { name: /пиячку/i }))
+    fireEvent.click(screen.getByRole('button', { name: /пиячок/i }))
     fireEvent.change(screen.getByLabelText(/Дата/i), { target: { value: localDate(-1) } })
     fireEvent.change(screen.getByLabelText(/Час/i), { target: { value: '19:30' } })
     fireEvent.change(screen.getByLabelText(/Мета/i), { target: { value: 'Шукаю компанію на дегустацію' } })
@@ -102,7 +102,7 @@ describe('HangoutButton', () => {
     vi.stubGlobal('fetch', fetchMock)
     window.localStorage.setItem('hangout-safety-ack', '1')
     renderWithProviders(<HangoutButton venueId="v1" loginNext="/venues/v1" />, testUser)
-    fireEvent.click(screen.getByRole('button', { name: /пиячку/i }))
+    fireEvent.click(screen.getByRole('button', { name: /пиячок/i }))
     fillForm()
     fireEvent.click(screen.getByRole('button', { name: /Створити/i }))
     await waitFor(() => expect(apiCalls(fetchMock)).toHaveLength(1))
@@ -126,14 +126,14 @@ describe('HangoutButton', () => {
     vi.stubGlobal('fetch', fetchMock)
     window.localStorage.setItem('hangout-safety-ack', '1')
     renderWithProviders(<HangoutButton venueId="v1" loginNext="/venues/v1" />, testUser)
-    fireEvent.click(screen.getByRole('button', { name: /пиячку/i }))
+    fireEvent.click(screen.getByRole('button', { name: /пиячок/i }))
     fillForm()
     fireEvent.click(screen.getByRole('button', { name: /Створити/i }))
     expect(await screen.findByText(/Сервіс тимчасово недоступний/i)).toBeInTheDocument()
     // закриття (Скасувати) → повторне відкриття: помилка не повертається
     fireEvent.click(screen.getByRole('button', { name: /Скасувати/i }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: /пиячку/i }))
+    fireEvent.click(screen.getByRole('button', { name: /пиячок/i }))
     expect(screen.queryByText(/Сервіс тимчасово недоступний/i)).not.toBeInTheDocument()
     // поля теж скинуті
     expect(screen.getByLabelText(/Мета/i)).toHaveValue('')

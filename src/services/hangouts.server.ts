@@ -13,3 +13,17 @@ export function getHangouts(query: string) {
 export function getMyHangouts(role: string, tokens: SessionTokens | null): Promise<RawHangout[]> {
   return serverFetch<RawHangout[]>(`/me/hangouts?role=${role}`, { tokens, revalidate: 0 })
 }
+
+/**
+ * id зустрічей користувача (створені + приєднані) — для стану «В тусовці!»
+ * у стрічці. Помилка (мережа/сесія) → порожня множина, кнопки лишаються «Приєднатися».
+ */
+export async function getMyHangoutIds(tokens: SessionTokens | null): Promise<Set<string>> {
+  if (!tokens) return new Set()
+  try {
+    const mine = await getMyHangouts('all', tokens)
+    return new Set(mine.map((h) => h.id))
+  } catch {
+    return new Set()
+  }
+}

@@ -10,12 +10,22 @@ import { joinHangout } from '@/services/hangouts'
 import { ApiError } from '@/lib/api/parse'
 import type { HangoutStatus } from '@/types/hangout'
 
-export function HangoutJoinButton({ hangoutId, status }: { hangoutId: string; status: HangoutStatus }) {
+export function HangoutJoinButton({ hangoutId, status, joinRedirect, initialJoined = false }: {
+  hangoutId: string
+  status: HangoutStatus
+  /** Вказати — після успішного join перейти на адресу замість перевитягу
+   *  (деталі зустрічі → назад до списку). */
+  joinRedirect?: string
+  /** Користувач уже учасник (від сервера, /me/hangouts) — одразу «В тусовці!». */
+  initialJoined?: boolean
+}) {
   const { user } = useUser()
   const { toast } = useToast()
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  // локальний факт приєднання: кнопка гасне у стан «В тусовці!»
+  const [joined, setJoined] = useState(initialJoined)
 
   if (!user) {
     return (
@@ -39,9 +49,11 @@ export function HangoutJoinButton({ hangoutId, status }: { hangoutId: string; st
     setError(null)
     try {
       await joinHangout(hangoutId)
-      // router.refresh(): після join список учасників на сервері змінився —
-      // RSC-перевитяг оновить лічильник/статус картки (патерн HangoutActions)
-      router.refresh()
+      setJoined(true)
+      // Серверне оновлення: поки ми ще на цій сторінці — RSC-перевитяг
+      // оновить лічильник/статус картки; redirect (деталі) замінює його
+      if (joinRedirect) router.push(joinRedirect)
+      else router.refresh()
       toast('Успішно приєднано до зустрічі')
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Не вдалося приєднатися')
@@ -50,6 +62,10 @@ export function HangoutJoinButton({ hangoutId, status }: { hangoutId: string; st
     }
   }
 
+  if (joined) {
+    // стан після успішного join: не-дія, лише позначка (бекенд 409 і так захищає)
+    return <Button size="sm" disabled>В тусовці!</Button>
+  }
   return (
     <div>
       <Button size="sm" onClick={join} disabled={busy}>{busy ? 'Приєднуємось…' : 'Приєднатися'}</Button>
