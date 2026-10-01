@@ -49,6 +49,23 @@ export class ComplaintsService {
     return { data, meta: buildMeta({ page, limit, offset }, total) };
   }
 
+  /** Скарги до закладу для власника: ціль — сам заклад або відгук на нього. */
+  async listForVenue(venueId: string, page = 1, limit = 20) {
+    const { offset } = normalizePagination({ page, limit });
+    const [data, total] = await this.complaints
+      .createQueryBuilder('c')
+      .leftJoin('c.review', 'r')
+      .where('(c.venueId = :venueId OR r.venueId = :venueId)', { venueId })
+      .andWhere('c.status IN (:...statuses)', {
+        statuses: [ComplaintStatus.New, ComplaintStatus.InReview],
+      })
+      .orderBy('c.createdAt', 'ASC')
+      .offset(offset)
+      .limit(limit)
+      .getManyAndCount();
+    return { data, meta: buildMeta({ page, limit, offset }, total) };
+  }
+
   async resolve(id: string, adminUserId: string, dto: ResolveComplaintDto) {
     const c = await this.complaints.findOne({ where: { id } });
     if (!c) throw new NotFoundException('Скаргу не знайдено');

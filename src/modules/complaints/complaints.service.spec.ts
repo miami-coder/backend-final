@@ -22,6 +22,7 @@ describe('ComplaintsService', () => {
       save: jest.fn().mockImplementation((x) => Promise.resolve(x)),
       findOne: jest.fn(),
       findAndCount: jest.fn().mockResolvedValue([[], 0]),
+      createQueryBuilder: jest.fn(),
     };
     const module = await Test.createTestingModule({
       providers: [
@@ -98,5 +99,39 @@ describe('ComplaintsService', () => {
       service.resolve('c2', 'admin2', { status: ComplaintStatus.Resolved }),
     ).rejects.toBeInstanceOf(ConflictException);
     expect(complaints.save).not.toHaveBeenCalled();
+  });
+
+  // Скарги до закладу: venueId-скарги + скарги на відгуки цього закладу
+  it('listForVenue filters by venueId (своїй ціллю або ціллю відгуку)', async () => {
+    const qb = {
+      leftJoin: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
+      orderBy: jest.fn().mockReturnThis(),
+      offset: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
+      getManyAndCount: jest
+        .fn()
+        .mockResolvedValue([[{ id: 'c1' }], 1]),
+    };
+    complaints.createQueryBuilder.mockReturnValue(qb);
+    const r = await service.listForVenue('v1', 1, 20);
+    expect(qb.where).toHaveBeenCalledWith(
+      '(c.venueId = :venueId OR r.venueId = :venueId)',
+      { venueId: 'v1' },
+    );
+    expect(qb.andWhere).toHaveBeenCalledWith('c.status IN (:...statuses)', {
+      statuses: [
+        ComplaintStatus.New,
+        ComplaintStatus.InReview,
+      ],
+    });
+    expect(r.data).toEqual([{ id: 'c1' }]);
+    expect(r.meta).toEqual({
+      page: 1,
+      limit: 20,
+      total: 1,
+      hasMore: false,
+    });
   });
 });
