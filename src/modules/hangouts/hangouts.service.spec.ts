@@ -138,20 +138,56 @@ describe('HangoutsService', () => {
     );
   });
 
-  it('getForUser loads venue relation for participant', async () => {
+  it('getOne loads venue + participants-user-profile relations', async () => {
     hangouts.findOne.mockResolvedValueOnce({
       id: 'h1',
       status: HangoutStatus.Open,
-      participants: [{ userId: 'u1' }],
+      participants: [
+        {
+          hangoutId: 'h1',
+          userId: 'u1',
+          joinedAt: new Date('2026-09-30T10:00:00Z'),
+          user: { profile: { firstname: 'Іван', lastname: 'Петренко' } },
+        },
+      ],
       venue: { id: 'v1' },
     });
-    const h = await service.getForUser('u1', 'h1');
+    const h = await service.getOne('h1');
     expect(hangouts.findOne).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 'h1' },
-        relations: { participants: true, venue: true },
+        relations: { participants: { user: { profile: true } }, venue: true },
       }),
     );
-    expect(h.venue).toEqual({ id: 'v1' });
+    expect(h.participants[0]).toEqual({
+      hangoutId: 'h1',
+      userId: 'u1',
+      joinedAt: new Date('2026-09-30T10:00:00Z'),
+      firstname: 'Іван',
+      lastname: 'Петренко',
+    });
+  });
+
+  it('getOne дозволяє не-учаснику дивитись деталі (без 403)', async () => {
+    hangouts.findOne.mockResolvedValueOnce({
+      id: 'h1',
+      status: HangoutStatus.Open,
+      participants: [{ userId: 'someone' }],
+      venue: null,
+    });
+    const h = await service.getOne('h1');
+    expect(h.id).toBe('h1');
+  });
+
+  it('getOne витримує учасника без profile (фолбек на порожні імена)', async () => {
+    hangouts.findOne.mockResolvedValueOnce({
+      id: 'h1',
+      status: HangoutStatus.Open,
+      participants: [{ hangoutId: 'h1', userId: 'u1', joinedAt: new Date(), user: null }],
+      venue: null,
+    });
+    const h = await service.getOne('h1');
+    expect(h.participants[0].firstname).toBe('');
+    expect(h.participants[0].lastname).toBe('');
   });
 });

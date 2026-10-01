@@ -156,17 +156,32 @@ export class HangoutsService {
     return { data, meta: buildMeta({ page, limit, offset }, total) };
   }
 
-  async getForUser(userId: string, hangoutId: string): Promise<Hangout> {
+  /**
+   * Деталі зустрічі — доступні будь-якому залогіненому користувачу (гейт
+   * «тільки для учасників» знято: доєднатися можна лише побачивши деталі).
+   * Учасники — з profile (імʼя/прізвище) і joinedAt; повний user/email
+   * назовні не віддаємо (PII).
+   */
+  async getOne(hangoutId: string): Promise<
+    Omit<Hangout, 'participants'> & {
+      participants: { hangoutId: string; userId: string; joinedAt: Date; firstname: string; lastname: string }[];
+    }
+  > {
     const h = await this.hangouts.findOne({
       where: { id: hangoutId },
-      relations: { participants: true, venue: true },
+      relations: { participants: { user: { profile: true } }, venue: true },
     });
     if (!h) throw new NotFoundException('Заявку не знайдено');
-    const isParticipant = h.participants.some((p) => p.userId === userId);
-    if (!isParticipant) {
-      throw new ForbiddenException('Ви не учасник цієї заявки');
-    }
-    return h;
+    return {
+      ...h,
+      participants: h.participants.map((p) => ({
+        hangoutId: p.hangoutId,
+        userId: p.userId,
+        joinedAt: p.joinedAt,
+        firstname: p.user?.profile?.firstname ?? '',
+        lastname: p.user?.profile?.lastname ?? '',
+      })),
+    };
   }
 
   async listMine(userId: string, role: 'created' | 'joined' | 'all') {
