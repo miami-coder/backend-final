@@ -1,70 +1,39 @@
-# Пиячок — фронтенд каталогу закладів України
+# Пиячок — фронтенд
 
-«Пиячок» — каталог барів, ресторанів та кафе України: рейтинги, відгуки, новини та зустрічі.
-Це фронтенд (Next.js 16 App Router, React 19, TypeScript, Tailwind v4, zod). Інтерфейс — українською.
+Каталог закладів «Пиячок»: Next.js 16 App Router, React 19, TypeScript, Tailwind v4. Інтерфейс — українською. Порт `3001`, потрібен запущений бекенд на `:3000`.
 
-## Запуск
-
-**Бекенд** — проєкт `backend-final` (NestJS), доступний на `http://localhost:3000/api/v1`:
+## Запуск через Docker
 
 ```bash
-cd backend-final
-pnpm start:dev
+docker compose up -d
 ```
 
-**Фронтенд** — порт 3001:
+Підніме фронтенд на `http://localhost:3001` з hot-reload (вихідники змонтує з диска, перезбірка не потрібна). `BACKEND_URL` всередині контейнера сам вийде на хост-бекенд (`http://host.docker.internal:3000`), нічого конфігурувати не треба.
 
-```bash
-pnpm install
-pnpm dev
-# → http://localhost:3001
-```
+Логи: `docker compose logs -f frontend`. Зупинка: `docker compose down`.
 
-**Змінні оточення** — `.env.local`:
+## Запуск без Docker
 
-```
-BACKEND_URL=http://localhost:3000
-```
+Потрібні Node 22 і pnpm, і бекенд на `http://localhost:3000`.
 
-`BACKEND_URL` — адреса бекенда (за замовчуванням `http://localhost:3000`); фронтенд проксирує запити на `${BACKEND_URL}/api/v1`.
+1. Змінні оточення:
 
-## Скрипти
+   ```bash
+   cp .env.example .env.local
+   ```
 
-| Команда | Призначення |
-| --- | --- |
-| `pnpm dev` | dev-сервер на порту 3001 |
-| `pnpm build` | продакшн-збірка |
-| `pnpm start` | запуск продакшн-збірки |
-| `pnpm test` | тести (Vitest + React Testing Library) |
-| `pnpm test:watch` | тести у режимі watch |
-| `pnpm typecheck` | перевірка типів (`tsc --noEmit`) |
-| `pnpm lint` | ESLint |
+   `.env.local`: `BACKEND_URL=http://localhost:3000` — адреса бекенда, куди фронте́нд проксує `/api/v1`.
 
-Потрібен Node 20+ і пакувальник `pnpm`.
+2. Залежності та dev-сервер:
 
-## Архітектура (BFF)
+   ```bash
+   pnpm install
+   pnpm dev
+   # → http://localhost:3001
+   ```
 
-Фронтенд не звертається до бекенда напряму з браузера — він працює як BFF (Backend-For-Frontend):
+3. Тести:
 
-- Усі клієнтські запити йдуть на `/api/v1/*`, які переспрямовуються на `${BACKEND_URL}/api/v1` (маршрут `src/app/api/v1/[...path]/route.ts`).
-- Пара JWT-токенів (access + refresh) зберігається в httpOnly-cookie `piyachok_session` — токени недоступні з JS (`document.cookie` їх не містить), refresh виконується на сервері.
-- Оновлення access-токена відбувається автоматично всередині проксі `/api/v1`: отримавши 401, він сам викликає `/auth/refresh` на бекенді й ротує cookie на сервері, тому окремого BFF-хендлера `/api/auth/refresh` навмисно немає.
-- OAuth (Google/Facebook) — кнопки ведуть на бекенд; колбек `?access&refresh` обробляє `src/app/auth/callback` і встановлює ту саму cookie.
-- Каталог закладів рендериться SSR: фільтри/сортування/пагінація зберігаються в URL.
-
-## Структура
-
-```
-src/app       — маршрути App Router (сторінки, layout, /api/v1-проксі, auth)
-src/components — UI-компоненти дизайн-системи та layout
-src/lib       — api-клієнт, сесія, валідація (zod), побудова query
-src/types     — типи даних API та парсери
-```
-
-## Брами якості
-
-Перед комітом мають проходити:
-
-```bash
-pnpm typecheck && pnpm lint && pnpm test && pnpm build
-```
+   ```bash
+   pnpm test
+   ```
