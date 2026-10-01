@@ -28,6 +28,7 @@ describe('AuthService', () => {
       findById: jest.fn().mockResolvedValue({ id: 'u1', email: 'a@b.com' }),
       findByEmail: jest.fn(),
       verifyPassword: jest.fn(),
+      restoreAccount: jest.fn().mockResolvedValue(undefined),
     };
     const qb = {
       innerJoin: jest.fn().mockReturnThis(),
@@ -116,6 +117,16 @@ describe('AuthService', () => {
       email: 'a@b.com',
       password: 'Password1',
     });
+    expect(res.accessToken).toBe('access-tok');
+  });
+
+  // Дефект: soft-видалений (адмін-видалення) акаунт міг логінитесь паролем
+  // «мулликом» — без ролей і невидимий у списку користувачів
+  it('login soft-видаленого акаунта відновлює його перед видачею токенів', async () => {
+    users.findByEmail.mockResolvedValueOnce({ id: 'u-del', email: 'a@b.com', deletedAt: new Date() });
+    users.verifyPassword.mockResolvedValueOnce(true);
+    const res = await service.login({ email: 'a@b.com', password: 'Password1' });
+    expect(users.restoreAccount).toHaveBeenCalledWith('u-del');
     expect(res.accessToken).toBe('access-tok');
   });
 
