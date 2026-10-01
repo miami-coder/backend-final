@@ -11,12 +11,15 @@ import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiConflictResponse,
+  ApiExtraModels,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiQuery,
   ApiTags,
   ApiUnauthorizedResponse,
+  getSchemaPath,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
@@ -155,16 +158,39 @@ export class HangoutsController {
   @ApiBearerAuth('access-token')
   @UseGuards(JwtAuthGuard)
   @Get('hangouts/:id')
-  @ApiOperation({ summary: 'Переглянути зустріч (тільки для учасників)' })
-  @ApiDataResponse({
-    type: Hangout,
-    description: 'Деталі зустрічі з учасниками',
+  @ApiOperation({ summary: 'Переглянути зустріч (для будь-якого залогіненого)' })
+  @ApiExtraModels(Hangout)
+  @ApiOkResponse({
+    description: 'Деталі зустрічі з учасниками (імʼя/прізвище, joinedAt)',
+    schema: {
+      type: 'object',
+      properties: {
+        data: {
+          allOf: [{ $ref: getSchemaPath(Hangout) }],
+          properties: {
+            participants: {
+              type: 'array',
+              description: 'Імʼя/прізвище учасника; повні дані користувача не віддаються',
+              items: {
+                type: 'object',
+                properties: {
+                  hangoutId: { type: 'string', format: 'uuid' },
+                  userId: { type: 'string', format: 'uuid' },
+                  joinedAt: { type: 'string', format: 'date-time' },
+                  firstname: { type: 'string' },
+                  lastname: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   })
   @ApiUnauthorizedResponse({ description: 'Не авторизований' })
-  @ApiForbiddenResponse({ description: 'Ви не учасник цієї заявки' })
   @ApiNotFoundResponse({ description: 'Зустріч не знайдено' })
   get(@CurrentUser() u: JwtUser, @Param('id') id: string) {
-    return this.hangouts.getForUser(u.sub, id).then((data) => ({ data }));
+    return this.hangouts.getOne(id).then((data) => ({ data }));
   }
 
   @ApiBearerAuth('access-token')

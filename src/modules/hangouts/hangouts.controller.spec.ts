@@ -14,6 +14,7 @@ describe('HangoutsController', () => {
       leave: jest.fn(),
       cancel: jest.fn(),
       getForUser: jest.fn(),
+      getOne: jest.fn(),
       listMine: jest.fn(),
     };
     const module = await Test.createTestingModule({
@@ -60,10 +61,10 @@ describe('HangoutsController', () => {
     expect(res.data.id).toBe('h1');
   });
 
-  it('get delegates to getForUser and wraps in data', async () => {
-    hangouts.getForUser.mockResolvedValue({ id: 'h1' });
+  it('get delegates to getOne (без гейту участі) and wraps in data', async () => {
+    hangouts.getOne.mockResolvedValue({ id: 'h1' });
     const res = await controller.get({ sub: 'u1' } as any, 'h1');
-    expect(hangouts.getForUser).toHaveBeenCalledWith('u1', 'h1');
+    expect(hangouts.getOne).toHaveBeenCalledWith('h1');
     expect(res.data.id).toBe('h1');
   });
 
