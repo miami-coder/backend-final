@@ -28,7 +28,7 @@ export default async function AdminMessagesPage({ searchParams }: Props) {
   return (
     <section aria-label="Зворотний звʼязок" className="space-y-4">
       <p className="text-sm text-muted">
-        Повідомлення з форми «Написати нам» (/contact). Відповідь потрапить користувачу у Повідомлення.
+        Повідомлення з форми «Написати нам». Відповідь потрапить користувачу у Повідомлення.
       </p>
       {messages.length === 0 ? (
         <p className="rounded-xl border border-line bg-surface p-8 text-center text-muted">

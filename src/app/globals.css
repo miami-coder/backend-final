@@ -42,6 +42,27 @@ body {
   outline-offset: 2px;
 }
 
+/* File-input: нативна кнопка «Обрати файл» має читатись як дія (як Button secondary);
+   «No file chosen» лишається просто інфою (muted), клікабельна лише кнопка. */
+input[type="file"] {
+  color: var(--color-muted);
+}
+input[type="file"]::file-selector-button {
+  cursor: pointer;
+  margin-right: 0.75rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-strong);
+  border-radius: 0.75rem;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-weight: 500;
+  transition: border-color 0.15s, background 0.15s;
+}
+input[type="file"]:hover::file-selector-button {
+  border-color: var(--color-amber-500);
+  background: var(--color-raised);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

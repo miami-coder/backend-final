@@ -84,6 +84,22 @@ describe('ReviewForm (створення)', () => {
     await waitFor(() => expect(refresh).toHaveBeenCalled())
   })
 
+  it('успішне створення → форма очищається: текст порожній, зірки скинуті, файл знятий', async () => {
+    const fetchMock = vi.fn(async () => ok201())
+    vi.stubGlobal('fetch', fetchMock)
+    renderWithProviders(<ReviewForm venueId="v1" myReview={null} />, testUser)
+    fireEvent.change(screen.getByLabelText(/Відгук/i), { target: { value: valid.text } })
+    fireEvent.click(screen.getByRole('radio', { name: /5/i }))
+    const file = new File(['photo'], 'check.png', { type: 'image/png' })
+    fireEvent.change(screen.getByLabelText(/Фото чеку/i), { target: { files: [file] } })
+    fireEvent.click(screen.getByRole('button', { name: /Надіслати відгук/i }))
+    await waitFor(() => expect(apiCalls(fetchMock)).toHaveLength(1))
+    await waitFor(() => expect(refresh).toHaveBeenCalled())
+    expect(screen.getByLabelText(/Відгук/i)).toHaveValue('')
+    expect(screen.queryByRole('radio', { name: /5/i, checked: true })).not.toBeInTheDocument()
+    expect(screen.getByLabelText(/Фото чеку/i)).toHaveValue('')
+  })
+
   it('409 → показує повідомлення бекенда', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => new Response(
       JSON.stringify({ error: { code: 'CONFLICT', message: 'Ви вже залишили відгук про цей заклад', details: null } }),
@@ -98,6 +114,32 @@ describe('ReviewForm (створення)', () => {
 })
 
 describe('ReviewForm (редагування/видалення наявного)', () => {
+  it('наявний відгук → форма закрита: Редагувати/Видалити, клік Редагувати → підставлений редактор', () => {
+    renderWithProviders(
+      <ReviewForm venueId="v1" myReview={{ id: 'r1', rating: 3, text: 'Було нормально' }} />,
+      testUser,
+    )
+    // Поля не показуються, поки форму не відкриють
+    expect(screen.queryByLabelText(/^Відгук$/i)).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /Редагувати/i }))
+    expect(screen.getByLabelText(/Відгук/i)).toHaveValue('Було нормально')
+    expect(screen.getByRole('radio', { name: /3/i, checked: true })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Скасувати/i })).toBeInTheDocument()
+  })
+
+  it('скасування у редакторі → поворот до закритої картки з відкатом правок', () => {
+    renderWithProviders(
+      <ReviewForm venueId="v1" myReview={{ id: 'r1', rating: 3, text: 'Було нормально' }} />,
+      testUser,
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Редагувати/i }))
+    fireEvent.change(screen.getByLabelText(/Відгук/i), { target: { value: 'Тимчасова правка' } })
+    fireEvent.click(screen.getByRole('button', { name: /Скасувати/i }))
+    expect(screen.queryByLabelText(/^Відгук$/i)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Редагувати/i })).toBeInTheDocument()
+    expect(screen.queryByDisplayValue('Тимчасова правка')).not.toBeInTheDocument()
+  })
+
   it('edit-режим: PATCH JSON {rating,text}', async () => {
     const fetchMock = vi.fn(async () => ok201())
     vi.stubGlobal('fetch', fetchMock)
@@ -105,6 +147,7 @@ describe('ReviewForm (редагування/видалення наявного
       <ReviewForm venueId="v1" myReview={{ id: 'r1', rating: 3, text: 'Було нормально' }} />,
       testUser,
     )
+    fireEvent.click(screen.getByRole('button', { name: /Редагувати/i }))
     fireEvent.change(screen.getByLabelText(/Відгук/i), { target: { value: 'Стало ще краще' } })
     fireEvent.click(screen.getByRole('button', { name: /Зберегти/i }))
     await waitFor(() => expect(apiCalls(fetchMock)).toHaveLength(1))
@@ -114,21 +157,40 @@ describe('ReviewForm (редагування/видалення наявного
     expect(JSON.parse(String(init.body))).toEqual({ rating: 3, text: 'Стало ще краще' })
   })
 
-  it('видалення → DELETE + router.refresh()', async () => {
-    // jsdom не має window.confirm — підтверджуємо діалог тестом
-    vi.spyOn(window, 'confirm').mockReturnValue(true)
+  it('видалення: модалка-підтвердження → DELETE + router.refresh()', async () => {
     const fetchMock = authAwareMock(() => new Response(null, { status: 200 }))
     vi.stubGlobal('fetch', fetchMock)
     renderWithProviders(
       <ReviewForm venueId="v1" myReview={{ id: 'r1', rating: 3, text: 'x'.repeat(10) }} />,
       testUser,
     )
-    fireEvent.click(screen.getByRole('button', { name: /Видалити відгук/i }))
+    // Не window.confirm, а діалог у DOM: спершу модалка, DELETE лише після підтвердження
+    fireEvent.click(screen.getByRole('button', { name: /Видалити/i }))
+    await screen.findByRole('dialog', { name: /видалити відгук\?/i })
+    expect(apiCalls(fetchMock)).toHaveLength(0)
+    fireEvent.click(screen.getByRole('button', { name: /Так, видалити/i }), undefined)
     await waitFor(() => expect(apiCalls(fetchMock)).toHaveLength(1))
     const [url, init] = apiCalls(fetchMock)[0]
     expect(url).toBe('/api/v1/reviews/r1')
     expect(init.method).toBe('DELETE')
+    // Успіх — модалка закрилася
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
     await waitFor(() => expect(refresh).toHaveBeenCalled())
+  })
+
+  it('видалення: «Скасувати» у модалці → без DELETE', async () => {
+    const fetchMock = authAwareMock(() => new Response(null, { status: 200 }))
+    vi.stubGlobal('fetch', fetchMock)
+    renderWithProviders(
+      <ReviewForm venueId="v1" myReview={{ id: 'r1', rating: 3, text: 'x'.repeat(10) }} />,
+      testUser,
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Видалити/i }))
+    await screen.findByRole('dialog', { name: /видалити відгук\?/i })
+    fireEvent.click(screen.getByRole('button', { name: /Скасувати/i }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(apiCalls(fetchMock)).toHaveLength(0)
+    expect(refresh).not.toHaveBeenCalled()
   })
 
   it('гість → посилання на логін', () => {

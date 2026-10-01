@@ -47,10 +47,15 @@ export function MyReviewItem({ review, venueName }: { review: Review; venueName:
         <Button variant="ghost" size="sm" onClick={() => setDeleting(true)}>Видалити</Button>
       </div>
 
-      {/* ReviewForm не приймає onDone: після PATCH він сам робить toast + router.refresh(),
-          але модалку не закриває — користувач закриває її сам (Esc / «×» / клік поза модалкою). */}
+      {/* ReviewForm з initialEditing: модалка = сам редактор; після PATCH він сам
+          робить toast + router.refresh() і закриває редактор у картку (у модалці
+          це читатиметься як закритий блок — користувач закриє її сам). */}
       <Modal open={editing} onClose={() => setEditing(false)} title="Редагувати відгук">
-        <ReviewForm venueId={review.venueId} myReview={{ id: review.id, rating: review.rating, text: review.text }} />
+        <ReviewForm
+          venueId={review.venueId}
+          myReview={{ id: review.id, rating: review.rating, text: review.text }}
+          initialEditing
+        />
       </Modal>
 
       <Modal open={deleting} onClose={() => setDeleting(false)} title="Видалити відгук?">

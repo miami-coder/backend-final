@@ -49,7 +49,7 @@ describe('VenueCreateForm', () => {
     expect(body.tagSlugs).toEqual(['pyvo', 'live'])
   })
 
-  it('широти/довготи немає: ані інпутів, ані в POST-тілі', async () => {
+  it('координати опційні: порожні — не в POST-тілі', async () => {
     vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
       if (String(input).endsWith('/auth/me')) {
         return new Response(JSON.stringify({ data: testUser }), { status: 200, headers: { 'content-type': 'application/json' } })
@@ -57,8 +57,8 @@ describe('VenueCreateForm', () => {
       return new Response(JSON.stringify({ data: { id: 'v9' } }), { status: 201, headers: { 'content-type': 'application/json' } })
     }))
     renderForm(<VenueCreateForm />)
-    expect(screen.queryByLabelText(/Широта/i)).not.toBeInTheDocument()
-    expect(screen.queryByLabelText(/Довгота/i)).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/^Широта/i)).toBeInTheDocument()
+    expect(screen.queryByLabelText(/^Довгота/i)).toBeInTheDocument()
     fireEvent.change(screen.getByLabelText(/^Назва/i), { target: { value: 'Бар «Пиво»' } })
     fireEvent.change(screen.getByLabelText(/^Адреса/i), { target: { value: 'вул. Липова, 1' } })
     fireEvent.click(screen.getByRole('button', { name: /Подати/i }))
@@ -66,6 +66,25 @@ describe('VenueCreateForm', () => {
     const body = JSON.parse((apiCalls()[0][1] as RequestInit).body as string)
     expect(body.latitude).toBeUndefined()
     expect(body.longitude).toBeUndefined()
+  })
+
+  it('заповнені координати → у POST-тілі числами', async () => {
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+      if (String(input).endsWith('/auth/me')) {
+        return new Response(JSON.stringify({ data: testUser }), { status: 200, headers: { 'content-type': 'application/json' } })
+      }
+      return new Response(JSON.stringify({ data: { id: 'v9' } }), { status: 201, headers: { 'content-type': 'application/json' } })
+    }))
+    renderForm(<VenueCreateForm />)
+    fireEvent.change(screen.getByLabelText(/^Назва/i), { target: { value: 'Бар «Хміль»' } })
+    fireEvent.change(screen.getByLabelText(/^Адреса/i), { target: { value: 'вул. Липова, 2' } })
+    fireEvent.change(screen.getByLabelText(/^Широта/i), { target: { value: '50.4501' } })
+    fireEvent.change(screen.getByLabelText(/^Довгота/i), { target: { value: '30.5234' } })
+    fireEvent.click(screen.getByRole('button', { name: /Подати/i }))
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/account/venues?created=1'))
+    const body = JSON.parse((apiCalls()[0][1] as RequestInit).body as string)
+    expect(body.latitude).toBe(50.4501)
+    expect(body.longitude).toBe(30.5234)
   })
 
   it('name <3 → інлайн-помилка, без POST', async () => {

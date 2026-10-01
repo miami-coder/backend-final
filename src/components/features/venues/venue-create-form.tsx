@@ -24,6 +24,8 @@ const DAY_LABELS: Record<string, string> = {
 const FIELD_LABELS: Record<string, string> = {
   name: 'Назва',
   address: 'Адреса',
+  latitude: 'Широта',
+  longitude: 'Довгота',
   description: 'Опис',
   'contacts.phone': 'Телефон',
   'contacts.instagram': 'Instagram',
@@ -49,6 +51,8 @@ export function VenueCreateForm() {
   const router = useRouter()
   const [name, setName] = useState('')
   const [address, setAddress] = useState('')
+  const [latitude, setLatitude] = useState('')
+  const [longitude, setLongitude] = useState('')
   const [description, setDescription] = useState('')
   const [phone, setPhone] = useState('')
   const [instagram, setInstagram] = useState('')
@@ -74,6 +78,8 @@ export function VenueCreateForm() {
     const dto = {
       name,
       address,
+      latitude: latitude.trim() ? Number(latitude) : undefined,
+      longitude: longitude.trim() ? Number(longitude) : undefined,
       description: description.trim() || undefined,
       contacts: (phone.trim() || instagram.trim() || facebook.trim() || website.trim())
         ? {
@@ -178,6 +184,39 @@ export function VenueCreateForm() {
           onChange={(e) => setDescription(e.target.value)}
           className="mt-1 w-full"
         />
+      </div>
+      {/* Координати опційні: без них заклад не бере участі у пошуку «Поблизу» */}
+      <div className="text-sm">
+        <label htmlFor="vn-lat">Широта</label>
+        <Input
+          id="vn-lat"
+          type="number"
+          step="0.000001"
+          min="-90"
+          max="90"
+          placeholder="напр. 50.4501"
+          aria-describedby={fieldErrors.latitude ? 'vn-lat-error' : undefined}
+          value={latitude}
+          onChange={(e) => setLatitude(e.target.value)}
+          className="mt-1 w-full"
+        />
+        {err('latitude')}
+      </div>
+      <div className="text-sm">
+        <label htmlFor="vn-lng">Довгота</label>
+        <Input
+          id="vn-lng"
+          type="number"
+          step="0.000001"
+          min="-180"
+          max="180"
+          placeholder="напр. 30.5234"
+          aria-describedby={fieldErrors.longitude ? 'vn-lng-error' : undefined}
+          value={longitude}
+          onChange={(e) => setLongitude(e.target.value)}
+          className="mt-1 w-full"
+        />
+        {err('longitude')}
       </div>
       <fieldset className="rounded-xl border border-line p-3 sm:col-span-2">
         <legend className="px-1 text-sm font-medium">Контакти</legend>

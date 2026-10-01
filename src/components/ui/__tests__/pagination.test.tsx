@@ -13,4 +13,9 @@ describe('Pagination', () => {
     expect(screen.getByRole('link', { name: 'Наступна' })).toHaveAttribute('href', '/?page=3')
     expect(screen.getByRole('link', { name: '1' })).toBeInTheDocument()
   })
+  it('scroll={false} — самі ж href-и, без нових атрибутів у DOM', () => {
+    render(<Pagination page={2} totalPages={3} hrefFor={(p) => `/venues/v1?sort=oldest&page=${p}`} scroll={false} />)
+    expect(screen.getByRole('link', { name: 'Попередня' })).toHaveAttribute('href', '/venues/v1?sort=oldest&page=1')
+    expect(screen.getByRole('link', { name: 'Наступна' })).toHaveAttribute('href', '/venues/v1?sort=oldest&page=3')
+  })
 })

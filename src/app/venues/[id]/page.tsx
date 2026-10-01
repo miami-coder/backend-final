@@ -13,10 +13,13 @@ import { FavoriteButton } from '@/components/features/venues/favorite-button'
 import { HangoutButton } from '@/components/features/hangouts/hangout-button'
 import { ReviewForm } from '@/components/features/venues/review-form'
 import { ReviewList } from '@/components/features/venues/review-list'
+import { NewsListItem } from '@/components/features/news/news-list-item'
 import { getFavoriteIds, getVenueDetail } from '@/services/venues.server'
+import { getVenueNews } from '@/services/news.server'
 import { findMyReviewForVenue } from '@/services/reviews.server'
 import { formatMoney } from '@/lib/utils/format'
 import type { Venue } from '@/types/venue'
+import { parseNews, type News } from '@/types/news'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -59,6 +62,16 @@ export default async function VenuePage({ params, searchParams }: Props) {
     } catch {
       myReview = null
     }
+  }
+
+  // Публічні новини саме цього закладу (GET /news?venueId=): показуються
+  // лише published; draft/archived тут не з'являються (анологічно вкладці /news)
+  let venueNews: News[] = []
+  try {
+    const rawNews = await getVenueNews(id, tokens)
+    venueNews = rawNews.data.map(parseNews)
+  } catch {
+    venueNews = []
   }
 
   return (
@@ -139,6 +152,22 @@ export default async function VenuePage({ params, searchParams }: Props) {
         <section aria-label="Опис">
           <h2 className="mb-2 font-display font-semibold">Про заклад</h2>
           <p className="whitespace-pre-line text-muted">{venue.description}</p>
+        </section>
+      )}
+
+      {venueNews.length > 0 && (
+        <section aria-label="Новини закладу" className="space-y-2">
+          <div className="flex items-baseline justify-between gap-2">
+            <h2 className="font-display text-xl font-semibold">Новини закладу</h2>
+            <Link className="text-sm text-amber-500 hover:underline" href="/news">
+              Усі новини
+            </Link>
+          </div>
+          <ul className="border-t border-line">
+            {venueNews.map((n) => (
+              <NewsListItem key={n.id} item={n} />
+            ))}
+          </ul>
         </section>
       )}
 

@@ -30,6 +30,7 @@ export async function ReviewList({ venueId, sort, page }: { venueId: string; sor
         {SORTS.map((s) => (
           <Link
             key={s.value}
+            scroll={false}
             href={`/venues/${venueId}?sort=${s.value}${page > 1 ? `&page=${page}` : ''}`}
             aria-current={safeSort === s.value ? 'true' : undefined}
             className={`rounded-full px-3 py-1 text-xs ${
@@ -76,7 +77,7 @@ export async function ReviewList({ venueId, sort, page }: { venueId: string; sor
       </ul>
 
       {totalPages > 1 && (
-        <Pagination page={page} totalPages={totalPages} hrefFor={(p) => `/venues/${venueId}?sort=${safeSort}&page=${p}`} />
+        <Pagination scroll={false} page={page} totalPages={totalPages} hrefFor={(p) => `/venues/${venueId}?sort=${safeSort}&page=${p}`} />
       )}
     </div>
   )
