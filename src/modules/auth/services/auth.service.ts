@@ -49,6 +49,9 @@ export class AuthService {
     if (!user) throw new UnauthorizedException('Невірний email або пароль');
     const ok = await this.users.verifyPassword(user, dto.password);
     if (!ok) throw new UnauthorizedException('Невірний email або пароль');
+    // soft-видалений (адмін-видалення) акаунт, який заходить паролем, оживає:
+    // знімаємо прапор + повертаємо дефолтну роль до видачі токенів
+    if (user.deletedAt) await this.users.restoreAccount(user.id);
     const roles = await this.getUserRoles(user.id);
     return this.issueTokens(user.id, user.email, roles);
   }

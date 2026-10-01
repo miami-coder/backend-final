@@ -9,6 +9,10 @@ import * as bcrypt from 'bcryptjs';
 import { User } from './entities/user.entity';
 import { Profile } from './entities/profile.entity';
 import { OAuthAccount } from './entities/oauth-account.entity';
+import { Role } from '../rbac/entities/role.entity';
+import { UserRole } from '../rbac/entities/user-role.entity';
+import { RoleCode } from '../rbac/entities/role.enum';
+import { PermissionsService } from '../rbac/permissions.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 
@@ -21,6 +25,10 @@ export class UsersService {
     @InjectRepository(Profile) private readonly profiles: Repository<Profile>,
     @InjectRepository(OAuthAccount)
     private readonly oauth: Repository<OAuthAccount>,
+    @InjectRepository(Role) private readonly roleRepo: Repository<Role>,
+    @InjectRepository(UserRole)
+    private readonly userRoles: Repository<UserRole>,
+    private readonly perms: PermissionsService,
   ) {}
 
   async create(dto: CreateUserDto): Promise<User> {
@@ -82,10 +90,20 @@ export class UsersService {
     const existingAccount = await this.oauth.findOne({
       where: { provider, providerUserId },
     });
-    if (existingAccount) return this.findById(existingAccount.userId);
+    if (existingAccount) {
+      const existing = await this.findById(existingAccount.userId);
+      // soft-видалений (адмін-видалення) акаунт, який заходить знову, — оживає
+      if (existing.deletedAt) await this.restoreAccount(existing.id);
+      // бекфілл старих акаунтів, створених без ролі
+      else await this.ensureUserRole(existing.id);
+      return existing;
+    }
 
     let user = await this.findByEmail(email);
-    if (!user) {
+    if (user && user.deletedAt) {
+      // не створюємо дубля за email — відновлюємо наявний акаунт
+      await this.restoreAccount(user.id);
+    } else if (!user) {
       user = this.users.create({
         email: email.toLowerCase(),
         passwordHash: null,
@@ -103,6 +121,30 @@ export class UsersService {
     await this.oauth.save(
       this.oauth.create({ userId: user.id, provider, providerUserId }),
     );
+    await this.ensureUserRole(user.id);
     return user;
+  }
+
+  /** Soft-видалений акаунт (.deletedAt) знову заходить (OAuth або паролем):
+   *  знімаємо прапор видалення й гарантуємо дефолтну роль — акаунт оживає. */
+  async restoreAccount(userId: string): Promise<void> {
+    await this.users.update({ id: userId }, { deletedAt: null });
+    await this.ensureUserRole(userId);
+  }
+
+  // Дефолтна роль — паритет із register(): OAuth-користувач мусить мати 'user'.
+  // Ідемпотентно; бекфілить і старі oauth-акаунти, створені до цього виправлення.
+  private async ensureUserRole(userId: string): Promise<void> {
+    const role = await this.roleRepo.findOne({
+      where: { code: RoleCode.User },
+    });
+    if (!role) return;
+    const existing = await this.userRoles.findOne({
+      where: { userId, roleId: role.id },
+    });
+    if (existing) return;
+    await this.userRoles.save({ userId, roleId: role.id });
+    // кеш пермішенів (TTL 5 хв) треба скинути, щоб роль набрала сили одразу
+    await this.perms.invalidate(userId);
   }
 }
