@@ -15,7 +15,11 @@ export class OAuthHandlerService {
       user.email,
       roles,
     );
-    const frontend = process.env.FRONTEND_URL ?? 'http://localhost:3001';
+    // FRONTEND_URL може містити кілька доменів (список для CORS) — редірект
+    // будуємо лише за першим (основним) доменом.
+    const frontend =
+      (process.env.FRONTEND_URL ?? 'http://localhost:3001').split(',')[0]?.trim() ||
+      'http://localhost:3001';
     const params = new URLSearchParams({
       access: accessToken,
       refresh: refreshToken,
