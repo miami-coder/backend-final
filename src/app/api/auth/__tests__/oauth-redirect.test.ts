@@ -16,13 +16,13 @@ import { GET as facebook } from '@/app/api/auth/facebook/route'
 
 describe('OAuth start redirects', () => {
   it('google → 302 на браузерну адресу бекенда, не на BACKEND_URL з контейнера', async () => {
-    const res = await google(new Request('http://l/api/auth/google'))
+    const res = await google()
     expect(res.status).toBe(302)
     expect(res.headers.get('location')).toBe('http://localhost:3000/api/v1/auth/google')
   })
 
   it('facebook → 302 на браузерну адресу бекенда', async () => {
-    const res = await facebook(new Request('http://l/api/auth/facebook'))
+    const res = await facebook()
     expect(res.status).toBe(302)
     expect(res.headers.get('location')).toBe('http://localhost:3000/api/v1/auth/facebook')
   })
