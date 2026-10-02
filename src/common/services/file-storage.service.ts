@@ -35,7 +35,7 @@ export class FileStorageService {
       this.extFromMime(file.mimetype);
     const filename = `${randomUUID()}${ext}`;
 
-    if (this.blobToken) {
+    if (this.useBlobMode) {
       const blob = await put(`${folder}/${filename}`, file.buffer, {
         access: 'public',
         contentType: file.mimetype,
@@ -52,7 +52,7 @@ export class FileStorageService {
   }
 
   async remove(folder: string, filename: string): Promise<void> {
-    if (this.blobToken) {
+    if (this.useBlobMode) {
       await del(`${folder}/${filename}`).catch(() => undefined);
       return;
     }
@@ -60,8 +60,11 @@ export class FileStorageService {
     await fs.unlink(filepath).catch(() => undefined);
   }
 
-  private get blobToken(): string | undefined {
-    return process.env.BLOB_READ_WRITE_TOKEN || undefined;
+  // Blob-режим активний коли є класичний токен АБО безтокенне підключення
+  // (Vercel Marketplace Blob інжектить BLOB_STORE_ID; @vercel/blob 2.8+
+  // сам ресолвить OIDC-креденшіали в середовищі Vercel).
+  private get useBlobMode(): boolean {
+    return Boolean(process.env.BLOB_STORE_ID || process.env.BLOB_READ_WRITE_TOKEN);
   }
 
   private get uploadsRoot(): string {
