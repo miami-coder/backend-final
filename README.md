@@ -10,7 +10,7 @@ NestJS API для каталогу закладів «Пиячок» (`:3000`, �
    cp .env.example .env
    ```
 
-2. Підніми стек (postgres + redis + бекенд з hot-reload; міграції накочує окремий контейнер `migrate` автоматично):
+2. Підніми стек (postgres + redis + бекенд з hot-reload; міграції накочує окремий контейнер `migrate` автоматично, слідом сіється супер-адмін `admin@gmail.com` / `Admin1234` — якщо такий користувач уже є в базі, створення пропускається; перекрити креді можна через `SUPER_ADMIN_EMAIL` / `SUPER_ADMIN_PASSWORD` у `.env`):
 
    ```bash
    docker compose up -d

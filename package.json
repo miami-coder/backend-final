@@ -20,7 +20,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json --runInBand",
     "migration:run": "typeorm-ts-node-commonjs -d src/config/data-source.ts migration:run",
     "migration:revert": "typeorm-ts-node-commonjs -d src/config/data-source.ts migration:revert",
-    "migration:generate": "typeorm-ts-node-commonjs -d src/config/data-source.ts migration:generate"
+    "migration:generate": "typeorm-ts-node-commonjs -d src/config/data-source.ts migration:generate",
+    "seed:superadmin": "ts-node src/scripts/seed-super-admin.ts"
   },
   "packageManager": "pnpm@10.33.0",
   "dependencies": {
