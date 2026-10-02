@@ -33,7 +33,9 @@ export function configureApp(
       transform: true,
     }),
   );
-  app.useGlobalFilters(app.get(AllExceptionsFilter));
+  // Фільтр жодним модулем не провайдиться (залежностей у конструктора немає),
+  // тому app.get(AllExceptionsFilter) кидає Nest could not find ... — інстанціюємо напряму.
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   if (staticUploads) {
     // Роздача завантажених файлів: /static/* з uploads (локальний дисковий режим;
