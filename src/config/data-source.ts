@@ -45,6 +45,11 @@ export default new DataSource({
   username: process.env.DATABASE_USER!,
   password: process.env.DATABASE_PASS!,
   database: process.env.DATABASE_NAME!,
+  // DATABASE_SSL=true — TLS з повною верифікацією сертифата (Neon, керовані Postgres).
+  ssl:
+    process.env.DATABASE_SSL === 'true'
+      ? { rejectUnauthorized: true }
+      : undefined,
   entities: [
     Role,
     Permission,
