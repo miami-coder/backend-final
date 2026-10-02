@@ -1,11 +1,11 @@
+// Форми шлють повні ключі (monday…sunday), короткі (mon…sun) — запасний
+// формат від старих даних.
 const DAY_LABELS: Record<string, string> = {
-  mon: 'Понеділок',
-  tue: 'Вівторок',
-  wed: 'Середа',
-  thu: 'Четвер',
-  fri: 'П’ятниця', // U+2019 — типографський апостроф, уникає \'-екранування
-  sat: 'Субота',
-  sun: 'Неділя',
+  monday: 'Понеділок', tuesday: 'Вівторок', wednesday: 'Середа', thursday: 'Четвер',
+  friday: 'П’ятниця', // U+2019 — типографський апостроф, уникає \'-екранування
+  saturday: 'Субота', sunday: 'Неділя',
+  mon: 'Понеділок', tue: 'Вівторок', wed: 'Середа', thu: 'Четвер',
+  fri: 'П’ятниця', sat: 'Субота', sun: 'Неділя',
 }
 
 // Години роботи закладу: словник {mon: '10:00-22:00', …} з бекенда.
@@ -17,7 +17,7 @@ export function WorkingHours({ hours }: { hours: Record<string, string> }) {
     <dl className="space-y-1 text-sm">
       {entries.map(([day, value]) => (
         <div key={day} className="flex justify-between gap-4">
-          <dt className="text-muted">{DAY_LABELS[day] ?? day}</dt>
+          <dt className="text-muted">{DAY_LABELS[day.toLowerCase()] ?? day}</dt>
           <dd>{value}</dd>
         </div>
       ))}

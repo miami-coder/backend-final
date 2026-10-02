@@ -18,13 +18,14 @@
 // закладу) ПІСЛЯ створення новини — ендпоінту без id немає. Якщо файл не
 // вибрано, новина створюється без фото.
 
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
 import { Modal } from '@/components/ui/modal'
+import { FilePickerButton } from '@/components/ui/file-picker-button'
 import { useToast } from '@/components/ui/toast'
 import { createVenueNews, deleteNews, updateNews, uploadNewsPhoto } from '@/services/news'
 import { ApiError } from '@/lib/api/parse'
@@ -38,7 +39,8 @@ export function VenueNewsManager({ venueId, news }: { venueId: string; news: New
   const [category, setCategory] = useState<NewsCategory>('general')
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
-  const fileRef = useRef<HTMLInputElement>(null)
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoResetKey, setPhotoResetKey] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [sending, setSending] = useState(false)
   const [editing, setEditing] = useState<News | null>(null)
@@ -61,14 +63,14 @@ export function VenueNewsManager({ venueId, news }: { venueId: string; news: New
       // venueId лише в URL — у body його бекенд не очікує
       const created = await createVenueNews(venueId, parsed.data)
       // Фото — файловий upload після створення (ендпоінт адресує новину за id)
-      const file = fileRef.current?.files?.[0]
-      if (file && created?.id) {
-        await uploadNewsPhoto(created.id, file)
+      if (photoFile && created?.id) {
+        await uploadNewsPhoto(created.id, photoFile)
       }
       toast('Новину додано')
       setTitle('')
       setContent('')
-      if (fileRef.current) fileRef.current.value = ''
+      setPhotoFile(null)
+      setPhotoResetKey((k) => k + 1)
       router.refresh()
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Не вдалося додати новину')
@@ -122,13 +124,16 @@ export function VenueNewsManager({ venueId, news }: { venueId: string; news: New
         </Select>
         <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Заголовок (від 5 символів)" aria-label="Заголовок новини" />
         <Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="Текст (від 20 символів)" aria-label="Текст новини" />
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          aria-label="Фото новини (опційно)"
-          className="text-sm"
-        />
+        <div className="flex items-center gap-2">
+          <FilePickerButton
+            buttonLabel="Обрати фото"
+            inputLabel="Фото новини (опційно)"
+            accept="image/jpeg,image/png,image/webp"
+            onFiles={(files) => setPhotoFile(files[0] ?? null)}
+            resetKey={photoResetKey}
+          />
+          <span className="text-xs text-muted">{photoFile ? photoFile.name : 'Файл не вибрано'}</span>
+        </div>
         {error && <p role="alert" className="text-sm text-danger">{error}</p>}
         <Button type="submit" disabled={sending}>{sending ? 'Додаємо…' : 'Додати новину'}</Button>
       </form>

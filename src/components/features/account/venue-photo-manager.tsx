@@ -8,13 +8,14 @@
 //
 // Відхилення від референс-імплементації брифа (тести брифа — вербатим,
 // саме вони поведінкова специфіка): (1) upload запускається одразу на
-// вибір файлу (change), кнопка лишається як ручний ретрай після помилки;
-// (2) img з осмисленим alt — з alt="" елемент випадає з a11y-дерева
-// (role presentation), і getByRole('img') у тесті його не знаходить.
+// вибір файлу (change); (2) img з осмисленим alt — з alt="" елемент
+// випадає з a11y-дерева (role presentation), і getByRole('img') у тесті
+// його не знаходить. Пікер — FilePickerButton: клікабельна/hover-активна
+// тільки кнопка, а не рядок «Choose File / No file chosen».
 
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
+import { FilePickerButton } from '@/components/ui/file-picker-button'
 import { useToast } from '@/components/ui/toast'
 import { uploadVenuePhoto } from '@/services/venues'
 import { ApiError } from '@/lib/api/parse'
@@ -23,17 +24,13 @@ import type { VenuePhoto } from '@/types/venue'
 export function VenuePhotoManager({ venueId, photos }: { venueId: string; photos: VenuePhoto[] }) {
   const router = useRouter()
   const { toast } = useToast()
-  const fileRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
 
-  async function upload() {
-    const file = fileRef.current?.files?.[0]
-    if (!file) return
+  async function upload(file: File) {
     setUploading(true)
     try {
       await uploadVenuePhoto(venueId, file)
       toast('Фото завантажено')
-      if (fileRef.current) fileRef.current.value = ''
       router.refresh()
     } catch (e) {
       toast(e instanceof ApiError ? e.message : 'Не вдалося завантажити фото', 'error')
@@ -45,18 +42,15 @@ export function VenuePhotoManager({ venueId, photos }: { venueId: string; photos
   return (
     <section aria-label="Фото закладу">
       <div className="flex items-center gap-3">
-        <input
-          ref={fileRef}
-          type="file"
+        <FilePickerButton
+          buttonLabel={uploading ? 'Завантажуємо…' : 'Додати фото'}
+          inputLabel="Додати фото"
           accept="image/jpeg,image/png,image/webp"
-          aria-label="Додати фото"
-          className="text-sm"
-          onChange={upload}
           disabled={uploading}
+          onFiles={(files) => {
+            if (files[0]) void upload(files[0])
+          }}
         />
-        <Button size="sm" onClick={upload} disabled={uploading}>
-          {uploading ? 'Завантажуємо…' : 'Завантажити'}
-        </Button>
       </div>
       <p className="mt-2 text-sm text-muted">
         Перше завантажене фото стає головним у публічній галереї.

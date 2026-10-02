@@ -26,6 +26,24 @@ interface Props {
   searchParams: Promise<{ sort?: string; page?: string }>
 }
 
+// У бекенді посилання зберігаються як введено: хендл (@u_pana, u_pana),
+// «instagram.com/x» без схеми тощо — голий href робить їх відносними
+// і «перекидає на сайт Пиячок». Нормалізуємо до абсолютного https-URL.
+function normalizeContactHref(raw: string, host: string): string {
+  const value = raw.trim()
+  if (/^https?:\/\//i.test(value)) return value
+  // хендл: «@name» або «name» без слешів/крапок — це не домен і не URL
+  if (!value.includes('/') && !value.includes('.')) {
+    return `https://${host}/${value.replace(/^@/, '')}`
+  }
+  // «instagram.com/name» або «facebook.com/x» без схеми — додаємо https
+  return `https://${value.replace(/^\/+/, '')}`
+}
+
+function instagramHref(raw: string): string {
+  return normalizeContactHref(raw, 'instagram.com')
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
   const venue = await getVenueDetail(id)
@@ -140,9 +158,9 @@ export default async function VenuePage({ params, searchParams }: Props) {
           <h2 className="mb-2 font-display font-semibold">Контакти</h2>
           <ul className="space-y-1 text-sm">
             {venue.contacts.phone && <li><a className="text-amber-500 hover:underline" href={`tel:${venue.contacts.phone}`}>{venue.contacts.phone}</a></li>}
-            {venue.contacts.instagram && <li><a className="text-amber-500 hover:underline" href={venue.contacts.instagram} target="_blank" rel="noopener noreferrer">Instagram</a></li>}
-            {venue.contacts.facebook && <li><a className="text-amber-500 hover:underline" href={venue.contacts.facebook} target="_blank" rel="noopener noreferrer">Facebook</a></li>}
-            {venue.contacts.website && <li><a className="text-amber-500 hover:underline" href={venue.contacts.website} target="_blank" rel="noopener noreferrer">Сайт</a></li>}
+            {venue.contacts.instagram && <li><a className="text-amber-500 hover:underline" href={instagramHref(venue.contacts.instagram)} target="_blank" rel="noopener noreferrer">Instagram</a></li>}
+            {venue.contacts.facebook && <li><a className="text-amber-500 hover:underline" href={normalizeContactHref(venue.contacts.facebook, 'facebook.com')} target="_blank" rel="noopener noreferrer">Facebook</a></li>}
+            {venue.contacts.website && <li><a className="text-amber-500 hover:underline" href={normalizeContactHref(venue.contacts.website, 'example.com')} target="_blank" rel="noopener noreferrer">Сайт</a></li>}
             {!venue.contacts.phone && !venue.contacts.instagram && !venue.contacts.facebook && !venue.contacts.website && <li className="text-faint">Не вказано</li>}
           </ul>
         </section>

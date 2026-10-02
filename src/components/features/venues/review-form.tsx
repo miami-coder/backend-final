@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useUser } from '@/components/providers/user-provider'
 import { Button } from '@/components/ui/button'
 import { Modal } from '@/components/ui/modal'
+import { FilePickerButton } from '@/components/ui/file-picker-button'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/components/ui/toast'
 import { ApiError } from '@/lib/api/parse'
@@ -34,7 +35,8 @@ export function ReviewForm({ venueId, myReview, initialEditing = false }: {
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const fileRef = useRef<HTMLInputElement>(null)
+  const [checkFile, setCheckFile] = useState<File | null>(null)
+  const [checkResetKey, setCheckResetKey] = useState(0)
 
   // Зміна відгуку зверху (створено/видалено) — поля синхронізуємо, редактор закриваємо.
   // Монтування пропускаємо: initialEditing уже відкрив редактор
@@ -86,7 +88,7 @@ export function ReviewForm({ venueId, myReview, initialEditing = false }: {
       setError(parsed.error.issues[0]?.message ?? 'Перевірте поля')
       return
     }
-    const file = fileRef.current?.files?.[0]
+    const file = checkFile
     if (file) {
       if (!ALLOWED.includes(file.type)) {
         setError('Фото: лише JPEG, PNG або WebP')
@@ -110,7 +112,8 @@ export function ReviewForm({ venueId, myReview, initialEditing = false }: {
         // відкриється повністю підставленою зі свіжого myReview
         setRating(0)
         setText('')
-        if (fileRef.current) fileRef.current.value = ''
+        setCheckFile(null)
+        setCheckResetKey((k) => k + 1)
       } else {
         await updateReview(myReview.id, parsed.data)
         setEditing(false)
@@ -207,13 +210,17 @@ export function ReviewForm({ venueId, myReview, initialEditing = false }: {
           <label htmlFor="review-check" className="block">
             Фото чеку (необов&apos;язково, до 5 МБ)
           </label>
-          <input
-            ref={fileRef}
-            id="review-check"
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            className="mt-1"
-          />
+          <div className="mt-1 flex items-center gap-2">
+            <FilePickerButton
+              buttonLabel="Обрати фото"
+              inputLabel="Фото чеку"
+              inputId="review-check"
+              accept="image/jpeg,image/png,image/webp"
+              onFiles={(files) => setCheckFile(files[0] ?? null)}
+              resetKey={checkResetKey}
+            />
+            <span className="text-xs text-muted">{checkFile ? checkFile.name : 'Файл не вибрано'}</span>
+          </div>
         </div>
       )}
 

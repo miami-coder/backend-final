@@ -14,6 +14,10 @@ import { Textarea } from '@/components/ui/textarea'
 import { createVenue, uploadVenuePhoto } from '@/services/venues'
 import { ApiError } from '@/lib/api/parse'
 import { venueCreateSchema, WH_DAYS, csvToArray } from '@/lib/validation/venue'
+import { FilePickerButton } from '@/components/ui/file-picker-button'
+
+// Ліміт фото при поданні (решту можна додати у вкладці «Фото» кабінету)
+const MAX_PHOTOS = 4
 
 const DAY_LABELS: Record<string, string> = {
   monday: 'Понеділок', tuesday: 'Вівторок', wednesday: 'Середа', thursday: 'Четвер',
@@ -297,16 +301,41 @@ export function VenueCreateForm() {
         {err('typeSlug')}
       </div>
       <div className="text-sm sm:col-span-2">
-        <label htmlFor="vn-photos">Фото закладу</label>
-        <input
-          id="vn-photos"
-          type="file"
-          multiple
+        <label>Фото закладу (до 4)</label>
+        <FilePickerButton
+          buttonLabel="Обрати фото"
+          inputLabel="Фото закладу"
           accept="image/jpeg,image/png,image/webp"
-          aria-label="Фото закладу"
-          onChange={(e) => setPhotos(e.target.files ? Array.from(e.target.files) : [])}
-          className="mt-1 block w-full text-sm"
+          multiple
+          className="mt-1"
+          onFiles={(picked) => {
+            setPhotos((prev) => {
+              // дублікат (та сам файл двічі) — ігноруємо; спільний ліміт 4
+              const merged = [
+                ...prev,
+                ...picked.filter((p) => !prev.some((q) => q.name === p.name && q.size === p.size)),
+              ]
+              return merged.slice(0, MAX_PHOTOS)
+            })
+          }}
         />
+        {photos.length > 0 && (
+          <ul className="mt-2 space-y-1">
+            {photos.map((f, i) => (
+              <li key={`${f.name}-${f.size}-${i}`} className="flex items-center gap-2 text-xs">
+                <span className="min-w-0 truncate text-muted">{f.name}</span>
+                <button
+                  type="button"
+                  aria-label={`Прибрати ${f.name}`}
+                  className="shrink-0 rounded px-1 text-danger hover:underline"
+                  onClick={() => setPhotos((prev) => prev.filter((_, j) => j !== i))}
+                >
+                  ✕
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
         <p className="mt-1 text-xs text-muted">JPEG/PNG/WebP, до 5 МБ кожне. Перше фото стане головним.</p>
       </div>
       {/* Футер форми: зліва підказка/глобальна помилка, праворуч submit */}
