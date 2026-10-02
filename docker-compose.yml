@@ -26,7 +26,7 @@ services:
 
   migrate:
     build: .
-    command: pnpm migration:run
+    command: sh -c "pnpm migration:run && pnpm seed:superadmin"
     env_file: .env
     environment:
       DATABASE_HOST: postgres
