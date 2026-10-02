@@ -14,13 +14,20 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleInit() {
     try {
-      this.client = new Redis({
-        host: process.env.REDIS_HOST ?? 'localhost',
-        port: Number(process.env.REDIS_PORT ?? 6379),
+      // Пріоритет REDIS_URL (хостед-редіс, напр. Redis Cloud / redis.io):
+      // схема rediss:// самою бібліотекою означає TLS-зʼєднання.
+      const commonOpts = {
         lazyConnect: true,
         maxRetriesPerRequest: 1,
         retryStrategy: () => null,
-      });
+      } as const;
+      this.client = process.env.REDIS_URL
+        ? new Redis(process.env.REDIS_URL, commonOpts)
+        : new Redis({
+            host: process.env.REDIS_HOST ?? 'localhost',
+            port: Number(process.env.REDIS_PORT ?? 6379),
+            ...commonOpts,
+          });
       await this.client.connect();
       this.connected = true;
       this.logger.log('Redis connected');
