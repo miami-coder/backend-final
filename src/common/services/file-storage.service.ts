@@ -2,10 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { promises as fs } from 'fs';
 import { extname, join } from 'path';
 import { randomUUID } from 'crypto';
+import { put, del } from '@vercel/blob';
 
 const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 
+/**
+ * Зберігання завантажених файлів у двох режимах:
+ * - локальний (дефолт): файл у uploads/, URL - /static/folder/file;
+ * - blob (коли є BLOB_READ_WRITE_TOKEN, тобто на Vercel): файл у Vercel Blob,
+ *   URL — публічне https-посилання з токена; диск серверлеса не використовується.
+ */
 @Injectable()
 export class FileStorageService {
   async save(
@@ -27,6 +34,15 @@ export class FileStorageService {
       extname(file.originalname).toLowerCase() ||
       this.extFromMime(file.mimetype);
     const filename = `${randomUUID()}${ext}`;
+
+    if (this.blobToken) {
+      const blob = await put(`${folder}/${filename}`, file.buffer, {
+        access: 'public',
+        contentType: file.mimetype,
+      });
+      return { url: blob.url, filename, size: file.size };
+    }
+
     const dir = join(this.uploadsRoot, folder);
     await fs.mkdir(dir, { recursive: true });
     const filepath = join(dir, filename);
@@ -36,8 +52,16 @@ export class FileStorageService {
   }
 
   async remove(folder: string, filename: string): Promise<void> {
+    if (this.blobToken) {
+      await del(`${folder}/${filename}`).catch(() => undefined);
+      return;
+    }
     const filepath = join(this.uploadsRoot, folder, filename);
     await fs.unlink(filepath).catch(() => undefined);
+  }
+
+  private get blobToken(): string | undefined {
+    return process.env.BLOB_READ_WRITE_TOKEN || undefined;
   }
 
   private get uploadsRoot(): string {

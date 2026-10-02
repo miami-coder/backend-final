@@ -10,6 +10,12 @@ export const typeOrmAsyncConfig: TypeOrmModuleAsyncOptions = {
     username: config.get<string>('DATABASE_USER'),
     password: config.get<string>('DATABASE_PASS'),
     database: config.get<string>('DATABASE_NAME'),
+    // Керовані Postgres (Neon і т.п.) вимагають TLS: DATABASE_SSL=true вмикає
+    // TLS з повною верифікацією сертифата (rejectUnauthorized: true).
+    ssl:
+      config.get<string>('DATABASE_SSL') === 'true'
+        ? { rejectUnauthorized: true }
+        : undefined,
     autoLoadEntities: true,
     synchronize: false,
     migrationsRun: false,
