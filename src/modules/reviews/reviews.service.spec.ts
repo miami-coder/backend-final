@@ -131,4 +131,32 @@ describe('ReviewsService', () => {
       expect.anything(),
     );
   });
+
+  describe('feature/unfeature', () => {
+    it('feature sets isFeatured=true and saves', async () => {
+      reviews.findOne.mockResolvedValueOnce({ id: 'r1', isFeatured: false });
+      await service.feature('r1');
+      expect(reviews.save).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'r1', isFeatured: true }),
+      );
+    });
+
+    it('unfeature sets isFeatured=false and saves', async () => {
+      reviews.findOne.mockResolvedValueOnce({ id: 'r1', isFeatured: true });
+      await service.unfeature('r1');
+      expect(reviews.save).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'r1', isFeatured: false }),
+      );
+    });
+
+    it('feature/unfeature throws 404 when review missing', async () => {
+      reviews.findOne.mockResolvedValue(null);
+      await expect(service.feature('nope')).rejects.toThrow(
+        NotFoundException,
+      );
+      await expect(service.unfeature('nope')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+  });
 });
