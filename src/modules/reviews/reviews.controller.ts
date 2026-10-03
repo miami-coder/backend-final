@@ -184,6 +184,19 @@ export class ReviewsController {
   }
 
   @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Delete('reviews/:id/feature')
+  @Permissions('review:feature')
+  @ApiOperation({ summary: 'Зняти виділення відгуку' })
+  @ApiDataResponse({ type: Review, description: 'Відгук без виділення' })
+  @ApiUnauthorizedResponse({ description: 'Не авторизований' })
+  @ApiForbiddenResponse({ description: 'Немає дозволу review:feature' })
+  @ApiNotFoundResponse({ description: 'Відгук не знайдено' })
+  unfeature(@Param('id') id: string) {
+    return this.reviews.unfeature(id).then((data) => ({ data }));
+  }
+
+  @ApiBearerAuth('access-token')
   @UseGuards(JwtAuthGuard)
   @Get('me/reviews')
   @ApiOperation({ summary: 'Мої відгуки' })

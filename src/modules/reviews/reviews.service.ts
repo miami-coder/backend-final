@@ -146,6 +146,12 @@ export class ReviewsService {
     return this.reviews.save(r);
   }
 
+  async unfeature(reviewId: string) {
+    const r = await this.findOneOrThrow(reviewId);
+    r.isFeatured = false;
+    return this.reviews.save(r);
+  }
+
   private async recalc(venueId: string) {
     const result = await this.reviews
       .createQueryBuilder('r')
