@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { RatingStars } from '@/components/ui/rating-stars'
 import { Pagination } from '@/components/ui/pagination'
+import { FeatureReviewButton } from '@/components/features/venues/feature-review-button'
 import { getVenueReviews } from '@/services/reviews.server'
 import { formatDateTime } from '@/lib/utils/format'
 import { parseReview, type Review } from '@/types/review'
@@ -67,6 +68,8 @@ export async function ReviewList({ venueId, sort, page }: { venueId: string; sor
                   Рекомендований критиком
                 </span>
               )}
+              {/* кнопка сама ховається, якщо глядачем не критик/супер-адмін */}
+              <FeatureReviewButton reviewId={r.id} isFeatured={r.isFeatured} />
               {r.checkPhotoUrl && (
                 /* eslint-disable-next-line @next/next/no-img-element -- зовнішній URL з бекенда */
                 <img src={r.checkPhotoUrl} alt="Фото чеку" className="h-16 rounded-xl" />
