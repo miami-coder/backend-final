@@ -115,4 +115,37 @@ describe('Venues E2E', () => {
       .send({ name: 'hijack' })
       .expect(403);
   });
+
+  // Регресія: параметри :lng/:lat у addSelect ST_Distance підставляються лише
+  // коли вони вже зареєстровані в іменованих параметрах — без radiusKm TypeORM
+  // лишав у SQL сире ST_MakePoint(:lng, :lat) → 500 від Postgres.
+  it('sort=distance works with coordinates even without radiusKm', async () => {
+    const created = await request(app.getHttpServer())
+      .post('/api/v1/venues')
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({
+        name: 'Заклад поблизу',
+        address: 'вул. Сортова, 1',
+        latitude: 50.4,
+        longitude: 30.5,
+        averageCheck: 400,
+      })
+      .expect(201);
+    const id = created.body.data.id;
+
+    await request(app.getHttpServer())
+      .post(`/api/v1/admin/venues/${id}/approve`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .expect(201);
+
+    const res = await request(app.getHttpServer())
+      .get('/api/v1/venues?sort=distance&lat=50.45&lng=30.52')
+      .expect(200);
+    expect(res.body.data.some((v: any) => v.id === id)).toBe(true);
+
+    const withRadius = await request(app.getHttpServer())
+      .get('/api/v1/venues?sort=distance&lat=50.45&lng=30.52&radiusKm=100')
+      .expect(200);
+    expect(withRadius.body.data.some((v: any) => v.id === id)).toBe(true);
+  });
 });
