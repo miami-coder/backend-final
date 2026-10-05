@@ -267,6 +267,11 @@ export class VenuesService {
         break;
       case 'distance':
         if (query.lat != null && query.lng != null) {
+          // Параметри у raw-виразі addSelect підставляються лише якщо вони
+          // зареєстровані в іменованих параметрах запиту. Без radiusKm вони
+          // ніде не появлялись — у SQL лишалось сире ST_MakePoint(:lng, :lat)
+          // і Postgres віддавав «syntax error at or near ":"» (500).
+          qb.setParameters({ lng: query.lng, lat: query.lat });
           qb.addSelect(
             `ST_Distance(v.location, ST_MakePoint(:lng, :lat)::geography)`,
             'distance',
