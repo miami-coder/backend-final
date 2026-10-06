@@ -184,15 +184,18 @@ export class VenuesService {
   }
 
   async findOneForOwnerQuery(id: string): Promise<Venue | null> {
-    // Те саме насичення, що в search(): photos + features + tags + types
+    // Те саме насичення, що в search(): photos + features + tags + types.
+    // Привʼязки (fa/vt/vta) обовʼязково з andSelect: без вибірки власних
+    // колонок TypeORM не гідрує батьківський об'єкт — у JSON не потрапляв
+    // ані venueTypeAssignments, ані featureAssignments (лишались only photos).
     return this.venues
       .createQueryBuilder('v')
       .leftJoinAndSelect('v.photos', 'photo')
-      .leftJoin('v.featureAssignments', 'fa')
+      .leftJoinAndSelect('v.featureAssignments', 'fa')
       .leftJoinAndSelect('fa.feature', 'f')
-      .leftJoin('v.venueTags', 'vt')
+      .leftJoinAndSelect('v.venueTags', 'vt')
       .leftJoinAndSelect('vt.tag', 't')
-      .leftJoin('v.venueTypeAssignments', 'vta')
+      .leftJoinAndSelect('v.venueTypeAssignments', 'vta')
       .leftJoinAndSelect('vta.type', 'ty')
       .where('v.id = :id', { id })
       .getOne();
@@ -214,11 +217,11 @@ export class VenuesService {
     const qb = this.venues
       .createQueryBuilder('v')
       .leftJoinAndSelect('v.photos', 'photo')
-      .leftJoin('v.featureAssignments', 'fa')
+      .leftJoinAndSelect('v.featureAssignments', 'fa')
       .leftJoinAndSelect('fa.feature', 'f')
-      .leftJoin('v.venueTags', 'vt')
+      .leftJoinAndSelect('v.venueTags', 'vt')
       .leftJoinAndSelect('vt.tag', 't')
-      .leftJoin('v.venueTypeAssignments', 'vta')
+      .leftJoinAndSelect('v.venueTypeAssignments', 'vta')
       .leftJoinAndSelect('vta.type', 'ty')
       .where('v.status = :status', { status: VenueStatus.Approved });
 
