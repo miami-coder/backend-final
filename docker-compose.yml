@@ -32,6 +32,8 @@ services:
       DATABASE_HOST: postgres
     volumes:
       - ./src:/app/src
+      - ./seed-assets:/app/seed-assets
+      - uploads:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
