@@ -266,6 +266,14 @@ describe('VenuesService', () => {
     expect(res.data).toEqual([]);
   });
 
+  it('search тримить CSV тегів/фіч — « cocktails, dj » не втрачає dj', async () => {
+    const mockQb = venues.createQueryBuilder(); // той самий обʼєкт, що піде у search
+    await service.search({ page: 1, limit: 20, tag: ' cocktails, dj ', feature: 'wifi, parking' });
+    const params = mockQb.andWhere.mock.calls.map((c) => c[1]).filter(Boolean);
+    expect(params).toContainEqual({ tags: ['cocktails', 'dj'] });
+    expect(params).toContainEqual({ features: ['wifi', 'parking'] });
+  });
+
   it('changeStatus emits status_changed event', async () => {
     venues.findOne.mockResolvedValueOnce({
       id: 'v1',

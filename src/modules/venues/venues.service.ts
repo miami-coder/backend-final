@@ -240,12 +240,20 @@ export class VenuesService {
       qb.andWhere('v.averageCheck >= :minCheck', { minCheck: query.minCheck });
     if (query.maxCheck != null)
       qb.andWhere('v.averageCheck <= :maxCheck', { maxCheck: query.maxCheck });
-    if (query.feature)
-      qb.andWhere('f.code IN (:...features)', {
-        features: query.feature.split(','),
+    if (query.feature) {
+      // CSV з пробілами («wifi, parking») — тримимо, інакше « wifi» не матчиться
+      qb.andWhere(
+        'f.code IN (:...features)',
+        {
+          features: query.feature.split(',').map((s) => s.trim()),
+        },
+      );
+    }
+    if (query.tag) {
+      qb.andWhere('t.slug IN (:...tags)', {
+        tags: query.tag.split(',').map((s) => s.trim()),
       });
-    if (query.tag)
-      qb.andWhere('t.slug IN (:...tags)', { tags: query.tag.split(',') });
+    }
     if (query.type) qb.andWhere('ty.slug = :type', { type: query.type });
     if (query.lat != null && query.lng != null && query.radiusKm != null) {
       qb.andWhere(
