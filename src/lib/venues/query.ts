@@ -52,8 +52,10 @@ export function parseCatalogQuery(sp: Record<string, string | string[] | undefin
   return {
     q: str(sp.q),
     type: str(sp.type),
-    feature: str(sp.feature)?.split(',').filter(Boolean) ?? [],
-    tag: str(sp.tag)?.split(',').filter(Boolean) ?? [],
+    // CSV по комах, з тримом: URL може містити пробіли («wine, beer») — без трима
+    // слаг з пробілом зникає і на бекенді і тут
+    feature: str(sp.feature)?.split(',').map((s) => s.trim()).filter(Boolean) ?? [],
+    tag: str(sp.tag)?.split(',').map((s) => s.trim()).filter(Boolean) ?? [],
     minCheck: inRange(num(sp.minCheck), 0, Number.MAX_SAFE_INTEGER),
     maxCheck: inRange(num(sp.maxCheck), 0, Number.MAX_SAFE_INTEGER),
     minRating: inRange(num(sp.minRating), 0, 5),

@@ -24,9 +24,9 @@ export function VenueFilters({ initial }: { initial: CatalogQuery }) {
   const [q, setQ] = useState(initial.q ?? '')
   const [sort, setSort] = useState(initial.sort)
   const [type, setType] = useState(initial.type ?? '')
-  const [tag, setTag] = useState(initial.tag.join(', '))
+  const [tag, setTag] = useState(initial.tag.join(','))
   const [tags, setTags] = useState<TagRef[]>([])
-  const [feature, setFeature] = useState(initial.feature.join(', '))
+  const [feature, setFeature] = useState(initial.feature.join(','))
   const [minCheck, setMinCheck] = useState(initial.minCheck?.toString() ?? '')
   const [maxCheck, setMaxCheck] = useState(initial.maxCheck?.toString() ?? '')
   const [minRating, setMinRating] = useState(initial.minRating?.toString() ?? '')
@@ -49,17 +49,24 @@ export function VenueFilters({ initial }: { initial: CatalogQuery }) {
     const next = active.includes(slug)
       ? active.filter((s) => s !== slug)
       : [...active, slug]
-    setTag(next.join(', '))
+    setTag(next.join(','))
   }
 
   function apply(e: FormEvent) {
     e.preventDefault()
     const p = new URLSearchParams()
     if (q) p.set('q', q)
+    // CSV уніфікуємо: трим + прибираємо порожні → URL без «%20», бекнд не втрачає слаги
+    if (tag) {
+      const clean = tag.split(',').map((s) => s.trim()).filter(Boolean).join(',')
+      if (clean) p.set('tag', clean)
+    }
     if (sort !== 'newest') p.set('sort', sort)
     if (type) p.set('type', type)
-    if (tag) p.set('tag', tag)
-    if (feature) p.set('feature', feature)
+    if (feature) {
+      const clean = feature.split(',').map((s) => s.trim()).filter(Boolean).join(',')
+      if (clean) p.set('feature', clean)
+    }
     if (minCheck) p.set('minCheck', minCheck)
     if (maxCheck) p.set('maxCheck', maxCheck)
     if (minRating) p.set('minRating', minRating)

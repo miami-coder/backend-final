@@ -22,6 +22,11 @@ describe('parseCatalogQuery', () => {
   it('сміттєві числа ігноруються', () => {
     expect(parseCatalogQuery({ minCheck: 'abc', page: '-3' })).toEqual(DEFAULT_CATALOG_QUERY)
   })
+  it('CSV тегів/фіч з пробілами тримиться (регресія: «wine, beer» не втрачав beer)', () => {
+    expect(parseCatalogQuery({ tag: 'wine, beer' }).tag).toEqual(['wine', 'beer'])
+    expect(parseCatalogQuery({ feature: 'wifi, parking' }).feature).toEqual(['wifi', 'parking'])
+    expect(parseCatalogQuery({ tag: 'wine,, ,beer' }).tag).toEqual(['wine', 'beer'])
+  })
   it('порожні lat/lng — як відсутні (не 0;0)', () => {
     const q = parseCatalogQuery({ lat: '', lng: '' })
     expect(q.lat).toBeUndefined()
