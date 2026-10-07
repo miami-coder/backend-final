@@ -16,7 +16,7 @@ export interface CatalogQuery {
   limit: number
 }
 
-export const DEFAULT_CATALOG_QUERY: CatalogQuery = { feature: [], tag: [], sort: 'newest', page: 1, limit: 20 }
+export const DEFAULT_CATALOG_QUERY: CatalogQuery = { feature: [], tag: [], sort: 'newest', page: 1, limit: 10 }
 
 // Допустимі значення сортування
 const SORTS = ['rating', 'check', 'newest', 'name', 'distance'] as const

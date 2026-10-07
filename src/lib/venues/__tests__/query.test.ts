@@ -53,7 +53,7 @@ describe('sanitize каталогу', () => {
 
 describe('catalogHref', () => {
   it('будує /?… для пагінації', () => {
-    expect(catalogHref({ ...DEFAULT_CATALOG_QUERY, page: 2 })).toBe('/?sort=newest&page=2&limit=20')
+    expect(catalogHref({ ...DEFAULT_CATALOG_QUERY, page: 2 })).toBe('/?sort=newest&page=2&limit=10')
   })
 })
 
@@ -63,7 +63,7 @@ describe('toSearch', () => {
     expect(s).toContain('q=%D0%B1%D0%B0%D1%80') // закодований 'бар'
     expect(s).toContain('feature=wifi')
     expect(s).toContain('page=3')
-    expect(s).toContain('limit=20')
+    expect(s).toContain('limit=10')
     expect(s).not.toContain('type=')
     expect(s).not.toContain('minCheck=')
   })
