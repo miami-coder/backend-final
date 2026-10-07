@@ -30,7 +30,7 @@ export function VenueFilters({ initial }: { initial: CatalogQuery }) {
   const [minCheck, setMinCheck] = useState(initial.minCheck?.toString() ?? '')
   const [maxCheck, setMaxCheck] = useState(initial.maxCheck?.toString() ?? '')
   const [minRating, setMinRating] = useState(initial.minRating?.toString() ?? '')
-  const [radiusKm, setRadiusKm] = useState(initial.radiusKm?.toString() ?? '5')
+  const [radiusKm, setRadiusKm] = useState(initial.radiusKm?.toString() ?? '')
   const [geo, setGeo] = useState<{ lat: number; lng: number } | null>(
     initial.lat !== undefined && initial.lng !== undefined ? { lat: initial.lat, lng: initial.lng } : null,
   )
@@ -66,7 +66,8 @@ export function VenueFilters({ initial }: { initial: CatalogQuery }) {
     if (geo) {
       p.set('lat', String(geo.lat))
       p.set('lng', String(geo.lng))
-      p.set('radiusKm', radiusKm)
+      // Порожній радіус — без урізання діапазону: бекенд просто сортує за відстанню
+      if (radiusKm) p.set('radiusKm', radiusKm)
     }
     router.push(`/?${p.toString()}`)
   }
@@ -180,9 +181,9 @@ export function VenueFilters({ initial }: { initial: CatalogQuery }) {
         <div className="w-28 shrink-0 lg:w-auto">
           <label className="text-sm">
             Радіус (км)
-            <Input type="number" min="0.1" max="100" step="0.5" value={radiusKm} onChange={(e) => setRadiusKm(e.target.value)} className="mt-1" />
+            <Input type="number" min="0.1" max="100" step="any" value={radiusKm} onChange={(e) => setRadiusKm(e.target.value)} placeholder="порожньо = усі" className="mt-1" />
           </label>
-          {geo && <span className="mt-1 block text-xs text-muted">Поблизу, радіус {radiusKm} км</span>}
+          {geo && <span className="mt-1 block text-xs text-muted">{radiusKm ? `Поблизу, радіус ${radiusKm} км` : 'Поблизу, без обмеження радіуса'}</span>}
         </div>
         <div className="flex shrink-0 gap-2 lg:w-auto lg:flex-col">
           <Button type="submit">Застосувати</Button>
