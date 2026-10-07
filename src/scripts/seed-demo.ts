@@ -22,6 +22,7 @@
 
 import { promises as fs } from 'fs';
 import { join } from 'path';
+import { randomUUID } from 'crypto';
 import { DataSource } from 'typeorm';
 import bcrypt from 'bcryptjs';
 import defaultDataSource from '../config/data-source';
@@ -36,7 +37,9 @@ import { VenueTypeAssignment } from '../modules/venues/entities/venue-type-assig
 import { VenueFeature } from '../modules/venues/entities/venue-feature.entity';
 import { VenueFeatureAssignment } from '../modules/venues/entities/venue-feature-assignment.entity';
 import { VenueStatus } from '../modules/venues/entities/venue.entity';
-import { SEED_TAGS, SEED_VENUES } from './seed-demo-data';
+import { Review } from '../modules/reviews/entities/review.entity';
+import { News, NewsCategory, NewsStatus } from '../modules/news/entities/news.entity';
+import { SEED_TAGS, SEED_VENUES, SEED_REVIEWS, SEED_NEWS } from './seed-demo-data';
 
 const PASSWORD = 'User1234';
 const BCRYPT_COST = 12; // синхронно з users.service.register()
@@ -154,7 +157,87 @@ async function main() {
     console.log(`Заклад створено: «${seed.name}» (${seed.type}, статус ${status}, фото ${seed.photos.length}).`);
   }
 
-  console.log(`\nГотово: створено ${created} закладів (статус ${status}). Юзери: ${USERS.map((u) => `${u.email}/User1234`).join(', ')}.`);
+  // --- 4. Відгуки: по одному на заклад, рецензент ≠ власник (см. seed-demo-data.ts) ---
+  let reviewsCreated = 0;
+  for (const r of SEED_REVIEWS) {
+    const userId = users.get(r.user);
+    const venue = await ds.getRepository(Venue).findOne({ where: { name: r.venue } });
+    if (!userId || !venue) {
+      console.warn(`⚠ Відгук для «${r.venue}» пропущено — немає юзера/закладу.`);
+      continue;
+    }
+    const exists = await ds.getRepository(Review).findOne({ where: { venueId: venue.id, userId } });
+    if (exists) {
+      console.log(`Відгук ${r.user} → «${r.venue}» існує — пропущено.`);
+      continue;
+    }
+    await ds.getRepository(Review).insert({
+      venueId: venue.id, userId, rating: r.rating, text: r.text, checkPhotoUrl: null,
+    });
+    reviewsCreated++;
+    console.log(`Відгук додано: ${r.user} → «${r.venue}» (${r.rating}/5).`);
+  }
+
+  // Перерахунок ratingAvg/ratingCount по всіх закладах, що мають відгуки
+  // (та сама логіка, що ReviewsService.recalc — сід вставляє напряму в БД)
+  const aggregates = await ds.getRepository(Review)
+    .createQueryBuilder('r')
+    .select('r."venueId"', 'venueId')
+    .addSelect('AVG(r.rating)', 'avg')
+    .addSelect('COUNT(r.id)', 'count')
+    .groupBy('r."venueId"')
+    .getRawMany<{ venueId: string; avg: string; count: string }>();
+  for (const row of aggregates) {
+    await ds.getRepository(Venue).update(row.venueId, {
+      ratingAvg: Number(row.avg),
+      ratingCount: Number(row.count),
+    });
+  }
+  if (aggregates.length) console.log(`Рейтинг перераховано для ${aggregates.length} закладів.`);
+
+  // --- 5. Новини: по одній published на заклад, фото — реюзна webp з seed-assets ---
+  let newsCreated = 0;
+  for (const n of SEED_NEWS) {
+    const venue = await ds.getRepository(Venue).findOne({ where: { name: n.venue } });
+    if (!venue) {
+      console.warn(`⚠ Новину для «${n.venue}» пропущено — закладу немає.`);
+      continue;
+    }
+    const exists = await ds.getRepository(News).findOne({ where: { venueId: venue.id, title: n.title } });
+    if (exists) {
+      console.log(`Новина «${n.title}» (${n.venue}) існує — пропущено.`);
+      continue;
+    }
+    let imageUrl: string | null = null;
+    const venueSeed = SEED_VENUES.find((v) => v.name === n.venue)!;
+    const photoPath = venueSeed.photos[n.photoIdx];
+    const newsId = randomUUID();
+    if (photoPath) {
+      const dstDir = join(uploadsRoot(), 'news', newsId);
+      try {
+        await fs.mkdir(dstDir, { recursive: true });
+        await fs.copyFile(join(assetsRoot, photoPath), join(dstDir, 'photo.webp'));
+        imageUrl = `/static/news/${newsId}/photo.webp`;
+      } catch (e) {
+        console.warn(`⚠ Фото новини «${n.title}» не скопіювалося (${e instanceof Error ? e.message : e}) — новина без картинки.`);
+      }
+    }
+    await ds.getRepository(News).insert({
+      id: newsId,
+      venueId: venue.id,
+      category: n.category as NewsCategory,
+      title: n.title,
+      content: n.content,
+      imageUrl,
+      status: NewsStatus.Published,
+      publishedAt: new Date(),
+    });
+    newsCreated++;
+    console.log(`Новину додано: «${n.title}» → «${n.venue}»${imageUrl ? ' (з фото)' : ''}.`);
+  }
+
+  console.log(`\nГотово: створено ${created} закладів (статус ${status}), ${reviewsCreated} відгуків, ${newsCreated} новин.`);
+  console.log(`Юзери: ${USERS.map((u) => `${u.email}/User1234`).join(', ')}.`);
 }
 
 main()
