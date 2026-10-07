@@ -11,7 +11,7 @@ export function Pagination({ page, totalPages, hrefFor, scroll }: {
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1)
     .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
   return (
-    <nav className="flex items-center gap-2" aria-label="Пагінація">
+    <nav className="flex items-center justify-center gap-2" aria-label="Пагінація">
       {page > 1 && <Link scroll={scroll} className="rounded-full border border-strong px-3 py-1.5 hover:bg-raised hover:border-amber-500/60" href={hrefFor(page - 1)}>Попередня</Link>}
       {pages.map((p) =>
         p === page
