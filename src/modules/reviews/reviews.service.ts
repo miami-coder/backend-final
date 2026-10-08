@@ -34,6 +34,10 @@ export class ReviewsService {
   ): Promise<Review> {
     const venue = await this.venues.findOne({ where: { id: venueId } });
     if (!venue) throw new NotFoundException('Заклад не знайдено');
+    if (venue.ownerId === userId)
+      throw new ForbiddenException(
+        'Не можна залишати відгук на власний заклад',
+      );
     const existing = await this.reviews.findOne({ where: { venueId, userId } });
     if (existing)
       throw new ConflictException('Ви вже залишили відгук на цей заклад');

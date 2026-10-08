@@ -60,6 +60,18 @@ describe('ReviewsService', () => {
     ).rejects.toThrow(NotFoundException);
   });
 
+  it('create throws 403 when reviewer is the venue owner', async () => {
+    venues.findOne.mockResolvedValueOnce({ id: 'v1', ownerId: 'u1' });
+    reviews.save.mockResolvedValueOnce({ id: 'r-new' });
+    await expect(
+      service.create('u1', 'v1', {
+        rating: 5,
+        text: 'Чудовий заклад! Рекомендую',
+      }),
+    ).rejects.toThrow(ForbiddenException);
+    expect(reviews.save).not.toHaveBeenCalled();
+  });
+
   it('create throws 409 on duplicate review', async () => {
     venues.findOne.mockResolvedValueOnce({ id: 'v1' });
     reviews.findOne.mockResolvedValueOnce({ id: 'r1' });
