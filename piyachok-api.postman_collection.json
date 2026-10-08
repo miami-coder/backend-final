@@ -1,0 +1,2873 @@
+{
+  "info": {
+    "_postman_id": "b2e1f9a0-pya4-1ock-al00-000000000001",
+    "name": "Пиячок API — локальний обхід",
+    "description": "Повний обхід локального API «Пиячок» (backend-final).\n\n**Порядок запуску**\n1. `docker compose up -d` у backend-final, дочекатись 200 від `{{baseUrl}}/health`.\n2. Виконати 4 логіни з папки «1. Аутентифікація» — тест-скрипти сам запишуть токени, refreshToken і userId до енва.\n3. Обходь папки зверху вниз: id створених обʼєктів автоматично чейняться (venueId, reviewId, newsId, complaintId, hangoutId...).\n\nРолі у прогоні: admin — супер-адмін, user1 — власник закладів, user2/user3 — звичайні.\nФікстура: демо-база від `pnpm seed:demo` (15 закладів).\n\nСхему згенеровано з Swagger GET /api/v1/docs-json локального бекенда.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Аутентифікація",
+      "item": [
+        {
+          "name": "01 · Login супер-адмін",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"{{adminEmail}}\", \"password\": \"{{adminPassword}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Тест-скрипт сам складає токен і userId до енва."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201/200 від логіна', () => pm.expect(pm.response.code).to.be.oneOf([200,201]));",
+                  "const d = pm.response.json().data || pm.response.json();",
+                  "pm.environment.set('tokenAdmin', d.accessToken);",
+                  "pm.environment.set('refreshTokenAdmin', d.refreshToken || '');",
+                  "pm.environment.set('userIdAdmin', d.user?.id || '');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01 · Login user1 (власник)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"{{user1Email}}\", \"password\": \"{{user1Password}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Тест-скрипт сам складає токен і userId до енва."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201/200 від логіна', () => pm.expect(pm.response.code).to.be.oneOf([200,201]));",
+                  "const d = pm.response.json().data || pm.response.json();",
+                  "pm.environment.set('tokenUser1', d.accessToken);",
+                  "pm.environment.set('refreshTokenUser1', d.refreshToken || '');",
+                  "pm.environment.set('userId1', d.user?.id || '');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01 · Login user2",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"{{user2Email}}\", \"password\": \"{{user2Password}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Тест-скрипт сам складає токен і userId до енва."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201/200 від логіна', () => pm.expect(pm.response.code).to.be.oneOf([200,201]));",
+                  "const d = pm.response.json().data || pm.response.json();",
+                  "pm.environment.set('tokenUser2', d.accessToken);",
+                  "pm.environment.set('refreshTokenUser2', d.refreshToken || '');",
+                  "pm.environment.set('userId2', d.user?.id || '');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01 · Login user3",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"{{user3Email}}\", \"password\": \"{{user3Password}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Тест-скрипт сам складає токен і userId до енва."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201/200 від логіна', () => pm.expect(pm.response.code).to.be.oneOf([200,201]));",
+                  "const d = pm.response.json().data || pm.response.json();",
+                  "pm.environment.set('tokenUser3', d.accessToken);",
+                  "pm.environment.set('refreshTokenUser3', d.refreshToken || '');",
+                  "pm.environment.set('userId3', d.user?.id || '');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Почати OAuth-вхід через Facebook",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/facebook",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "facebook"
+              ]
+            },
+            "description": "OAuth Facebook — редірект у браузері; у Postman не виконується."
+          },
+          "response": []
+        },
+        {
+          "name": "Callback OAuth Facebook",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/facebook/callback",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "facebook",
+                "callback"
+              ]
+            },
+            "description": "Callback приходить з браузера після OAuth."
+          },
+          "response": []
+        },
+        {
+          "name": "Почати OAuth-вхід через Google",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/google",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "google"
+              ]
+            },
+            "description": "OAuth Google — редірект у браузері; у Postman не виконується."
+          },
+          "response": []
+        },
+        {
+          "name": "Callback OAuth Google",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/google/callback",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "google",
+                "callback"
+              ]
+            },
+            "description": "Callback приходить з браузера після OAuth."
+          },
+          "response": []
+        },
+        {
+          "name": "Вийти (скасувати refresh token)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"refreshToken\": \"{{refreshTokenUser1}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Поточний користувач за access token",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Оновити access token (ротація refresh token)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"refreshToken\": \"{{refreshTokenUser1}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201/200 від логіна', () => pm.expect(pm.response.code).to.be.oneOf([200,201]));",
+                  "const d = pm.response.json().data || pm.response.json();",
+                  "pm.environment.set('TOKEN_VAR', d.accessToken);",
+                  "pm.environment.set('REFRESH_VAR', d.refreshToken || '');",
+                  "pm.environment.set('ID_VAR', d.user?.id || '');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Реєстрація користувача (email + пароль)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Демо-реєстрація. Роль новому юзеру — user. Якщо email вже існує, отримаєте конфлікт.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"demo.postman@gmail.com\", \"password\": \"Demo12345\", \"acceptEula\": true, \"firstname\": \"Демо\", \"lastname\": \"Постман\", \"age\": 25, \"phone\": \"+380000000000\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Профіль",
+      "item": [
+        {
+          "name": "Поточний профіль користувача",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Оновити свій профіль",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser2}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "profile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstname\": \"Демо\", \"age\": 26}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Каталог (public)",
+      "item": [
+        {
+          "name": "Довідник тегів закладів (з кількістю закладів)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/venues/tags",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "venues",
+                "tags"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Публічні деталі закладу",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/venues/{{venueId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "venues",
+                "{{venueId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Заклад — створення і керування (власник)",
+      "item": [
+        {
+          "name": "Заклади поточного користувача (усі статуси)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser1}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/venues",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "venues"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));",
+                  "const j = pm.response.json();",
+                  "const id = j?.data?.id ?? (Array.isArray(j?.data) ? j.data[0]?.id : undefined) ?? j?.id;",
+                  "if (id) pm.environment.set('venueId', id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Свій заклад незалежно від статусу (власник або venue:edit:any)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser1}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/venues/{{venueId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "venues",
+                "{{venueId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Аналітика закладу (власник або супер-адмін)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser1}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/venues/{{venueId}}/analytics",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "venues",
+                "{{venueId}}",
+                "analytics"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "{{from}}",
+                  "disabled": true
+                },
+                {
+                  "key": "to",
+                  "value": "{{to}}",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "from/to підставляються pre-request-скриптом (останні 30 днів)."
+          },
+          "response": []
+        },
+        {
+          "name": "Пошук закладів із фільтрами",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/venues",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "venues"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "вишня",
+                  "disabled": true
+                },
+                {
+                  "key": "type",
+                  "value": "bar",
+                  "disabled": true
+                },
+                {
+                  "key": "feature",
+                  "value": "wifi,parking",
+                  "disabled": true
+                },
+                {
+                  "key": "tag",
+                  "value": "beer,food",
+                  "disabled": true
+                },
+                {
+                  "key": "minCheck",
+                  "value": "100",
+                  "disabled": true
+                },
+                {
+                  "key": "maxCheck",
+                  "value": "1000",
+                  "disabled": true
+                },
+                {
+                  "key": "minRating",
+                  "value": "4",
+                  "disabled": true
+                },
+                {
+                  "key": "lat",
+                  "value": "50.4501",
+                  "disabled": true
+                },
+                {
+                  "key": "lng",
+                  "value": "30.5234",
+                  "disabled": true
+                },
+                {
+                  "key": "radiusKm",
+                  "value": "10",
+                  "disabled": true
+                },
+                {
+                  "key": "sort",
+                  "value": "rating",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));",
+                  "const j = pm.response.json();",
+                  "const id = j?.data?.id ?? (Array.isArray(j?.data) ? j.data[0]?.id : undefined) ?? j?.id;",
+                  "if (id && !pm.environment.get('venueId')) pm.environment.set('venueId', id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Створити заклад",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser1}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/venues",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "venues"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Демо-бар Постмана\", \"description\": \"Тестовий заклад, створений обхідним прогоном Postman.\", \"address\": \"м. Київ, вул. Демо, 1\", \"latitude\": 50.4501, \"longitude\": 30.5234, \"averageCheck\": 350, \"typeSlug\": \"bar\", \"featureCodes\": [\"wifi\", \"parking\"], \"tagSlugs\": [\"beer\", \"food\"], \"workingHours\": {\"monday\": \"18:00-03:00\"}, \"contacts\": {\"phone\": \"+380671234567\", \"website\": \"https://example.com\"}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));",
+                  "const j = pm.response.json();",
+                  "const id = j?.data?.id ?? (Array.isArray(j?.data) ? j.data[0]?.id : undefined) ?? j?.id;",
+                  "if (id) pm.environment.set('venueId', id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Оновити заклад (власник або модератор)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser1}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/venues/{{venueId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "venues",
+                "{{venueId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"description\": \"Оновив опис з Postman (PATCH /venues/:id)\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Видалити заклад (м’яко: статус Archived)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser1}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/venues/{{venueId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "venues",
+                "{{venueId}}"
+              ]
+            },
+            "description": "Soft-delete → статус archived. Виконувати ближче до кінця обходу!"
+          },
+          "response": []
+        },
+        {
+          "name": "Завантажити фото закладу",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser1}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/venues/{{venueId}}/photos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "venues",
+                "{{venueId}}",
+                "photos"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. Модерація закладів (супер-адмін)",
+      "item": [
+        {
+          "name": "Список схвалених закладів (передача керування)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/venues/approved",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "venues",
+                "approved"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Список закладів на модерації (pending)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/venues/pending",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "venues",
+                "pending"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Схвалити заклад (власник автоматично отримує venue_admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/venues/{{venueId}}/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "venues",
+                "{{venueId}}",
+                "approve"
+              ]
+            },
+            "description": "Апрув: заклад → approved, власник автоматично отримує role venue_admin."
+          },
+          "response": []
+        },
+        {
+          "name": "Призначити власника закладу",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/venues/{{venueId}}/assign-owner",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "venues",
+                "{{venueId}}",
+                "assign-owner"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userId\": \"{{userId3}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Відхилити заклад",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/venues/{{venueId}}/reject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "venues",
+                "{{venueId}}",
+                "reject"
+              ]
+            },
+            "description": "Заклад → rejected (у каталозі не з’являється)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "6. Відгуки",
+      "item": [
+        {
+          "name": "Усі відгуки (суперадмін)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/reviews",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "reviews"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));",
+                  "const j = pm.response.json();",
+                  "const id = j?.data?.id ?? (Array.isArray(j?.data) ? j.data[0]?.id : undefined) ?? j?.id;",
+                  "if (id) pm.environment.set('reviewId', id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Мої відгуки",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/reviews",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "reviews"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Переглянути відгук",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reviews/{{reviewId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reviews",
+                "{{reviewId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Оновити відгук (автор або модератор)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reviews/{{reviewId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reviews",
+                "{{reviewId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Видалити відгук (мʼяке видалення)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reviews/{{reviewId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reviews",
+                "{{reviewId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Виділити відгук (закріпити)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reviews/{{reviewId}}/feature",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reviews",
+                "{{reviewId}}",
+                "feature"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Зняти виділення відгуку",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reviews/{{reviewId}}/feature",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reviews",
+                "{{reviewId}}",
+                "feature"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Створити відгук на заклад (з можливим фото чека)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/venues/{{venueId}}/reviews",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "venues",
+                "{{venueId}}",
+                "reviews"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "rating",
+                  "type": "text",
+                  "value": "5"
+                },
+                {
+                  "key": "text",
+                  "type": "text",
+                  "value": "Атмосферно і смачно — тестовий відгук з Postman."
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));",
+                  "const j = pm.response.json();",
+                  "const id = j?.data?.id ?? (Array.isArray(j?.data) ? j.data[0]?.id : undefined) ?? j?.id;",
+                  "if (id) pm.environment.set('reviewId', id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Список відгуків закладу",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/venues/{{venueId}}/reviews",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "venues",
+                "{{venueId}}",
+                "reviews"
+              ],
+              "query": [
+                {
+                  "key": "sort",
+                  "value": "newest",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "7. Новини",
+      "item": [
+        {
+          "name": "Список новин (адмін, будь-який статус)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/news",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "news"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "published",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Створити глобальну новину",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/news",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "news"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"category\": \"general\", \"title\": \"Платформова новина з Postman\", \"content\": \"Глобальна новина, створена супер-адміном у прогоні.\", \"status\": \"published\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));",
+                  "const j = pm.response.json();",
+                  "const id = j?.data?.id ?? (Array.isArray(j?.data) ? j.data[0]?.id : undefined) ?? j?.id;",
+                  "if (id) pm.environment.set('newsId', id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Створити новину для закладу",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser1}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/venues/{{venueId}}/news",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "venues",
+                "{{venueId}}",
+                "news"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"category\": \"promo\", \"title\": \"Тестова новина з Postman\", \"content\": \"Знижка для тих, хто тестує обхід API.\", \"status\": \"published\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));",
+                  "const j = pm.response.json();",
+                  "const id = j?.data?.id ?? (Array.isArray(j?.data) ? j.data[0]?.id : undefined) ?? j?.id;",
+                  "if (id) pm.environment.set('newsId', id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Список публічних новин",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/news",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "news"
+              ],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "promo",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "12",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Переглянути новину",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/news/{{newsId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "news",
+                "{{newsId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Оновити новину",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser1}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/news/{{newsId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "news",
+                "{{newsId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"content\": \"Оновив тестову новину з Postman\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Видалити новину (мʼяке видалення)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser1}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/news/{{newsId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "news",
+                "{{newsId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Завантажити фото новини",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser1}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/news/{{newsId}}/photo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "news",
+                "{{newsId}}",
+                "photo"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "8. Обране",
+      "item": [
+        {
+          "name": "Список обраних закладів",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/favorites",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "favorites"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Додати заклад до обраних",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/favorites/{{venueId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "favorites",
+                "{{venueId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Видалити заклад з обраних",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/favorites/{{venueId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "favorites",
+                "{{venueId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "9. Пиячки (зустрічі)",
+      "item": [
+        {
+          "name": "Список публічних зустрічей (відкриті)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/hangouts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "hangouts"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "open",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Переглянути зустріч (для будь-якого залогіненого)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/hangouts/{{hangoutId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "hangouts",
+                "{{hangoutId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Скасувати зустріч (тільки творець)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/hangouts/{{hangoutId}}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "hangouts",
+                "{{hangoutId}}",
+                "cancel"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Приєднатися до зустрічі",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser3}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/hangouts/{{hangoutId}}/join",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "hangouts",
+                "{{hangoutId}}",
+                "join"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Покинути зустріч",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser3}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/hangouts/{{hangoutId}}/leave",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "hangouts",
+                "{{hangoutId}}",
+                "leave"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Мої зустрічі (створені / приєднані / всі)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/hangouts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "hangouts"
+              ],
+              "query": [
+                {
+                  "key": "role",
+                  "value": "all",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Створити зустріч у закладі",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser2}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/venues/{{venueId}}/hangouts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "venues",
+                "{{venueId}}",
+                "hangouts"
+              ]
+            },
+            "description": "date підставляється pre-request-скриптом (завтра) — валідація вимагає сьогодні або майбутнє.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"date\": \"{{hangoutDate}}\", \"time\": \"19:30\", \"purpose\": \"Тестова зустріч з Postman\", \"gender\": \"any\", \"groupSize\": 4, \"payer\": \"split\", \"desiredBudget\": 400}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));",
+                  "const j = pm.response.json();",
+                  "const id = j?.data?.id ?? (Array.isArray(j?.data) ? j.data[0]?.id : undefined) ?? j?.id;",
+                  "if (id) pm.environment.set('hangoutId', id);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "10. Повідомлення",
+      "item": [
+        {
+          "name": "Скринька зворотного звʼязку «написати нам»",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/messages/feedback",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "messages",
+                "feedback"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));",
+                  "const j = pm.response.json();",
+                  "const id = j?.data?.id ?? (Array.isArray(j?.data) ? j.data[0]?.id : undefined) ?? j?.id;",
+                  "if (id) pm.environment.set('feedbackId', id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Відповісти на зворотний звʼязок",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/messages/feedback/{{feedbackId}}/reply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "messages",
+                "feedback",
+                "{{feedbackId}}",
+                "reply"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"body\": \"Відповідь підтримки (тест з Postman).\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Зворотний зв'язок «написати нам» (→ скринька адмінки)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser2}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/feedback",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "feedback"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"body\": \"Тестовий зворотний звʼязок з Postman — пройде в скриньку адмінки.\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));",
+                  "const j = pm.response.json();",
+                  "const id = j?.data?.id ?? (Array.isArray(j?.data) ? j.data[0]?.id : undefined) ?? j?.id;",
+                  "if (id) pm.environment.set('feedbackId', id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Вхідні повідомлення користувача",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/messages",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "messages"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));",
+                  "const j = pm.response.json();",
+                  "const id = j?.data?.id ?? (Array.isArray(j?.data) ? j.data[0]?.id : undefined) ?? j?.id;",
+                  "if (id) pm.environment.set('messageId', id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Кількість непрочитаних повідомлень",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/messages/unread-count",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "messages",
+                "unread-count"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Позначити повідомлення прочитаним",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/messages/{{messageId}}/read",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "messages",
+                "{{messageId}}",
+                "read"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Повідомлення користувачів про заклад (для власника)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser1}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/venues/{{venueId}}/messages",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "venues",
+                "{{venueId}}",
+                "messages"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Відповісти на повідомлення користувача (власник)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser1}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/venues/{{venueId}}/messages/{{messageId}}/reply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "venues",
+                "{{venueId}}",
+                "messages",
+                "{{messageId}}",
+                "reply"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"body\": \"Відповідь менеджера (тест з Postman).\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Написати повідомлення менеджеру закладу",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser2}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/venues/{{venueId}}/messages",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "venues",
+                "{{venueId}}",
+                "messages"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"body\": \"Тестове повідомлення менеджеру з Postman.\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));",
+                  "const j = pm.response.json();",
+                  "const id = j?.data?.id ?? (Array.isArray(j?.data) ? j.data[0]?.id : undefined) ?? j?.id;",
+                  "if (id) pm.environment.set('messageId', id);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "11. Скарги",
+      "item": [
+        {
+          "name": "Список скарг на розгляді",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/complaints",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "complaints"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));",
+                  "const j = pm.response.json();",
+                  "const id = j?.data?.id ?? (Array.isArray(j?.data) ? j.data[0]?.id : undefined) ?? j?.id;",
+                  "if (id) pm.environment.set('complaintId', id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Вирішити скаргу",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/complaints/{{complaintId}}/resolve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "complaints",
+                "{{complaintId}}",
+                "resolve"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Подати скаргу",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser2}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/complaints",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "complaints"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"venueId\": \"{{venueId}}\", \"reason\": \"fake_promo\", \"text\": \"Тестова скарга: на сторінці написано про акцію, якої немає (текст від 20 символів).\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Скарги до закладу (власник або супер-адмін)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser1}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/venues/{{venueId}}/complaints",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "venues",
+                "{{venueId}}",
+                "complaints"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "12. Аналітика",
+      "item": [
+        {
+          "name": "Загальна аналітика по всій системі",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/analytics/overview",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "analytics",
+                "overview"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Перегляди системи в розрізі часу",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/analytics/timeseries",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "analytics",
+                "timeseries"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "{{from}}",
+                  "disabled": true
+                },
+                {
+                  "key": "to",
+                  "value": "{{to}}",
+                  "disabled": true
+                },
+                {
+                  "key": "granularity",
+                  "value": "day",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "from/to підставляються pre-request-скриптом; granularity: day/week/month."
+          },
+          "response": []
+        },
+        {
+          "name": "Перегляди в розрізі закладів",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/analytics/venues",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "analytics",
+                "venues"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Записати перегляд закладу (з дедуплікацією)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/venues/{{venueId}}/view",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "venues",
+                "{{venueId}}",
+                "view"
+              ]
+            },
+            "description": "Лічильник переглядів, fire-and-forget; на бекенді дедуп 30 хв по (заклад, session) в Redis."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "13. Користувачі (супер-адмін)",
+      "item": [
+        {
+          "name": "Список користувачів (без видалених)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));",
+                  "const j = pm.response.json();",
+                  "const rows = j?.data?.data ?? j?.data ?? j;",
+                  "const row = Array.isArray(rows) ? rows[0] : null;",
+                  "if (row?.id && !pm.environment.get('userId3')) pm.environment.set('userId3', row.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Деталі користувача",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{userId3}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "{{userId3}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Оновити профіль користувача (адмін)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{userId3}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "{{userId3}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"age\": 30}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Мʼяко видалити користувача",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{userId3}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "{{userId3}}"
+              ]
+            },
+            "description": "Soft-delete користувача {{userId3}}. Виконувати в кінці всіх залежних тестів!"
+          },
+          "response": []
+        },
+        {
+          "name": "Системне повідомлення від «Пиячок» користувачу",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{userId2}}/message",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "{{userId2}}",
+                "message"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"body\": \"Системне повідомлення від «Пиячок» (тест з Postman).\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Призначити / зняти роль користувача",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{userId3}}/roles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "{{userId3}}",
+                "roles"
+              ]
+            },
+            "description": "Перемикач: перший прогін додає user3 роль critic, наступний запуском знімає (змінна _roleToggle у Tests).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"roleCode\": \"critic\", \"action\": \"{{roleAction}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "14. Health",
+      "item": [
+        {
+          "name": "GET /health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "GET /health/db",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health/db",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health",
+                "db"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
