@@ -40,6 +40,8 @@ import { VenueStatus } from '../modules/venues/entities/venue.entity';
 import { Review } from '../modules/reviews/entities/review.entity';
 import { News, NewsCategory, NewsStatus } from '../modules/news/entities/news.entity';
 import { SEED_TAGS, SEED_VENUES, SEED_REVIEWS, SEED_NEWS } from './seed-demo-data';
+import { Role } from '../modules/rbac/entities/role.entity';
+import { UserRole } from '../modules/rbac/entities/user-role.entity';
 
 const PASSWORD = 'User1234';
 const BCRYPT_COST = 12; // синхронно з users.service.register()
@@ -64,6 +66,11 @@ async function main() {
   // --- 1. Юзери ---
   const users = new Map<string, string>(); // key -> id
   const passwordHash = await bcrypt.hash(PASSWORD, BCRYPT_COST);
+  const userRole = await ds.getRepository(Role).findOne({ where: { code: 'user' } });
+  if (!userRole)
+    throw new Error(
+      'Ролі user немає в базі — спершу прогоніть міграції (pnpm migration:run або сервіс `migrate`).',
+    );
   for (const u of USERS) {
     const repo = ds.getRepository(User);
     let user = await repo.findOne({ where: { email: u.email } });
@@ -79,6 +86,19 @@ async function main() {
         phone: u.phone, age: u.age,
       });
       console.log(`Юзер створено: ${u.email} (${u.firstname} ${u.lastname}).`);
+    }
+    // Гарантована роль `user` (без неї JWT виходить з порожніми roles і
+    // PermissionsGuard повертає 403 на кожен пермішен-ендпоінт)
+    const hasUserRole = await ds.getRepository(UserRole).findOne({
+      where: { userId: user.id, roleId: userRole.id },
+    });
+    if (!hasUserRole) {
+      await ds.getRepository(UserRole).insert({
+        userId: user.id,
+        roleId: userRole.id,
+        assignedBy: null,
+      });
+      console.log(`  → роль user додана: ${u.email}`);
     }
     users.set(u.key, user.id);
   }
