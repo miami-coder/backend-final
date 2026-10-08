@@ -13,7 +13,7 @@
 
 ---
 
-## 1. Роли та права доступу
+## 1. Ролі та права доступу
 
 У системі чотири ролі (RBAC, таблиці `roles` / `permissions` / `user_roles`, RoleGuard через JWT + PermissionsGuard поверх контролерів).
 
@@ -22,7 +22,7 @@
 | `user` | `venue:create`, `review:create`, `review:edit:own`, `hangout:create`, `news:manage:own` | автоматично при реєстрації (`POST /auth/register`) |
 | `venue_admin` | усе від `user` + `venue:edit:own`, `analytics:view:own` | автоматично: супер-адмін апрувне заклад (`POST /admin/venues/:id/approve`) → власник отримує роль `venue_admin` |
 | `critic` | усе від `user` + `review:feature` | тільки вручну супер-адміном (`POST /admin/users/:id/roles`) |
-| `super_admin` | усі 15 permissions (`venue:moderate`, `news:manage:any`, `complaint:manage`, `user:manage`, `analytics:view:all` + інші) | сід при першому запуску (докер-сервіс `migrate`, скрипт `seed-super-admin.ts`) — `admin@gmail.com` / `Admin1234`; перекривається `SUPER_ADMIN_EMAIL` / `SUPER_ADMIN_PASSWORD` |
+| `super_admin` | усі 15 permissions (`venue:moderate`, `news:manage:any`, `complaint:manage`, `user:manage`, `analytics:view:all` + інші) | сід при першому запуску (докер-сервіс `migrate`, скрипт `seed-super-admin.ts`) — `admin@gmail.com`; перекривається `SUPER_ADMIN_EMAIL` / `SUPER_ADMIN_PASSWORD` |
 
 Кеш дозволів (Redis, TTL 5 хв) інвалідується автоматично за подією `user_role.added`, тож нова роль застосовується одразу. Усі дії супер-адміна над користувачами (зміна профілю, ролей, видалення) пишуться в таблицю `audit_logs`.
 
@@ -235,10 +235,10 @@ Swagger (OpenAPI) — `http://localhost:3000/api/v1/docs` (тільки поза
 ### 13.5 Тестові облікові записи
 | Роль | Логін | Пароль |
 |---|---|---|
-| Супер-адмін | `admin@gmail.com` | `Admin1234` |
-| Користувач 1 (Андрій Мельник) | `user1@gmail.com` | `User1234` |
-| Користувач 2 (Олег Савчук) | `user2@gmail.com` | `User1234` |
-| Користувач 3 (Тарас Гнатюк) | `user3@gmail.com` | `User1234` |
+| Супер-адмін | `admin@gmail.com` | `****` |
+| Користувач 1 (Андрій Мельник) | `user1@gmail.com` | `****` |
+| Користувач 2 (Олег Савчук) | `user2@gmail.com` | `****` |
+| Користувач 3 (Тарас Гнатюк) | `user3@gmail.com` | `****` |
 
 Ці ж облікові записи існують і на проді (бекенд `pyiachok-backend.vercel.app/api/v1`), і ним заповнена демонстраційна база: 15 закладів від трьох власників, відгуки та новини з фото.
 
