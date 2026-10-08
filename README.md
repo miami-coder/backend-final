@@ -1,6 +1,22 @@
 # Пиячок — бекенд
 
-NestJS API для каталогу закладів «Пиячок» (`:3000`, префікс `/api/v1`).
+NestJS API для каталогу закладів «Пиячок» (`:3000`, префікс `/api/v1`). Повний опис функціоналу — у [`DESCRIPTION.md`](DESCRIPTION.md).
+
+## Технології і навіщо вони
+
+- **NestJS 11 + TypeScript** — модульна структура (`src/modules/*`: auth, venues, reviews, news, complaints, messages, favorites, hangouts, analytics, admin…), DI, гварди й пайпи з коробки.
+- **PostgreSQL 16 + PostGIS** — геопошук закладів: `geography(POINT,4326)` + GIST-індекс, радіус через `ST_DWithin`, сортування по дистанції `ST_Distance`.
+- **TypeORM** — entity-схема, міграції (не автопроганяються — запускаються `pnpm migration:run`/сервісом `migrate`), snake_case naming strategy, soft-delete користувачів і закладів.
+- **Redis (ioredis)** — чотири ролі: кеш дозволів користувача (5 хв), кеш списків закладів (60 с) і зустрічей (30 с), ревокація refresh-токенів (TTL 30 днів), дедуплікація переглядів сторінок (30 хв).
+- **JWT + passport** (`@nestjs/jwt`, `passport-jwt`) — access 15 хв / refresh 30 днів з ротацією й ревокацією; `passport-google-oauth20`, `passport-facebook` — OAuth-вхід; `bcryptjs` — хешування паролів.
+- **class-validator + class-transformer** — валідація DTO через глобальний ValidationPipe (whitelist, forbidNonWhitelisted): пароль, вік 18+, EULA, текст відгуків/скарг, дата зустрічі.
+- **@nestjs/swagger** — OpenAPI-документація на `/api/v1/docs` (тільки поза prod) з Bearer auth.
+- **@nestjs/throttler** — rate limiting (глобально 100/хв + ліміти на auth: реєстрація 5/год, логін 10/хв).
+- **@nestjs/schedule** — cron-завдання: переведення минулих зустрічей у `completed` (кожні 5 хв).
+- **@nestjs/event-emitter** — доменні події: інвалідація кешів, запис аналітичних подій, авто-грант ролей.
+- **@vercel/blob** — файлове сховище фото на проді (локально — диск `uploads/` + роздача `/static/*`, у Vercel-оточенні автоматично Blob по наявності `BLOB_STORE_ID`/`BLOB_READ_WRITE_TOKEN`).
+- **nestjs-pino** — структуровані логи; **helmet**, **compression** — безпека і стискання HTTP; **@nestjs/config** з fail-fast валідацією env (JWT/DB-секрети обовʼязкові).
+- **Jest + supertest** — unit-тести (`pnpm test`) і e2e (`pnpm test:e2e`).
 
 ## Запуск через Docker
 
