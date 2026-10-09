@@ -71,7 +71,7 @@ async function renderPage(tab?: string, extra: Record<string, string> = {}) {
   const sp: Record<string, string> = { ...extra }
   if (tab) sp.tab = tab
   return renderToStaticMarkup(
-    // Next.js 16: params/searchParams — Promises
+    // Next.js 16: params/searchParams — це Promises
     await ManageVenuePage({
       params: Promise.resolve({ id: 'v1' }),
       searchParams: Promise.resolve(sp),

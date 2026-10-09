@@ -122,7 +122,7 @@ describe('VenueAssignOwnerButton', () => {
     expect(String(url)).toBe('/api/v1/admin/venues/v1/assign-owner')
     expect(init.method).toBe('POST')
     expect(init.headers).toEqual({ 'Content-Type': 'application/json' })
-    // exact body: JSON.stringify({ userId })
+    // точне тіло запиту: JSON.stringify({ userId })
     expect(init.body).toBe(JSON.stringify({ userId: 'u1' }))
     expect(refresh).toHaveBeenCalled()
     await waitFor(() =>
