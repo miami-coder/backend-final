@@ -31,7 +31,7 @@ describe('Hangouts E2E', () => {
         .send({ email: 'hcreator@x.com', password: 'Password1' })
     ).body.accessToken;
 
-    // Creator needs a venue to attach the hangout to
+    // Автору пиячка потрібен заклад, до якого можна його прив'язати
     const venue = await request(app.getHttpServer())
       .post('/api/v1/venues')
       .set('Authorization', `Bearer ${creatorToken}`)

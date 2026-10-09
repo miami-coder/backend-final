@@ -1,7 +1,7 @@
-// Runs in each e2e worker BEFORE any test file is imported. AppModule's
-// ConfigModule.forRoot() caches validated env at import time (it parses .env
-// via dotenv.parse and merges process.env on top), so DATABASE_* must be set
-// here — before `import { AppModule }` executes — not inside beforeAll.
+// Виконується в кожному e2e-воркері ДО імпорту будь-якого тестового файлу.
+// ConfigModule.forRoot() AppModuleʼа кешує валідований config у момент імпорту
+// (парсить .env через dotenv.parse і зливає process.env зверху), тому DATABASE_*
+// треба задати тут — до виконання `import { AppModule }`, а не в beforeAll.
 process.env.DATABASE_HOST = process.env.DATABASE_HOST ?? 'localhost';
 process.env.DATABASE_PORT = process.env.DATABASE_PORT_TEST ?? '5433';
 process.env.DATABASE_USER = process.env.DATABASE_USER_TEST ?? 'piyachok_test';

@@ -57,7 +57,7 @@ describe('Auth E2E', () => {
       .send({ refreshToken })
       .expect(201);
     expect(res.body.accessToken).toBeDefined();
-    // Old refresh token must now be revoked
+    // Старий refresh token тепер має бути скасованим
     await request(app.getHttpServer())
       .post('/api/v1/auth/refresh')
       .send({ refreshToken })

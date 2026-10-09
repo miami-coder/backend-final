@@ -8,8 +8,8 @@ import {
 import { PaginationMetaDto } from './pagination-meta.dto';
 
 /**
- * Documents a success response of shape `{ data: T }`.
- * Use for endpoints that wrap a single entity in a `data` field.
+ * Документує успішну відповідь у формі `{ data: T }`.
+ * Для ендпоінтів, що загортають один об'єкт у поле `data`.
  */
 export function ApiDataResponse(opts: {
   status?: number;
@@ -30,8 +30,8 @@ export function ApiDataResponse(opts: {
 }
 
 /**
- * Documents a success response of shape `{ data: T[] }` (array, no meta).
- * Use for endpoints that return a non-paginated list wrapped in `data`.
+ * Документує успішну відповідь у формі `{ data: T[] }` (масив, без meta).
+ * Для ендпоінтів, що повертають непагінований список, загорнутий у `data`.
  */
 export function ApiDataArrayResponse(opts: {
   status?: number;
@@ -54,8 +54,8 @@ export function ApiDataArrayResponse(opts: {
 }
 
 /**
- * Documents a success response of shape `{ data: T[], meta: PaginationMetaDto }`.
- * Use for endpoints that return a paginated list.
+ * Документує успішну відповідь у формі `{ data: T[], meta: PaginationMetaDto }`.
+ * Для ендпоінтів, що повертають paginated-список.
  */
 export function ApiPaginatedResponse(opts: {
   status?: number;
@@ -78,7 +78,7 @@ export function ApiPaginatedResponse(opts: {
 }
 
 /**
- * Documents a minimal `{ data: { id } }` acknowledgement response.
+ * Документує мінімальну відповідь-підтвердження у формі `{ data: { id } }`.
  */
 export function ApiIdResponse(opts: { status?: number; description?: string }) {
   const response = opts.status === 201 ? ApiCreatedResponse : ApiOkResponse;

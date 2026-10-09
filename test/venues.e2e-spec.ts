@@ -28,7 +28,7 @@ describe('Venues E2E', () => {
       roles: ['user', 'super_admin'],
     });
 
-    // Login owner
+    // Входимо під власником
     const ownerLogin = await request(app.getHttpServer())
       .post('/api/v1/auth/login')
       .send({ email: 'owner@x.com', password: 'Password1' });

@@ -31,7 +31,7 @@ export class AuthService {
     }
     const user = await this.users.create(dto);
 
-    // Assign 'user' role
+    // Призначаємо роль 'user'
     const role = (await this.userRoles.manager.findOne('Role', {
       where: { code: 'user' },
     })) as { id: string } | null;

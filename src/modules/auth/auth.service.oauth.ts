@@ -6,7 +6,8 @@ export class OAuthHandlerService {
   constructor(private readonly auth: AuthService) {}
 
   /**
-   * Called after OAuth strategy returns user; issues tokens and returns redirect URL.
+   * Викликається після того, як OAuth-стратегія повернула користувача:
+   * видає токени і повертає redirect URL.
    */
   async buildRedirectUrl(user: { id: string; email: string }): Promise<string> {
     const roles = await this.auth.getRolesForUser(user.id);

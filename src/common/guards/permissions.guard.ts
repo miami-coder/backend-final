@@ -23,9 +23,9 @@ export class PermissionsGuard implements CanActivate {
     const user = request.user;
     if (!user) throw new ForbiddenException('No authenticated user');
 
-    // Permission check happens in service layer (has access to DB / cache).
-    // Here we just ensure user has some role context. Detailed check is via
-    // PermissionsService.hasPermission() called explicitly in services.
+    // Перевірка дозволів відбувається в сервісному шарі (там є доступ до БД / кешу).
+    // Гард лише гарантує, що в користувача є роль. Детальна перевірка — через
+    // PermissionsService.hasPermission(), який явно викликається у сервісах.
     const hasAnyRole = (user.roles ?? []).length > 0;
     if (!hasAnyRole) throw new ForbiddenException('No roles assigned');
 
