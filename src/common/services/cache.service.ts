@@ -72,7 +72,7 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
         await this.client.set(key, payload);
       }
     } catch {
-      // silent fail
+      // тихо ігноруємо
     }
   }
 
@@ -81,7 +81,7 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
     try {
       await this.client.del(key);
     } catch {
-      // silent fail
+      // тихо ігноруємо
     }
   }
 
@@ -91,7 +91,7 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
       const keys = await this.client.keys(pattern);
       if (keys.length) await this.client.del(...keys);
     } catch {
-      // silent fail
+      // тихо ігноруємо
     }
   }
 }

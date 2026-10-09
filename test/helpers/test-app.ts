@@ -14,7 +14,7 @@ export async function bootstrapTestApp(): Promise<{
   process.env.DATABASE_USER = process.env.DATABASE_USER_TEST ?? 'piyachok_test';
   process.env.DATABASE_PASS = process.env.DATABASE_PASS_TEST ?? 'piyachok_test';
   process.env.DATABASE_NAME = process.env.DATABASE_NAME_TEST ?? 'piyachok_test';
-  // Ensure schema is reset
+  // Гарантовано скидаємо схему
   const ds = new DataSource({
     type: 'postgres',
     host: process.env.DATABASE_HOST ?? 'localhost',

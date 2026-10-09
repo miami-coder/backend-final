@@ -86,7 +86,7 @@ export class Init1700000000000 implements MigrationInterface {
       `CREATE INDEX "idx_user_roles_userId" ON "user_roles" ("userId")`,
     );
 
-    // Seed: 4 roles
+    // Сід: 4 ролі
     const userRoleId = (
       await queryRunner.query(
         `INSERT INTO "roles"("code","name","description") VALUES ('user','Користувач','Базовий акаунт') RETURNING "id"`,
@@ -108,7 +108,7 @@ export class Init1700000000000 implements MigrationInterface {
       )
     )[0].id;
 
-    // Seed: 15 permissions
+    // Сід: 15 дозволів
     const permCodes = [
       'venue:create',
       'venue:edit:own',
@@ -135,7 +135,7 @@ export class Init1700000000000 implements MigrationInterface {
       permIds[code] = r[0].id;
     }
 
-    // Map role -> permissions
+    // Мапа ролі -> дозволи
     const userPerms = [
       'venue:create',
       'review:create',

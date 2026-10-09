@@ -7,8 +7,8 @@ describe('CacheService', () => {
   const origPort = process.env.REDIS_PORT;
 
   beforeEach(async () => {
-    // Point at an unreachable port so the no-op fallback path is exercised
-    // deterministically, regardless of whether a real Redis is running.
+    // Направляємо на недосяжний порт, щоб no-op fallback-гілка відпрацьовувала
+    // детерміновано, незалежно від того, чи запущено справжній Redis.
     process.env.REDIS_HOST = '127.0.0.1';
     process.env.REDIS_PORT = '1';
     const module = await Test.createTestingModule({

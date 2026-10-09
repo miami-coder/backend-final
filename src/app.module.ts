@@ -37,11 +37,11 @@ import { AdminModule } from './modules/admin/admin.module';
             ? undefined
             : { target: 'pino-pretty' },
       },
-      // path-to-regexp v8 (Express 5) no longer accepts the bare `*` wildcard
-      // that nestjs-pino registers by default. Combined with the global prefix
-      // it became `/api/v1/*` and triggered the LegacyRouteConverter warning.
-      // Use the named-wildcard syntax so the same catch-all is registered
-      // without the warning.
+      // path-to-regexp v8 (Express 5) більше не приймає «голий» wildcard `*`,
+      // який nestjs-pino реєструє за замовчуванням. Разом із глобальним префіксом
+      // він перетворювався на `/api/v1/*` і спричиняв warning LegacyRouteConverter.
+      // Використовуємо синтаксис named-wildcard, щоб зареєструвати той самий
+      // catch-all без warning-у.
       forRoutes: [{ path: '{*path}', method: RequestMethod.ALL }],
     }),
     CommonModule,

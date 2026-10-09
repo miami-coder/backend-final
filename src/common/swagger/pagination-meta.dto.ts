@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 /**
- * Metadata block returned alongside paginated lists.
- * Mirrors `PaginatedResponseMeta` from `src/common/utils/pagination.util.ts`.
+ * Metadata-блок, що повертається разом із paginated-списками.
+ * Дзеркалить `PaginatedResponseMeta` з `src/common/utils/pagination.util.ts`.
  */
 export class PaginationMetaDto {
   @ApiProperty({ example: 1, description: 'Поточна сторінка' })

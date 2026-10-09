@@ -25,7 +25,7 @@ describe('Favorites E2E', () => {
       .send({ email: 'favuser@x.com', password: 'Password1' });
     userToken = login.body.accessToken;
 
-    // Create a venue to favorite
+    // Створюємо заклад, який додамо в улюблені
     const venue = await request(app.getHttpServer())
       .post('/api/v1/venues')
       .set('Authorization', `Bearer ${userToken}`)

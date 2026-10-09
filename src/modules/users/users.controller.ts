@@ -53,7 +53,7 @@ export class UsersController {
   }
 
   @Patch('profile')
-  @Permissions() // no specific perm required, just auth
+  @Permissions() // конкретний дозвіл не потрібен — достатньо авторизації
   @ApiOperation({ summary: 'Оновити свій профіль' })
   @ApiDataResponse({ type: Profile, description: 'Оновлений профіль' })
   @ApiUnauthorizedResponse({ description: 'Не авторизований' })

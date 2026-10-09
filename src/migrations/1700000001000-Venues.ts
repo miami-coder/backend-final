@@ -29,7 +29,7 @@ export class Venues1700000001000 implements MigrationInterface {
       `CREATE INDEX "idx_venues_status" ON "venues"("status")`,
     );
 
-    // PostGIS location column populated by trigger
+    // Колонка location PostGIS заповнюється тригером
     await queryRunner.query(
       `ALTER TABLE "venues" ADD COLUMN "location" geography(POINT, 4326)`,
     );
@@ -112,7 +112,7 @@ export class Venues1700000001000 implements MigrationInterface {
       )
     `);
 
-    // Seed features, types
+    // Сід фіч і типів
     await queryRunner.query(`
       INSERT INTO "venue_features"("code","name","icon") VALUES
       ('wifi','Wi-Fi','wifi'),

@@ -16,7 +16,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
 
   constructor(users: UsersService) {
     if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-      // Skip registration if not configured
+      // Пропускаємо реєстрацію стратегії, якщо OAuth не налаштований
       super({
         clientID: 'placeholder',
         clientSecret: 'placeholder',

@@ -1,4 +1,4 @@
-// backend-final/src/modules/venues/__tests__/me-venues.controller.spec.ts
+// backend-final/src/modules/venues/__tests__/me-venues.controller.spec.ts — локальні юніт-тести контролера
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { MeVenuesController } from '../me-venues.controller';
