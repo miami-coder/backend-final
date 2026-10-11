@@ -95,6 +95,37 @@ export class VenuesController {
 
   @ApiBearerAuth('access-token')
   @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Post(':id/recommend')
+  @Permissions('venue:recommend')
+  @ApiOperation({ summary: 'Рекомендувати заклад (критик; 1 критик на заклад)' })
+  @ApiDataResponse({ type: Venue, description: 'Рекомендований заклад' })
+  @ApiUnauthorizedResponse({ description: 'Не авторизований' })
+  @ApiForbiddenResponse({
+    description: 'Немає дозволу venue:recommend / несхвалений заклад',
+  })
+  @ApiNotFoundResponse({ description: 'Заклад не знайдено' })
+  recommend(@CurrentUser() u: JwtUser, @Param('id') id: string) {
+    return this.venues.recommend(u.sub, id).then((v) => ({ data: v }));
+  }
+
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Delete(':id/recommend')
+  @Permissions('venue:recommend')
+  @ApiOperation({ summary: 'Зняти рекомендацію закладу' })
+  @ApiDataResponse({ type: Venue, description: 'Заклад без рекомендації' })
+  @ApiUnauthorizedResponse({ description: 'Не авторизований' })
+  @ApiForbiddenResponse({
+    description:
+      'Немає дозволу venue:recommend / чужа рекомендація (знімає лише автор)',
+  })
+  @ApiNotFoundResponse({ description: 'Заклад не знайдено' })
+  unrecommend(@CurrentUser() u: JwtUser, @Param('id') id: string) {
+    return this.venues.unrecommend(u.sub, id).then((v) => ({ data: v }));
+  }
+
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Post()
   @Permissions('venue:create')
   @ApiOperation({ summary: 'Створити заклад' })

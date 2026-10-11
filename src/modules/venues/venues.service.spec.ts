@@ -352,4 +352,107 @@ describe('VenuesService', () => {
       expect(storage.save).not.toHaveBeenCalled();
     });
   });
+
+  describe('recommendations (критик)', () => {
+    const approved = {
+      id: 'v1',
+      status: VenueStatus.Approved,
+      recommendedBy: null,
+      recommendedAt: null,
+    };
+
+    beforeEach(() => {
+      venues.save.mockImplementation(async (v: any) => v);
+      cache.delByPattern.mockResolvedValue(undefined);
+    });
+
+    it('recommend ставить recommendedBy/recommendedAt і скидає кеш списку', async () => {
+      venues.findOne.mockResolvedValueOnce({ ...approved });
+      perms.hasPermission.mockResolvedValueOnce(true);
+      const saved = await service.recommend('u-critic', 'v1');
+      expect(saved.recommendedBy).toBe('u-critic');
+      expect(saved.recommendedAt).toBeInstanceOf(Date);
+      expect(cache.delByPattern).toHaveBeenCalled();
+    });
+
+    it('recommend кидає 403 без дозволу venue:recommend', async () => {
+      venues.findOne.mockResolvedValueOnce({ ...approved });
+      perms.hasPermission.mockResolvedValueOnce(false);
+      await expect(service.recommend('u1', 'v1')).rejects.toThrow(
+        ForbiddenException,
+      );
+      expect(venues.save).not.toHaveBeenCalled();
+    });
+
+    it('recommend кидає 403 для не-схваленого закладу', async () => {
+      venues.findOne.mockResolvedValueOnce({
+        ...approved,
+        status: VenueStatus.Pending,
+      });
+      perms.hasPermission.mockResolvedValueOnce(true);
+      await expect(service.recommend('u-critic', 'v1')).rejects.toThrow(
+        ForbiddenException,
+      );
+      expect(venues.save).not.toHaveBeenCalled();
+    });
+
+    it('recommend перезаписує попередню (чужу) рекомендацію — 1 критик на заклад', async () => {
+      venues.findOne.mockResolvedValueOnce({
+        ...approved,
+        recommendedBy: 'u-old-critic',
+        recommendedAt: new Date('2026-01-01'),
+      });
+      perms.hasPermission.mockResolvedValueOnce(true);
+      const saved = await service.recommend('u-critic', 'v1');
+      expect(saved.recommendedBy).toBe('u-critic');
+    });
+
+    it('unrecommend знімає свою рекомендацію', async () => {
+      venues.findOne.mockResolvedValueOnce({
+        ...approved,
+        recommendedBy: 'u-critic',
+        recommendedAt: new Date('2026-01-01'),
+      });
+      perms.hasPermission.mockResolvedValueOnce(true);
+      const saved = await service.unrecommend('u-critic', 'v1');
+      expect(saved.recommendedBy).toBeNull();
+      expect(saved.recommendedAt).toBeNull();
+      expect(cache.delByPattern).toHaveBeenCalled();
+    });
+
+    it('unrecommend кидає 403 за чужу рекомендацію', async () => {
+      venues.findOne.mockResolvedValueOnce({
+        ...approved,
+        recommendedBy: 'u-another-critic',
+      });
+      perms.hasPermission.mockResolvedValueOnce(true);
+      await expect(service.unrecommend('u-critic', 'v1')).rejects.toThrow(
+        ForbiddenException,
+      );
+      expect(venues.save).not.toHaveBeenCalled();
+    });
+
+    it('unrecommend кидає 403 без дозволу venue:recommend', async () => {
+      venues.findOne.mockResolvedValueOnce({ ...approved });
+      perms.hasPermission.mockResolvedValueOnce(false);
+      await expect(service.unrecommend('u1', 'v1')).rejects.toThrow(
+        ForbiddenException,
+      );
+    });
+
+    it('listRecommendedByUser повертає заклади своєї рекомендації', async () => {
+      const listQb = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue([{ id: 'v1' }, { id: 'v2' }]),
+      };
+      venues.createQueryBuilder.mockReturnValueOnce(listQb);
+      const rows = await service.listRecommendedByUser('u-critic');
+      expect(rows.map((r: any) => r.id)).toEqual(['v1', 'v2']);
+      expect(listQb.where).toHaveBeenCalledWith('v.recommendedBy = :userId', {
+        userId: 'u-critic',
+      });
+    });
+  });
 });

@@ -183,6 +183,53 @@ export class VenuesService {
     });
   }
 
+  /** Заклади, які поточний критик рекомендував (для вкладки в кабінеті). */
+  async listRecommendedByUser(userId: string): Promise<Venue[]> {
+    return this.venues
+      .createQueryBuilder('v')
+      .leftJoinAndSelect('v.photos', 'photo')
+      .leftJoinAndSelect('v.venueTags', 'vt')
+      .leftJoinAndSelect('vt.tag', 't')
+      .leftJoinAndSelect('v.venueTypeAssignments', 'vta')
+      .leftJoinAndSelect('vta.type', 'ty')
+      .where('v.recommendedBy = :userId', { userId })
+      .orderBy('v.recommendedAt', 'DESC')
+      .getMany();
+  }
+
+  /**
+   * Рекомендація критика: 1 критик на заклад. Ставимо/відновлюємо свою
+   * рекомендацію; попередня (чужа) перезаписується — поле одне.
+   */
+  async recommend(userId: string, venueId: string): Promise<Venue> {
+    if (!(await this.perms.hasPermission(userId, 'venue:recommend')))
+      throw new ForbiddenException('Немає дозволу venue:recommend');
+    const venue = await this.findOneOrThrow(venueId);
+    if (venue.status !== VenueStatus.Approved)
+      throw new ForbiddenException('Рекомендувати можна лише схвалені заклади');
+    venue.recommendedBy = userId;
+    venue.recommendedAt = new Date();
+    const saved = await this.venues.save(venue);
+    await this.invalidateListCache();
+    return saved;
+  }
+
+  /** Зняти рекомендацію — може лише критик, який її поставив. */
+  async unrecommend(userId: string, venueId: string): Promise<Venue> {
+    if (!(await this.perms.hasPermission(userId, 'venue:recommend')))
+      throw new ForbiddenException('Немає дозволу venue:recommend');
+    const venue = await this.findOneOrThrow(venueId);
+    if (venue.recommendedBy && venue.recommendedBy !== userId)
+      throw new ForbiddenException(
+        'Зняти рекомендацію може лише критик, який її поставив',
+      );
+    venue.recommendedBy = null;
+    venue.recommendedAt = null;
+    const saved = await this.venues.save(venue);
+    await this.invalidateListCache();
+    return saved;
+  }
+
   async findOneForOwnerQuery(id: string): Promise<Venue | null> {
     // Те саме насичення, що в search(): photos + features + tags + types.
     // Привʼязки (fa/vt/vta) обовʼязково з andSelect: без вибірки власних
