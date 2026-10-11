@@ -2938,6 +2938,122 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "15. Рекомендації критика (критик/супер-адмін)",
+      "description": "1 критик на заклад: перм venue:recommend (критик і супер-адмін). У прогоні — tokenAdmin (супер-адмін теж має право); у проді реальною кнопкою користується критик.",
+      "item": [
+        {
+          "name": "Рекомендувати заклад (1 критик на заклад)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/venues/{{venueId}}/recommend",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "venues",
+                "{{venueId}}",
+                "recommend"
+              ]
+            }
+          },
+          "description": "201 — рекомендація поставлена (recommendedBy/recommendedAt). Повторний виклик перезаписує рекомендацію на свою.",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 рекомендація поставлена', () => pm.expect(pm.response.code).to.eql(201));",
+                  "const d = pm.response.json().data || pm.response.json();",
+                  "pm.test('recommendedBy містить суб токена', () => pm.expect(String(d.recommendedBy || '')).to.not.eql(''));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Мої рекомендації (кабінет критика)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/recommendations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "recommendations"
+              ]
+            }
+          },
+          "description": "200 — заклади, які поточний користувач рекомендував (вкладка «Рекомендовані»).",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 список рекомендацій', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const d = pm.response.json().data || pm.response.json();",
+                  "pm.test('у списку є щойно рекомендований заклад', () => pm.expect(Array.isArray(d) ? d.some(v => v.id === pm.environment.get('venueId')) : false).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Зняти рекомендацію закладу",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/venues/{{venueId}}/recommend",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "venues",
+                "{{venueId}}",
+                "recommend"
+              ]
+            }
+          },
+          "description": "200 — рекомендація знята (recommendedBy → null). Зняти може лише автор рекомендації (403 за чужу).",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 рекомендація знята', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const d = pm.response.json().data || pm.response.json();",
+                  "pm.test('recommendedBy скинуто в null', () => pm.expect(d.recommendedBy).to.eql(null));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }
