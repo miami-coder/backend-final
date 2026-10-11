@@ -44,6 +44,18 @@ export class MeVenuesController {
     return this.venues.listMineForUser(u.sub).then((data) => ({ data }));
   }
 
+  @Get('recommendations')
+  @ApiOperation({
+    summary: 'Заклади, які поточний користувач рекомендував (критик)',
+  })
+  @ApiDataArrayResponse({
+    type: Venue,
+    description: 'Список рекомендованих закладів',
+  })
+  listRecommendations(@CurrentUser() u: JwtUser) {
+    return this.venues.listRecommendedByUser(u.sub).then((data) => ({ data }));
+  }
+
   @Get('venues/:id')
   @ApiOperation({
     summary: 'Свій заклад незалежно від статусу (власник або venue:edit:any)',

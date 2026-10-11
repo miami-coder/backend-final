@@ -50,12 +50,20 @@ export class Venue {
   ratingAvg: number;
   @Column({ type: 'integer', default: 0 }) ratingCount: number;
   @Column({ type: 'integer', default: 0 }) viewCount: number;
+  /** Рекомендація критика: 1 критик на заклад, null — не рекомендований. */
+  @Column({ type: 'uuid', nullable: true })
+  recommendedBy: string | null;
+  @Column({ type: 'timestamptz', nullable: true }) recommendedAt: Date | null;
   @CreateDateColumn() createdAt: Date;
   @UpdateDateColumn() updatedAt: Date;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'ownerId' })
   owner: User;
+
+  @ManyToOne(() => User, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'recommendedBy' })
+  recommender: User | null;
 
   @OneToMany(() => VenuePhoto, (photo) => photo.venue)
   photos: VenuePhoto[];
