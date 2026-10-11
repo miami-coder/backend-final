@@ -83,3 +83,7 @@ export function getAdminVenuesPage(tab: 'moderation' | 'approved', page: number,
     revalidate: 0,
   })
 }
+/** Заклади, які поточний критик рекомендував (вкладка «Рекомендовані» кабінету). */
+export function getMyRecommendations(tokens: SessionTokens | null): Promise<RawVenue[]> {
+  return serverFetch<RawVenue[]>('/me/recommendations', { tokens, revalidate: 0 })
+}

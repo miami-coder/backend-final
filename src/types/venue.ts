@@ -17,6 +17,10 @@ export interface RawVenue {
   ratingAvg: string | null
   ratingCount: number
   viewCount: number
+  // Рекомендація критика (1 критик на заклад): рекомендований — userId, ні — null.
+  // Стара відповідь без цих полів (кеш CDN на 60 c) — optional.
+  recommendedBy?: string | null
+  recommendedAt?: string | null
   createdAt: string
   updatedAt: string
   // Відносини Є лише у елементах GET /venues (list); GET /venues/:id
@@ -55,6 +59,8 @@ export interface Venue {
   ratingAvg: number | null
   ratingCount: number
   viewCount: number
+  /** userId критика, який рекомендував; null — не рекомендований. */
+  recommendedBy: string | null
   createdAt: string
   updatedAt: string
   // Власник — лише там, де бекенд віддає owner (список pending в адмінці, listMine)
@@ -88,6 +94,7 @@ export function parseVenue(raw: RawVenue): Venue {
     ratingAvg: num(raw.ratingAvg),
     ratingCount: raw.ratingCount,
     viewCount: raw.viewCount,
+    recommendedBy: raw.recommendedBy ?? null,
     createdAt: raw.createdAt,
     updatedAt: raw.updatedAt,
     owner: raw.owner

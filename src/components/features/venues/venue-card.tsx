@@ -32,6 +32,14 @@ export function VenueCard({ venue }: { venue: Venue }) {
           <RatingStars value={venue.ratingAvg} />
         </div>
         <p className="mt-1 truncate text-sm text-muted">{venue.address}</p>
+        {venue.recommendedBy && (
+          <span
+            title="Рекомендовано критиком Пиячок"
+            className="mt-2 inline-block rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-500"
+          >
+            ✦ Рекомендовано
+          </span>
+        )}
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
           {venue.averageCheck !== null && (
             <Badge tone="brand">≈ {venue.averageCheck} грн</Badge>
