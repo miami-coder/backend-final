@@ -10,6 +10,7 @@ import { getSessionTokens } from '@/lib/auth/session'
 import { ComplaintButton } from '@/components/features/complaints/complaint-button'
 import { MessageToManagerButton } from '@/components/features/messages/message-to-manager-button'
 import { FavoriteButton } from '@/components/features/venues/favorite-button'
+import { RecommendButton } from '@/components/features/venues/recommend-button'
 import { HangoutButton } from '@/components/features/hangouts/hangout-button'
 import { ReviewForm } from '@/components/features/venues/review-form'
 import { ReviewList } from '@/components/features/venues/review-list'
@@ -44,15 +45,17 @@ function instagramHref(raw: string): string {
   return normalizeContactHref(raw, 'instagram.com')
 }
 
+// revalidate=0: після toggle рекомендації критиком router.refresh() має
+// показати свіжий бейдж «Рекомендовано критиком», а не дані з 60-сек кешу BFF
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
-  const venue = await getVenueDetail(id)
+  const venue = await getVenueDetail(id, 0)
   return { title: venue ? `${venue.name} — Пиячок` : 'Заклад — Пиячок' }
 }
 
 export default async function VenuePage({ params, searchParams }: Props) {
   const { id } = await params
-  const venue = await getVenueDetail(id)
+  const venue = await getVenueDetail(id, 0)
   if (!venue) notFound()
 
   const sp = await searchParams
@@ -99,7 +102,17 @@ export default async function VenuePage({ params, searchParams }: Props) {
       <PhotoGallery mainPhotoUrl={venue.mainPhotoUrl} photos={venue.photos} />
 
       <header className="space-y-2">
-        <h1 className="font-display text-3xl font-bold text-ink">{venue.name}</h1>
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="font-display text-3xl font-bold text-ink">{venue.name}</h1>
+          {venue.recommendedBy && (
+            <span
+              title="Рекомендовано критиком Пиячок"
+              className="rounded-full bg-amber-500/15 px-3 py-1 text-xs font-medium text-amber-500"
+            >
+              ✦ Рекомендовано критиком
+            </span>
+          )}
+        </div>
         <div className="flex flex-wrap items-center gap-3 text-sm text-muted">
           <RatingStars value={venue.ratingAvg} />
           {venue.ratingCount > 0 && <span>{venue.ratingCount} відгуків</span>}
@@ -120,6 +133,8 @@ export default async function VenuePage({ params, searchParams }: Props) {
         <HangoutButton venueId={venue.id} loginNext={`/venues/${venue.id}`} />
         <MessageToManagerButton venueId={venue.id} />
         <ComplaintButton target={{ venueId: venue.id }} loginNext={`/venues/${venue.id}`} />
+        {/* Перемикач рекомендації: рендериться лиш критику/супер-адміну */}
+        <RecommendButton venueId={venue.id} recommendedBy={venue.recommendedBy} />
       </div>
 
       {venue.tags.length > 0 && (

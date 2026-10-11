@@ -20,6 +20,7 @@ vi.mock('@/components/features/venues/review-list', () => ({ ReviewList: () => n
 
 // Клієнтські кнопки тягнуть useUser (потрібен провайдер) — у цьому тесті не їх перевіряємо
 vi.mock('@/components/features/venues/favorite-button', () => ({ FavoriteButton: () => null }))
+vi.mock('@/components/features/venues/recommend-button', () => ({ RecommendButton: () => null }))
 vi.mock('@/components/features/venues/route-button', () => ({ RouteButton: () => null }))
 vi.mock('@/components/features/venues/view-recorder', () => ({ ViewRecorder: () => null }))
 vi.mock('@/components/features/venues/review-form', () => ({ ReviewForm: () => null }))

@@ -33,4 +33,10 @@ describe('parseVenue', () => {
     expect(v.latitude).toBeNull()
     expect(v.ratingAvg).toBeNull()
   })
+  it('рекомендація критика: recommendedBy → null за відсутності поля (старий кеш) і userId, коли є', () => {
+    // Поля нема (стара відповідь/кеш CDN) — null
+    expect(parseVenue(raw).recommendedBy).toBeNull()
+    // Критик рекомендував — userId
+    expect(parseVenue({ ...raw, recommendedBy: 'u-critic', recommendedAt: '2026-10-11T10:00:00.000Z' }).recommendedBy).toBe('u-critic')
+  })
 })

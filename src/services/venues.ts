@@ -95,3 +95,16 @@ export function assignVenueOwner(venueId: string, userId: string): Promise<unkno
     body: JSON.stringify({ userId }),
   })
 }
+/** POST /venues/:id/recommend — рекомендувати заклад (критик; 1 критик на заклад). */
+export function recommendVenue(venueId: string): Promise<unknown> {
+  return api(`/venues/${venueId}/recommend`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+}
+
+/** DELETE /venues/:id/recommend — зняти рекомендацію (лише автор рекомендації). */
+export function unrecommendVenue(venueId: string): Promise<void> {
+  return apiVoid(`/venues/${venueId}/recommend`, { method: 'DELETE' })
+}

@@ -38,9 +38,12 @@ export async function getVenueDetail(id: string, revalidate = 60): Promise<Venue
   return parseVenue(relations ?? detail)
 }
 
-/** Каталог закладів (головна сторінка); meta потрібна пагінації. */
+/** Каталог закладів (головна сторінка); meta потрібна пагінації.
+ *  revalidate=0: бейдж «✦ Рекомендовано» після toggle має оновлюватись
+ *  одразу через router.refresh() — без 60-секундного кешу BFF
+ *  (бекендовий свій 60-с кеш списку лишається — БД не «стукається» щоразу). */
 export function getVenuesCatalog(query: string) {
-  return serverFetchList<RawVenue>(`/venues?${query}`, { revalidate: 60 })
+  return serverFetchList<RawVenue>(`/venues?${query}`, { revalidate: 0 })
 }
 
 /** Список закладів поточного власника (кабінет). */
@@ -82,4 +85,8 @@ export function getAdminVenuesPage(tab: 'moderation' | 'approved', page: number,
     tokens,
     revalidate: 0,
   })
+}
+/** Заклади, які поточний критик рекомендував (вкладка «Рекомендовані» кабінету). */
+export function getMyRecommendations(tokens: SessionTokens | null): Promise<RawVenue[]> {
+  return serverFetch<RawVenue[]>('/me/recommendations', { tokens, revalidate: 0 })
 }
