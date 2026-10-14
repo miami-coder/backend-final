@@ -1,0 +1,70 @@
+import type { PaginatedMeta } from '@/types/api'
+
+export class ApiError extends Error {
+  constructor(
+    public status: number,
+    public code: string,
+    message: string,
+    public details: unknown = null,
+  ) {
+    super(message)
+    this.name = 'ApiError'
+  }
+}
+
+async function errorFromResponse(res: Response): Promise<ApiError> {
+  try {
+    const body = (await res.json()) as { error?: { code?: string; message?: string; details?: unknown } }
+    if (body.error?.code) {
+      return new ApiError(res.status, body.error.code, body.error.message ?? 'Помилка запиту', body.error.details ?? null)
+    }
+  } catch {
+    // не-JSON тіло
+  }
+  return new ApiError(res.status, 'INTERNAL_ERROR', 'Сервіс тимчасово недоступний')
+}
+
+export async function parseData<T>(res: Response): Promise<T> {
+  if (!res.ok) throw await errorFromResponse(res)
+  const body = (await res.json()) as { data?: T }
+  // Тіло вже прочитане вище — errorFromResponse знову робив би res.json()
+  // на вичерпаному стрімі (TypeError), тому конструюємо помилку напряму
+  if (!('data' in body)) {
+    throw new ApiError(res.status, 'INTERNAL_ERROR', 'Сервіс тимчасово недоступний')
+  }
+  return body.data as T
+}
+
+// Бекенд іноді повертає числову meta рядками — коерцюємо, щоб UI не рахував ділення на рядках
+export async function parseList<T>(res: Response): Promise<{ data: T[]; meta?: PaginatedMeta }> {
+  if (!res.ok) throw await errorFromResponse(res)
+  const body = (await res.json()) as { data?: T[]; meta?: Partial<PaginatedMeta> }
+  const rawMeta = body.meta
+  const meta: PaginatedMeta | undefined = rawMeta
+    ? {
+        page: Number(rawMeta.page),
+        limit: Number(rawMeta.limit),
+        total: Number(rawMeta.total),
+        hasMore: Boolean(rawMeta.hasMore),
+      }
+    : undefined
+  return { data: body.data ?? [], meta }
+}
+
+// Запити без тіла у відповіді (наприклад, DELETE → 200 з порожнім тілом):
+// розгортає data, якщо JSON-конверт є, інакше — undefined
+export async function parseEmpty<T>(res: Response): Promise<T | undefined> {
+  if (!res.ok) throw await errorFromResponse(res)
+  const text = await res.text()
+  if (!text.trim()) return undefined
+  const body = JSON.parse(text) as { data?: T }
+  if (!('data' in body)) {
+    throw new ApiError(res.status, 'INTERNAL_ERROR', 'Сервіс тимчасово недоступний')
+  }
+  return body.data as T
+}
+
+export async function parseRaw<T>(res: Response): Promise<T> {
+  if (!res.ok) throw await errorFromResponse(res)
+  return (await res.json()) as T
+}

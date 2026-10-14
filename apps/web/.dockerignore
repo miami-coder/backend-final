@@ -1,0 +1,8 @@
+node_modules
+.next
+.git
+.claude
+.superpowers
+coverage
+npm-debug.log*
+pnpm-debug.log*
