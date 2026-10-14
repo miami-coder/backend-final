@@ -40,7 +40,7 @@ pnpm dev            # api :3000 + web :3001 паралельно
 - **якщо api працює локально** (`pnpm dev`): просто `pnpm seed:demo`;
 - **якщо api працює в контейнерах**: сідити зсередини контейнера, щоб фото потрапили в docker-том, який бачить api:
   ```bash
-  docker compose --env-file apps/api/.env run --rm api pnpm --filter backend-final seed:demo
+  docker compose run --rm api pnpm --filter backend-final seed:demo
   ```
   (сід з хоста при контейнерному api запише файли поза томом — картинки отдаватимуться 404).
 
@@ -53,14 +53,14 @@ pnpm dev            # api :3000 + web :3001 паралельно
 ## Запуск у Docker (все в контейнерах)
 
 ```bash
-docker compose --env-file apps/api/.env up -d --build
+docker compose up -d --build
 ```
 
 Піднімає postgres + redis + api (hot-reload) + web; міграції накочує контейнер `migrate` при старті. api → http://localhost:3000, web → http://localhost:3001. Зупинка: `docker compose down`.
 
 > Hot-reload фронта в контейнерах не передбачений (вихідники запікаються в образ) — для розробки використовуйте локальний варіант `pnpm dev`.
 
-> `--env-file apps/api/.env` обовʼязковий: з нього compose читає кредси Postgres (`DATABASE_*`). Скрипт `pnpm db:up` уже викликає його.
+> `--env-file apps/api/.env` не потрібен: compose читає кредси Postgres (`DATABASE_*`) прямо з `apps/api/.env` через `env_file`.
 
 ## Тести
 

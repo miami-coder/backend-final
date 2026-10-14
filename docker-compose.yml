@@ -3,17 +3,16 @@ name: piyachok
 services:
   postgres:
     image: postgis/postgis:16-3.4-alpine
-    # Кредси ${DATABASE_*} читаються через --env-file apps/api/.env (див. db:up / README)
-    environment:
-      POSTGRES_USER: ${DATABASE_USER}
-      POSTGRES_PASSWORD: ${DATABASE_PASS}
-      POSTGRES_DB: ${DATABASE_NAME}
+    # Кредси — прямо з apps/api/.env: піднімаємо просто `docker compose up`, без --env-file
+    env_file: apps/api/.env
+    # офіційний entrypoint читає POSTGRES_*; перейменовуєм DATABASE_* (один файл .env — один джерело правди)
+    command: ["sh", "-c", "export POSTGRES_USER=$$DATABASE_USER POSTGRES_PASSWORD=$$DATABASE_PASS POSTGRES_DB=$$DATABASE_NAME && exec docker-entrypoint.sh postgres"]
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER}"]
+      test: ["CMD-SHELL", "pg_isready -U $$DATABASE_USER"]
       interval: 5s
       timeout: 5s
       retries: 5

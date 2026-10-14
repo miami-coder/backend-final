@@ -8,7 +8,7 @@
     "build": "pnpm -r run build",
     "test": "pnpm -r run test",
     "typecheck": "pnpm -r --if-present run typecheck",
-    "db:up": "docker compose --env-file apps/api/.env up -d postgres redis",
+    "db:up": "docker compose up -d postgres redis",
     "db:down": "docker compose down",
     "migrate": "pnpm --filter backend-final migration:run",
     "seed:demo": "pnpm --filter backend-final seed:demo",
