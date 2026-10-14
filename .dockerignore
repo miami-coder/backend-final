@@ -1,0 +1,29 @@
+# Залежності і збірки — ставляться в образі з маніфестів (dockerignore: bare-патерни = корінь, тому **/)
+node_modules
+**/node_modules
+.next
+**/.next
+dist
+**/dist
+coverage
+**/coverage
+*.tsbuildinfo
+**/*.tsbuildinfo
+
+# Секрети (приклад лишається)
+.env
+.env.*
+**/.env
+**/.env.*
+!**/.env.example
+
+# Рантайм і локальні робочі області
+uploads
+**/uploads
+logs
+.superpowers
+.claude
+.idea
+.vercel
+.git
+docs
