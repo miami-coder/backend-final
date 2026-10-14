@@ -1,20 +1,18 @@
-# Dev-образ «Пиячок» (фронтенд): Next.js 16 dev-сервер із hot-reload
+# Dev-образ «Пиячок» (фронтенд): Next.js 16 dev-сервер
 FROM node:22-alpine
-
 WORKDIR /app
 
-# pnpm активується через corepack за полем packageManager у package.json
 RUN corepack enable
 
-# Спершу лише маніфести — шар з залежностями кешується, поки вони не зміняться
-COPY package.json pnpm-lock.yaml ./
+# Маніфести воркспейсу — шар з залежностями кешується
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY apps/web/package.json apps/web/package.json
+COPY apps/api/package.json apps/api/package.json
 RUN pnpm install --frozen-lockfile
 
-# Решта вихідників (у compose джерело додатково монтується як volume)
-COPY . .
+COPY apps/web ./apps/web
 
 ENV NEXT_TELEMETRY_DISABLED=1
 EXPOSE 3001
 
-# Проєкт стартує разом із контейнером
-CMD ["pnpm", "dev"]
+CMD ["pnpm", "--filter", "frontend-final", "dev"]

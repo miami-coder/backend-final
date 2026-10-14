@@ -1,0 +1,84 @@
+name: piyachok
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4-alpine
+    # Кредси ${DATABASE_*} читаються через --env-file apps/api/.env (див. db:up / README)
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASS}
+      POSTGRES_DB: ${DATABASE_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    command: ["redis-server", "--appendonly", "yes"]
+
+  migrate:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    command: sh -c "pnpm --filter backend-final migration:run && pnpm --filter backend-final seed:superadmin"
+    env_file: apps/api/.env
+    environment:
+      DATABASE_HOST: postgres
+    volumes:
+      - ./apps/api/src:/app/apps/api/src
+      - ./apps/api/seed-assets:/app/apps/api/seed-assets
+      - uploads:/app/apps/api/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    command: pnpm --filter backend-final start:dev
+    ports:
+      - "3000:3000"
+    env_file: apps/api/.env
+    environment:
+      DATABASE_HOST: postgres
+      REDIS_HOST: redis
+    volumes:
+      - ./apps/api/src:/app/apps/api/src
+      - uploads:/app/apps/api/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      migrate:
+        condition: service_completed_successfully
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      # Бек в одній docker-мережі; браузеру — localhost
+      BACKEND_URL: http://api:3000
+      PUBLIC_BACKEND_URL: ${PUBLIC_BACKEND_URL:-http://localhost:3000}
+      NEXT_TELEMETRY_DISABLED: '1'
+    depends_on:
+      - api
+
+volumes:
+  pgdata: {}
+  redisdata: {}
+  uploads: {}
