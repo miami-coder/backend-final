@@ -1,0 +1,26 @@
+# workspace
+node_modules/
+
+# збірки і кеші
+.next/
+/dist/
+/coverage/
+*.tsbuildinfo
+
+# env (реальні лежать у apps/*/.env, їх ловлять локальні gitignore)
+.env*
+!.env.example
+
+# локальні робочі області
+/.claude
+/.superpowers
+
+# рантайм
+uploads/
+
+# система
+.DS_Store
+*.log
+.vercel
+/.idea
+/docs
