@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+}
+
+@theme {
+  /* Поверхні: глибина через відтінки еспресо, не через тіні */
+  --color-bg: #171310;
+  --color-surface: #211B15;
+  --color-raised: #2B241C;
+  --color-line: #3A3128;
+  --color-strong: #4A4038;
+
+  /* Текст */
+  --color-ink: #F3E9DB;
+  --color-muted: #B3A493;
+  --color-faint: #948676; /* підказки/дати: ≈4.8:1 на bg-surface */
+  --color-espresso: #171310; /* текст на бурштинових кнопках */
+
+  /* Дії: бурштин (primary), мідь (акценти) */
+  --color-amber-400: #FFCA4D;
+  --color-amber-500: #F0B429;
+  --color-amber-600: #C98A0F;
+  --color-copper-500: #C1681A;
+
+  /* Статуси: теплі зелений/теракотовий */
+  --color-success: #8AA861;
+  --color-danger: #D9634D;
+
+  --font-sans: var(--font-golos), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-unbounded), var(--font-golos), ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  @apply bg-bg text-ink antialiased;
+}
+
+/* Фокус видимий всюди; reduced-motion прибирає пульс/масштаб */
+:focus-visible {
+  outline: 2px solid var(--color-amber-500);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
