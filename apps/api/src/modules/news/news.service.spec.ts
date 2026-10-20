@@ -268,7 +268,7 @@ describe('NewsService.listPublic — фільтр схованого закла�
     service = module.get(NewsService);
   });
 
-  it('список: схований заклад відфільтрований — join/andWhere з approved у запиті', async () => {
+  it('список: схований заклад відфільтрований — EXISTS-фільтр БЕЗ leftJoin (News не має venue-релішена!)', async () => {
     const chain = {
       where: jest.fn().mockReturnThis(),
       andWhere: jest.fn().mockReturnThis(),
@@ -282,7 +282,9 @@ describe('NewsService.listPublic — фільтр схованого закла�
     news.createQueryBuilder.mockReturnValueOnce(chain);
     await service.listPublic({ venueId: 'v-pending' });
     const andWhereCalls = chain.andWhere.mock.calls.map((c) => c[0]);
-    expect(andWhereCalls.some((sql) => sql.includes('v.status'))).toBe(true);
+    expect(andWhereCalls.some((sql) => sql.includes('EXISTS'))).toBe(true);
+    // leftJoin('n.venue') валить рантайм (релішена нема) — і не викликається
+    expect(chain.leftJoin).not.toHaveBeenCalled();
   });
 
   it('список: глобальні новини (venueId NULL) лишаються видимими — IS NULL у фільтрі', async () => {

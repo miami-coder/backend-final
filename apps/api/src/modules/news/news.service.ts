@@ -78,9 +78,11 @@ export class NewsService {
     const qb = this.news
       .createQueryBuilder('n')
       .where('n.status = :status', { status: NewsStatus.Published });
-    // Новини схованого (pending/archived) закладу публічно не видимі
-    qb.leftJoin('n.venue', 'v').andWhere(
-      '(n.venueId IS NULL OR v.status = :approved)',
+    // Новини схованого (pending/archived) закладу публічно не видимі.
+    // News не має venue-релішена (тільки колонка venueId) — leftJoin тут
+    // валиться в рантайм (500 на /news); тож фільтр через EXISTS (Stage 4 ревʼю).
+    qb.andWhere(
+      '(n.venueId IS NULL OR EXISTS (SELECT 1 FROM venues v WHERE v.id = n.venueId AND v.status = :approved))',
       {
         approved: VenueStatus.Approved,
       },
