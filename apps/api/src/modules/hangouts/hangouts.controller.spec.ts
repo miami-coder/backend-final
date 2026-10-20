@@ -1,4 +1,5 @@
 import { Test } from '@nestjs/testing';
+import { PermissionsService } from '../rbac/permissions.service';
 import { HangoutsController } from './hangouts.controller';
 import { HangoutsService } from './hangouts.service';
 
@@ -19,7 +20,7 @@ describe('HangoutsController', () => {
     };
     const module = await Test.createTestingModule({
       controllers: [HangoutsController],
-      providers: [{ provide: HangoutsService, useValue: hangouts }],
+      providers: [{ provide: PermissionsService, useValue: { hasAnyPermission: jest.fn().mockResolvedValue(true) } }, { provide: HangoutsService, useValue: hangouts }],
     }).compile();
     controller = module.get(HangoutsController);
   });

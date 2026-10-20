@@ -7,12 +7,16 @@ import {
 import { Reflector } from '@nestjs/core';
 import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
 import { JwtUser } from '../decorators/current-user.decorator';
+import { PermissionsService } from '../../modules/rbac/permissions.service';
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(
+    private reflector: Reflector,
+    private perms: PermissionsService,
+  ) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const required = this.reflector.getAllAndOverride<string[]>(
       PERMISSIONS_KEY,
       [context.getHandler(), context.getClass()],
@@ -23,12 +27,11 @@ export class PermissionsGuard implements CanActivate {
     const user = request.user;
     if (!user) throw new ForbiddenException('No authenticated user');
 
-    // Перевірка дозволів відбувається в сервісному шарі (там є доступ до БД / кешу).
-    // Гард лише гарантує, що в користувача є роль. Детальна перевірка — через
-    // PermissionsService.hasPermission(), який явно викликається у сервісах.
-    const hasAnyRole = (user.roles ?? []).length > 0;
-    if (!hasAnyRole) throw new ForbiddenException('No roles assigned');
-
+    // Перевірка конкретного права має відбуватись у самому захисті маршруту,
+    // а не залежати від того, чи сервіс про неї згадав (рев'ю викладача).
+    // hasAnyPermission читає role_permissions у БД через кеш Redis (TTL 300s).
+    const allowed = await this.perms.hasAnyPermission(user.sub, required);
+    if (!allowed) throw new ForbiddenException('Недостатньо дозволів');
     return true;
   }
 }

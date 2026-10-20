@@ -1,4 +1,5 @@
 import { Test } from '@nestjs/testing';
+import { PermissionsService } from '../rbac/permissions.service';
 import { VenuesController } from './venues.controller';
 import { VenuesService } from './venues.service';
 import { FileStorageService } from '../../common/services/file-storage.service';
@@ -22,6 +23,7 @@ describe('VenuesController', () => {
     const module = await Test.createTestingModule({
       controllers: [VenuesController],
       providers: [
+        { provide: PermissionsService, useValue: { hasAnyPermission: jest.fn().mockResolvedValue(true) } },
         { provide: VenuesService, useValue: venues },
         { provide: FileStorageService, useValue: storage },
       ],

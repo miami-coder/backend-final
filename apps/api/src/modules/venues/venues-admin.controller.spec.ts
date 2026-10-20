@@ -1,4 +1,5 @@
 import { Test } from '@nestjs/testing';
+import { PermissionsService } from '../rbac/permissions.service';
 import { VenuesAdminController } from './venues-admin.controller';
 import { VenuesService } from './venues.service';
 import { UsersService } from '../users/users.service';
@@ -22,6 +23,7 @@ describe('VenuesAdminController', () => {
     const module = await Test.createTestingModule({
       controllers: [VenuesAdminController],
       providers: [
+        { provide: PermissionsService, useValue: { hasAnyPermission: jest.fn().mockResolvedValue(true) } },
         { provide: VenuesService, useValue: venues },
         { provide: UsersService, useValue: users },
       ],

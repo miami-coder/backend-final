@@ -1,4 +1,5 @@
 import { Test } from '@nestjs/testing';
+import { PermissionsService } from '../rbac/permissions.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import {
   ForbiddenException,
@@ -42,6 +43,7 @@ describe('AdminUsersController', () => {
     const module = await Test.createTestingModule({
       controllers: [AdminUsersController],
       providers: [
+        { provide: PermissionsService, useValue: { hasAnyPermission: jest.fn().mockResolvedValue(true) } },
         { provide: getRepositoryToken(User), useValue: users },
         { provide: getRepositoryToken(Profile), useValue: profiles },
         { provide: getRepositoryToken(UserRole), useValue: userRoles },

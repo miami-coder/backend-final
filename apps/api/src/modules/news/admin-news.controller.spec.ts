@@ -1,4 +1,5 @@
 import { Test } from '@nestjs/testing';
+import { PermissionsService } from '../rbac/permissions.service';
 import { AdminNewsController } from './admin-news.controller';
 import { NewsService } from './news.service';
 import { NewsStatus } from './entities/news.entity';
@@ -14,7 +15,7 @@ describe('AdminNewsController', () => {
     };
     const module = await Test.createTestingModule({
       controllers: [AdminNewsController],
-      providers: [{ provide: NewsService, useValue: news }],
+      providers: [{ provide: PermissionsService, useValue: { hasAnyPermission: jest.fn().mockResolvedValue(true) } }, { provide: NewsService, useValue: news }],
     }).compile();
     controller = module.get(AdminNewsController);
   });
