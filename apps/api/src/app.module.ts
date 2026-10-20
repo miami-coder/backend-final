@@ -14,6 +14,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { VenuesModule } from './modules/venues/venues.module';
 import { TopModule } from './modules/top/top.module';
+import { ContentModule } from './modules/content/content.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { FavoritesModule } from './modules/favorites/favorites.module';
 import { NewsModule } from './modules/news/news.module';
@@ -52,6 +53,7 @@ import { AdminModule } from './modules/admin/admin.module';
     UsersModule,
     VenuesModule,
     TopModule,
+    ContentModule,
     ReviewsModule,
     FavoritesModule,
     NewsModule,

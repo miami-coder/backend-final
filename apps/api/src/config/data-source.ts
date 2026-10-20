@@ -37,6 +37,7 @@ import { Messages1700000009000 } from '../migrations/1700000009000-Messages';
 import { Recommendations1700000010000 } from '../migrations/1700000010000-Recommendations';
 import { ReviewBillAmount1700000011000 } from '../migrations/1700000011000-ReviewBillAmount';
 import { Top1700000012000 } from '../migrations/1700000012000-Top';
+import { SiteContent1700000013000 } from '../migrations/1700000013000-SiteContent';
 
 loadEnv();
 
@@ -93,6 +94,7 @@ export default new DataSource({
     Recommendations1700000010000,
     ReviewBillAmount1700000011000,
     Top1700000012000,
+    SiteContent1700000013000,
   ],
   synchronize: false,
 });

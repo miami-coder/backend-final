@@ -8,6 +8,7 @@ const LINKS = [
   { href: '/admin/venues', label: 'Заклади' },
   { href: '/admin/users', label: 'Користувачі' },
   { href: '/admin/top', label: 'Топ' },
+  { href: '/admin/content', label: 'Тексти' },
   { href: '/admin/complaints', label: 'Скарги' },
   { href: '/admin/reviews', label: 'Відгуки' },
   { href: '/admin/news', label: 'Новини' },
