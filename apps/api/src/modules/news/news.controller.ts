@@ -107,6 +107,22 @@ export class NewsController {
   }
 
   @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard)
+  @Get('me/news')
+  @ApiOperation({
+    summary: 'Новини закладів поточного власника (будь-який статус закладу)',
+  })
+  mine(
+    @CurrentUser() u: JwtUser,
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+  ) {
+    return this.news
+      .listMine(u.sub, page, limit)
+      .then(({ data, meta }) => ({ data, meta }));
+  }
+
+  @ApiBearerAuth('access-token')
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Post('me/venues/:venueId/news')
   @Permissions('news:manage:own', 'news:manage:any')

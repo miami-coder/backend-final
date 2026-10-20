@@ -302,3 +302,47 @@ describe('NewsService.listPublic — фільтр схованого закла�
     expect(andWhereCalls.some((sql) => sql.includes('IS NULL'))).toBe(true);
   });
 });
+
+describe('NewsService.listMine — власник бачить свої новини (ревʼю крок 3)', () => {
+  it('список новин усіх своїх закладів — незалежно від статусу закладу', async () => {
+    let service: NewsService;
+    let chain: any;
+    const news = {
+      save: jest.fn(),
+      findOne: jest.fn(),
+      createQueryBuilder: jest.fn(() => {
+        chain = {
+          where: jest.fn().mockReturnThis(),
+          andWhere: jest.fn().mockReturnThis(),
+          orderBy: jest.fn().mockReturnThis(),
+          addOrderBy: jest.fn().mockReturnThis(),
+          leftJoin: jest.fn().mockReturnThis(),
+          skip: jest.fn().mockReturnThis(),
+          take: jest.fn().mockReturnThis(),
+          getManyAndCount: jest.fn().mockResolvedValue([[{ id: 'n1' }], 1]),
+        };
+        return chain;
+      }),
+    };
+    const venuesSrv = {
+      listMineForUser: jest
+        .fn()
+        .mockResolvedValue([{ id: 'v1' }, { id: 'v2' }]),
+    };
+    const module = await Test.createTestingModule({
+      providers: [
+        NewsService,
+        { provide: getRepositoryToken(News), useValue: news },
+        { provide: VenuesService, useValue: venuesSrv },
+        { provide: PermissionsService, useValue: { hasPermission: jest.fn() } },
+        { provide: FileStorageService, useValue: { save: jest.fn() } },
+      ],
+    }).compile();
+    service = module.get(NewsService);
+    const res = await service.listMine('u1', 1, 20);
+    expect(res.data).toHaveLength(1);
+    const calls = chain.where.mock.calls;
+    expect(calls[0][0]).toContain('venueId IN');
+    expect(calls[0][1]).toEqual({ ids: ['v1', 'v2'] });
+  });
+});

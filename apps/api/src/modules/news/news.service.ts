@@ -98,6 +98,33 @@ export class NewsService {
     return { data, meta: buildMeta({ page, limit, offset }, total) };
   }
 
+  /** Список новин власника за всіма його закладами — будь-якого статусу
+   *  закладу (власник не втрачає доступ до своїх новин схованого закладу,
+   *  тикет з ревʼю Stage 2). */
+  async listMine(userId: string, page = 1, limit = 20) {
+    const myVenues = await this.venues.listMineForUser(userId);
+    if (myVenues.length === 0)
+      return { data: [], meta: buildMeta({ page, limit, offset: 0 }, 0) };
+    const {
+      page: p,
+      limit: l,
+      offset,
+    } = normalizePagination({
+      page,
+      limit,
+    });
+    const qb = this.news
+      .createQueryBuilder('n')
+      .where('n.venueId IN (:...ids)', {
+        ids: myVenues.map((v) => v.id),
+      })
+      .orderBy('n.publishedAt', 'DESC')
+      .skip(offset)
+      .take(l);
+    const [data, total] = await qb.getManyAndCount();
+    return { data, meta: buildMeta({ page: p, limit: l, offset }, total) };
+  }
+
   /** Список новин для адмінки: без status — усі статуси, зі status — фільтр за ним. */
   async listAdmin(opts: {
     category?: string;
