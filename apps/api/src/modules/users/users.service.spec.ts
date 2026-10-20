@@ -171,7 +171,10 @@ describe('UsersService', () => {
       users.findOne.mockResolvedValueOnce({ id: 'u-exist' });
       // ensureUserRole: користувач уже має роль 'user'
       roles.findOne.mockResolvedValueOnce({ id: 'role-user' });
-      userRoles.findOne.mockResolvedValueOnce({ userId: 'u-exist', roleId: 'role-user' });
+      userRoles.findOne.mockResolvedValueOnce({
+        userId: 'u-exist',
+        roleId: 'role-user',
+      });
       await service.findOrCreateOAuthUser('a@b.com', 'google', 'g-2', {
         firstname: 'A',
         lastname: 'B',
@@ -199,32 +202,87 @@ describe('UsersService', () => {
 
     // Дефект: soft-видалений акаунт (адмін-видалення) при повторному oauth-вході
     // логінився «мулликом» — прихованим зі списку користувачів
-    it('oauth-вхід soft-видаленого акаунта: відновлює його (знімає deletedAt + роль)', async () => {
+    it('oauth-вхід soft-видаленого акаунта НЕ оживає — 409 (ревʼю крок 2)', async () => {
       oauth.findOne.mockResolvedValueOnce({ userId: 'u-del' });
-      users.findOne.mockResolvedValueOnce({ id: 'u-del', email: 'a@b.com', deletedAt: new Date() });
-      roles.findOne.mockResolvedValueOnce({ id: 'role-user' });
-      userRoles.findOne.mockResolvedValueOnce(null);
-      const u = await service.findOrCreateOAuthUser('a@b.com', 'google', 'g-1', {
-        firstname: 'A',
-        lastname: 'B',
+      users.findOne.mockResolvedValueOnce({
+        id: 'u-del',
+        email: 'a@b.com',
+        deletedAt: new Date(),
       });
-      expect(u.id).toBe('u-del');
-      expect(users.update).toHaveBeenCalledWith({ id: 'u-del' }, { deletedAt: null });
-      expect(userRoles.save).toHaveBeenCalledWith({ userId: 'u-del', roleId: 'role-user' });
+      await expect(
+        service.findOrCreateOAuthUser('a@b.com', 'google', 'g-1', {
+          firstname: 'A',
+          lastname: 'B',
+        }),
+      ).rejects.toThrow(ConflictException);
+      expect(users.update).not.toHaveBeenCalledWith(
+        { id: 'u-del' },
+        { deletedAt: null },
+      );
     });
 
-    it('матч по email на soft-видаленого: відновлюємо, а не створюємо дубля', async () => {
+    it('матч по email на soft-видаленого НЕ оживає — 409 (ревʼю крок 2)', async () => {
       oauth.findOne.mockResolvedValueOnce(null);
-      users.findOne.mockResolvedValueOnce({ id: 'u-del', email: 'a@b.com', deletedAt: new Date() });
-      roles.findOne.mockResolvedValueOnce({ id: 'role-user' });
-      userRoles.findOne.mockResolvedValueOnce(null);
-      await service.findOrCreateOAuthUser('a@b.com', 'google', 'g-1', {
+      users.findOne.mockResolvedValueOnce({
+        id: 'u-del',
+        email: 'a@b.com',
+        deletedAt: new Date(),
+      });
+      await expect(
+        service.findOrCreateOAuthUser('a@b.com', 'google', 'g-1', {
+          firstname: 'A',
+          lastname: 'B',
+        }),
+      ).rejects.toThrow(ConflictException);
+      expect(users.update).not.toHaveBeenCalledWith(
+        { id: 'u-del' },
+        { deletedAt: null },
+      );
+    });
+  });
+});
+
+describe('UsersService — OAuth-регістрація на видалений email', () => {
+  it('видалений акаунт на той самий email → 409, без restoreAccount', async () => {
+    const repo = () => ({
+      findOne: jest.fn(),
+      create: jest.fn((x) => x),
+      save: jest.fn((x) => Promise.resolve(x)),
+      update: jest.fn().mockResolvedValue(undefined),
+    });
+    const users = repo();
+    const restoreAccount = jest.fn();
+    const profiles = repo();
+    const oauth = { ...repo(), findOne: jest.fn().mockResolvedValue(null) };
+    users.findOne.mockResolvedValueOnce({
+      id: 'u-del',
+      email: 'a@b.com',
+      deletedAt: new Date(),
+    }); // findByEmail → deleted
+    const module = await Test.createTestingModule({
+      providers: [
+        UsersService,
+        { provide: getRepositoryToken(User), useValue: users },
+        { provide: getRepositoryToken(Profile), useValue: profiles },
+        { provide: getRepositoryToken(OAuthAccount), useValue: oauth },
+        { provide: getRepositoryToken(Role), useValue: { findOne: jest.fn() } },
+        {
+          provide: getRepositoryToken(UserRole),
+          useValue: { save: jest.fn(), findOne: jest.fn() },
+        },
+        { provide: PermissionsService, useValue: { invalidate: jest.fn() } },
+      ],
+    }).compile();
+    const service = module.get(UsersService);
+    await expect(
+      service.findOrCreateOAuthUser('a@b.com', 'google', 'gid1', {
         firstname: 'A',
         lastname: 'B',
-      });
-      expect(users.create).not.toHaveBeenCalled();
-      expect(users.update).toHaveBeenCalledWith({ id: 'u-del' }, { deletedAt: null });
-      expect(oauth.save).toHaveBeenCalled();
-    });
+      }),
+    ).rejects.toThrow(ConflictException);
+    expect(users.update).not.toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ deletedAt: null }),
+    );
   });
 });

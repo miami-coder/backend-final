@@ -1,6 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { PermissionsService } from '../rbac/permissions.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { CacheService } from '../../common/services/cache.service';
 import {
   ForbiddenException,
   NotFoundException,
@@ -43,7 +44,11 @@ describe('AdminUsersController', () => {
     const module = await Test.createTestingModule({
       controllers: [AdminUsersController],
       providers: [
-        { provide: PermissionsService, useValue: { hasAnyPermission: jest.fn().mockResolvedValue(true) } },
+        {
+          provide: PermissionsService,
+          useValue: { hasAnyPermission: jest.fn().mockResolvedValue(true) },
+        },
+        { provide: CacheService, useValue: { get: jest.fn(), set: jest.fn() } },
         { provide: getRepositoryToken(User), useValue: users },
         { provide: getRepositoryToken(Profile), useValue: profiles },
         { provide: getRepositoryToken(UserRole), useValue: userRoles },

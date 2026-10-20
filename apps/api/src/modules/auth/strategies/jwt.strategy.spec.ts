@@ -27,3 +27,29 @@ describe('JwtStrategy', () => {
     expect(user.roles).toEqual([]);
   });
 });
+
+describe('JwtStrategy — видалений юзер (ревʼю крок 2)', () => {
+  const SECRET = 'b'.repeat(40);
+  beforeEach(() => {
+    process.env.JWT_ACCESS_SECRET = SECRET;
+  });
+
+  it('cache deleted:true → UnauthorizedException', async () => {
+    const cache = { get: jest.fn().mockResolvedValue(true) };
+    const strategy = new JwtStrategy(cache as any);
+    await expect(
+      strategy.validate({ sub: 'u-del', email: 'a@b.com', roles: ['user'] }),
+    ).rejects.toThrow(UnauthorizedException);
+  });
+
+  it('cache miss → користувач проходить', async () => {
+    const cache = { get: jest.fn().mockResolvedValue(null) };
+    const strategy = new JwtStrategy(cache as any);
+    const user = await strategy.validate({
+      sub: 'u-ok',
+      email: 'a@b.com',
+      roles: ['user'],
+    });
+    expect(user.sub).toBe('u-ok');
+  });
+});

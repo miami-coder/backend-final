@@ -19,7 +19,13 @@ describe('UsersController', () => {
     };
     const module = await Test.createTestingModule({
       controllers: [UsersController],
-      providers: [{ provide: PermissionsService, useValue: { hasAnyPermission: jest.fn().mockResolvedValue(true) } }, { provide: UsersService, useValue: users }],
+      providers: [
+        {
+          provide: PermissionsService,
+          useValue: { hasAnyPermission: jest.fn().mockResolvedValue(true) },
+        },
+        { provide: UsersService, useValue: users },
+      ],
     }).compile();
     controller = module.get(UsersController);
   });

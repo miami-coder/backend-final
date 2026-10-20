@@ -40,6 +40,7 @@ import {
 } from '../rbac/listeners/user-role.listener';
 import { AuditService } from './audit.service';
 import { AssignRoleDto } from './dto/assign-role.dto';
+import { CacheService } from '../../common/services/cache.service';
 import {
   buildMeta,
   normalizePagination,
@@ -63,6 +64,7 @@ export class AdminUsersController {
     @InjectRepository(Role) private readonly roles: Repository<Role>,
     private readonly audit: AuditService,
     private readonly events: EventEmitter2,
+    private readonly cache: CacheService,
   ) {}
 
   // Мапить користувача до DTO: прибирає passwordHash і userRoles, додає roles (коди ролей)
@@ -164,6 +166,9 @@ export class AdminUsersController {
     }
     user.deletedAt = new Date();
     await this.users.save(user);
+    // Прапор для jwt-strategy: старий access-токен живе не довше TTL кешу,
+    // refresh/login блокуються по deletedAt з БД.
+    await this.cache.set(`deleted:${id}`, true, 300);
     await this.audit.log(u.sub, 'soft_delete', 'user', id, null, {
       deletedAt: user.deletedAt,
     });

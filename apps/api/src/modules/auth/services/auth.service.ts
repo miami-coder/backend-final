@@ -49,9 +49,10 @@ export class AuthService {
     if (!user) throw new UnauthorizedException('Невірний email або пароль');
     const ok = await this.users.verifyPassword(user, dto.password);
     if (!ok) throw new UnauthorizedException('Невірний email або пароль');
-    // soft-видалений (адмін-видалення) акаунт, який заходить паролем, оживає:
-    // знімаємо прапор + повертаємо дефолтну роль до видачі токенів
-    if (user.deletedAt) await this.users.restoreAccount(user.id);
+    // Видалення адміном — фінальне (ревʼю крок 2): жодного авто-оживання
+    // при повторному заході паролем.
+    if (user.deletedAt)
+      throw new UnauthorizedException('Обліковий запис видалено');
     const roles = await this.getUserRoles(user.id);
     return this.issueTokens(user.id, user.email, roles);
   }
@@ -67,6 +68,8 @@ export class AuthService {
       throw new UnauthorizedException('Refresh token скасований');
     }
     const user = await this.users.findById(payload.sub);
+    if (user?.deletedAt)
+      throw new UnauthorizedException('Обліковий запис видалено');
     const roles = await this.getUserRoles(user.id);
     // Rotate
     await this.cache.set(`revoked:${refreshToken}`, true, 60 * 60 * 24 * 30);

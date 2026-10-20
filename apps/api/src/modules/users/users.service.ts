@@ -92,17 +92,18 @@ export class UsersService {
     });
     if (existingAccount) {
       const existing = await this.findById(existingAccount.userId);
-      // soft-видалений (адмін-видалення) акаунт, який заходить знову, — оживає
-      if (existing.deletedAt) await this.restoreAccount(existing.id);
+      // Видалення адміном — фінальне (ревʼю крок 2): OAuth-перезаходу з
+      // авто-оживанням більше нема.
+      if (existing.deletedAt)
+        throw new ConflictException('Обліковий запис видалено');
       // бекфілл старих акаунтів, створених без ролі
-      else await this.ensureUserRole(existing.id);
+      await this.ensureUserRole(existing.id);
       return existing;
     }
 
     let user = await this.findByEmail(email);
     if (user && user.deletedAt) {
-      // не створюємо дубля за email — відновлюємо наявний акаунт
-      await this.restoreAccount(user.id);
+      throw new ConflictException('Обліковий запис видалено');
     } else if (!user) {
       user = this.users.create({
         email: email.toLowerCase(),

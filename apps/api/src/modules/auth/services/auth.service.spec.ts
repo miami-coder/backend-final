@@ -122,12 +122,18 @@ describe('AuthService', () => {
 
   // Дефект: soft-видалений (адмін-видалення) акаунт міг логінитесь паролем
   // «мулликом» — без ролей і невидимий у списку користувачів
-  it('login soft-видаленого акаунта відновлює його перед видачею токенів', async () => {
-    users.findByEmail.mockResolvedValueOnce({ id: 'u-del', email: 'a@b.com', deletedAt: new Date() });
+  it('login soft-видаленого акаунта не оживає, а відкидається 401 (ревʼю крок 2)', async () => {
+    users.findByEmail.mockResolvedValueOnce({
+      id: 'u-del',
+      email: 'a@b.com',
+      deletedAt: new Date(),
+    });
     users.verifyPassword.mockResolvedValueOnce(true);
-    const res = await service.login({ email: 'a@b.com', password: 'Password1' });
-    expect(users.restoreAccount).toHaveBeenCalledWith('u-del');
-    expect(res.accessToken).toBe('access-tok');
+    await expect(
+      service.login({ email: 'a@b.com', password: 'Password1' }),
+    ).rejects.toThrow(UnauthorizedException);
+    expect(users.restoreAccount).not.toHaveBeenCalled();
+    expect(tokens.signAccess).not.toHaveBeenCalled();
   });
 
   it('refresh throws when token revoked', async () => {
@@ -152,5 +158,87 @@ describe('AuthService', () => {
       true,
       expect.any(Number),
     );
+  });
+});
+
+describe('AuthService — видалення юзера фінальне (ревʼю крок 2)', () => {
+  let service: AuthService;
+  let users: any;
+  let userRoles: any;
+  let tokens: any;
+  let cache: any;
+  let events: any;
+
+  beforeEach(async () => {
+    users = {
+      create: jest.fn(),
+      findByEmail: jest.fn(),
+      verifyPassword: jest.fn(),
+      findById: jest.fn(),
+      ensureUserRole: jest.fn().mockResolvedValue(undefined),
+      restoreAccount: jest.fn().mockResolvedValue(undefined),
+    };
+    userRoles = { save: jest.fn(), manager: { findOne: jest.fn() } };
+    tokens = {
+      signAccess: jest.fn().mockReturnValue('access-tok'),
+      signRefresh: jest.fn().mockReturnValue('refresh-tok'),
+      verifyRefresh: jest.fn().mockReturnValue({ sub: 'u1' }),
+    };
+    cache = {
+      get: jest.fn().mockResolvedValue(null),
+      set: jest.fn().mockResolvedValue(undefined),
+    };
+    events = { emit: jest.fn() };
+    const module = await Test.createTestingModule({
+      providers: [
+        AuthService,
+        { provide: UsersService, useValue: users },
+        { provide: getRepositoryToken(UserRole), useValue: userRoles },
+        { provide: TokenService, useValue: tokens },
+        { provide: CacheService, useValue: cache },
+        { provide: EventEmitter2, useValue: events },
+      ],
+    }).compile();
+    service = module.get(AuthService);
+  });
+
+  it('login видаленого юзера → 401 і БЕЗ авто-оживання', async () => {
+    users.findByEmail.mockResolvedValueOnce({
+      id: 'u1',
+      email: 'a@b.com',
+      deletedAt: new Date(),
+    });
+    users.verifyPassword.mockResolvedValueOnce(true);
+    await expect(
+      service.login({ email: 'a@b.com', password: 'p' }),
+    ).rejects.toThrow(UnauthorizedException);
+    expect(users.restoreAccount).not.toHaveBeenCalled();
+    expect(tokens.signAccess).not.toHaveBeenCalled();
+  });
+
+  it('refresh токена видаленого юзера → 401', async () => {
+    users.findById.mockResolvedValueOnce({
+      id: 'u1',
+      email: 'a@b.com',
+      deletedAt: new Date(),
+    });
+    await expect(service.refresh('rt')).rejects.toThrow(UnauthorizedException);
+    expect(tokens.signAccess).not.toHaveBeenCalled();
+  });
+
+  it('register на email видаленого юзера → 409 (без оживання)', async () => {
+    users.create.mockRejectedValueOnce(
+      new ConflictException('Користувач з таким email вже існує'),
+    );
+    await expect(
+      service.register({
+        email: 'a@b.com',
+        password: 'Password1',
+        firstname: 'A',
+        lastname: 'B',
+        acceptEula: true,
+      } as any),
+    ).rejects.toThrow(ConflictException);
+    expect(users.restoreAccount).not.toHaveBeenCalled();
   });
 });

@@ -71,15 +71,26 @@ describe('AuthController', () => {
   });
 
   it('me повертає profile з іменем (для шапки без пошти)', async () => {
-    users.getProfile.mockResolvedValue({ firstname: 'Супер', lastname: 'Адмін' });
-    const res = await controller.me({ sub: 'u1', email: 'a@b.com', roles: ['user'] });
+    users.getProfile.mockResolvedValue({
+      firstname: 'Супер',
+      lastname: 'Адмін',
+    });
+    const res = await controller.me({
+      sub: 'u1',
+      email: 'a@b.com',
+      roles: ['user'],
+    });
     expect(users.getProfile).toHaveBeenCalledWith('u1');
     expect(res.data.profile).toEqual({ firstname: 'Супер', lastname: 'Адмін' });
   });
 
   it('me без профиля (OAuth-крайовий випадок) → profile null, без кидка', async () => {
     users.getProfile.mockResolvedValue(null);
-    const res = await controller.me({ sub: 'u1', email: 'a@b.com', roles: ['user'] });
+    const res = await controller.me({
+      sub: 'u1',
+      email: 'a@b.com',
+      roles: ['user'],
+    });
     expect(res.data.profile).toBeNull();
     expect(res.data.id).toBe('u1');
   });
