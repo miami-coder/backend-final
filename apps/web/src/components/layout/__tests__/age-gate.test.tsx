@@ -7,7 +7,7 @@ import { AgeGate } from '@/components/layout/age-gate'
 beforeEach(() => localStorage.clear())
 
 describe('AgeGate', () => {
-  it('не показується, якщо в цьому сеансі вже підтверджено', () => {
+  it('не показується, якщо на пристрої вже підтверджено (localStorage)', () => {
     localStorage.setItem('age-confirmed', '1')
     const { container } = render(<AgeGate />)
     expect(container).toBeEmptyDOMElement()
