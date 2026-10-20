@@ -12,6 +12,7 @@ import { TokenService } from './jwt.service';
 import { CacheService } from '../../../common/services/cache.service';
 import { RegisterDto } from '../dto/register.dto';
 import { LoginDto } from '../dto/login.dto';
+import { Role } from '../../rbac/entities/role.entity';
 import { USER_ROLE_ADDED } from '../../rbac/listeners/user-role.listener';
 
 @Injectable()
@@ -20,6 +21,7 @@ export class AuthService {
     private readonly users: UsersService,
     @InjectRepository(UserRole)
     private readonly userRoles: Repository<UserRole>,
+    @InjectRepository(Role) private readonly roleRepo: Repository<Role>,
     private readonly tokens: TokenService,
     private readonly cache: CacheService,
     private readonly events: EventEmitter2,
@@ -33,9 +35,7 @@ export class AuthService {
     const user = await this.users.create(dto);
 
     // Призначаємо роль 'user'
-    const role = (await this.userRoles.manager.findOne('Role', {
-      where: { code: 'user' },
-    })) as { id: string } | null;
+    const role = await this.roleRepo.findOne({ where: { code: 'user' } });
     if (role) {
       await this.userRoles.save({ userId: user.id, roleId: role.id });
       this.events.emit(USER_ROLE_ADDED, { userId: user.id });

@@ -1,12 +1,17 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  UnauthorizedException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { TokenService } from './jwt.service';
 import { UsersService } from '../../users/users.service';
 import { UserRole } from '../../rbac/entities/user-role.entity';
+import { Role } from '../../rbac/entities/role.entity';
 import { CacheService } from '../../../common/services/cache.service';
 
 describe('AuthService', () => {
@@ -56,6 +61,14 @@ describe('AuthService', () => {
       imports: [JwtModule.register({})],
       providers: [
         AuthService,
+        {
+          provide: getRepositoryToken(Role),
+          useValue: {
+            findOne: jest
+              .fn()
+              .mockResolvedValue({ id: 'r-user', code: 'user' }),
+          },
+        },
         { provide: TokenService, useValue: tokens },
         { provide: UsersService, useValue: users },
         { provide: getRepositoryToken(UserRole), useValue: userRoles },
@@ -194,6 +207,14 @@ describe('AuthService — видалення юзера фінальне (рев
         AuthService,
         { provide: UsersService, useValue: users },
         { provide: getRepositoryToken(UserRole), useValue: userRoles },
+        {
+          provide: getRepositoryToken(Role),
+          useValue: {
+            findOne: jest
+              .fn()
+              .mockResolvedValue({ id: 'r-user', code: 'user' }),
+          },
+        },
         { provide: TokenService, useValue: tokens },
         { provide: CacheService, useValue: cache },
         { provide: EventEmitter2, useValue: events },
