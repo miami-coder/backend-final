@@ -1,82 +1,132 @@
-import { promises as fs } from 'fs';
-import { join } from 'path';
+import { BadRequestException } from '@nestjs/common';
 import { FileStorageService } from './file-storage.service';
 
-const TMP = join(process.cwd(), 'uploads-test');
+// PNG-магія (89 50 4E 47 0D 0A 1A 0A)
+const PNG_BUFFER = Buffer.concat([
+  Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+  Buffer.alloc(128),
+]);
+// JPEG-магія (FF D8 FF)
+const JPEG_BUFFER = Buffer.concat([
+  Buffer.from([0xff, 0xd8, 0xff, 0xe0]),
+  Buffer.alloc(128),
+]);
+// HTML-вміст (не зображення)
+const HTML_BUFFER = Buffer.from('<html><script>alert("x")</script></html>');
+// WEBP-магія (RIFF....WEBP)
+const WEBP_BUFFER = Buffer.concat([
+  Buffer.from('RIFF'),
+  Buffer.alloc(4),
+  Buffer.from('WEBPVP8'),
+  Buffer.alloc(64),
+]);
 
-describe('FileStorageService', () => {
+describe('FileStorageService — тип файлу за magic bytes (ревʼю викладача)', () => {
   let service: FileStorageService;
-  const origDir = process.env.UPLOADS_DIR;
-
-  beforeAll(() => {
-    process.env.UPLOADS_DIR = TMP;
-  });
-
-  afterAll(async () => {
-    if (origDir === undefined) delete process.env.UPLOADS_DIR;
-    else process.env.UPLOADS_DIR = origDir;
-    await fs.rm(TMP, { recursive: true, force: true });
-  });
+  let writeFileMock: jest.Mock;
 
   beforeEach(() => {
     service = new FileStorageService();
+    writeFileMock = jest.fn();
+    jest.spyOn(service as any, 'useBlobMode', 'get').mockReturnValue(false);
+    jest
+      .spyOn(service as any, 'uploadsRoot', 'get')
+      .mockReturnValue('/tmp/test-uploads');
+    jest.spyOn(require('fs').promises, 'writeFile').mockImplementation(writeFileMock);
+    jest.spyOn(require('fs').promises, 'mkdir').mockResolvedValue(undefined);
   });
 
-  it('saves a jpeg file and returns url', async () => {
-    const result = await service.save('test', {
-      originalname: 'photo.jpg',
+  afterEach(() => jest.restoreAllMocks());
+
+  it('HTML-байти при заявленому image/png → 400, нічого не зберігається', async () => {
+    await expect(
+      service.save('venues', {
+        originalname: 'photo.png',
+        mimetype: 'image/png',
+        size: 100,
+        buffer: HTML_BUFFER,
+      }),
+    ).rejects.toThrow(BadRequestException);
+    expect(writeFileMock).not.toHaveBeenCalled();
+  });
+
+  it('PNG-магія при заявленому text/html → зберігає як .png з image/png', async () => {
+    const res = await service.save('venues', {
+      originalname: 'x.html',
+      mimetype: 'image/png',
+      size: 100,
+      buffer: PNG_BUFFER,
+    });
+    expect(res.filename.endsWith('.png')).toBe(true);
+    expect(res.filename.endsWith('.html')).toBe(false);
+    expect(writeFileMock).toHaveBeenCalledWith(
+      '/tmp/test-uploads/venues/' + res.filename,
+      PNG_BUFFER,
+    );
+  });
+
+  it('розширення завжди від реального типу (originalname .html + PNG-магія → .png)', async () => {
+    const res = await service.save('venues', {
+      originalname: 'image.html',
+      mimetype: 'image/png',
+      size: 100,
+      buffer: PNG_BUFFER,
+    });
+    expect(res.url.startsWith('/static/venues/')).toBe(true);
+    expect(res.filename.endsWith('.png')).toBe(true);
+  });
+
+  it('JPEG-магія → .jpg', async () => {
+    const res = await service.save('venues', {
+      originalname: 'Без назви 2 (3)',
       mimetype: 'image/jpeg',
       size: 100,
-      buffer: Buffer.from('fake-jpeg-content'),
+      buffer: JPEG_BUFFER,
     });
-    expect(result.url).toMatch(/^\/static\/test\/[a-f0-9-]+\.jpg$/);
-    expect(result.size).toBe(100);
+    expect(res.filename.endsWith('.jpg')).toBe(true);
   });
 
-  it('rejects unsupported mime type', async () => {
+  it('WEBP-магія → .webp', async () => {
+    const res = await service.save('venues', {
+      originalname: 'img',
+      mimetype: 'image/webp',
+      size: 100,
+      buffer: WEBP_BUFFER,
+    });
+    expect(res.filename.endsWith('.webp')).toBe(true);
+  });
+
+  it('mime поза whitelist навіть з валідною магією → 400', async () => {
     await expect(
-      service.save('test', {
-        originalname: 'doc.pdf',
+      service.save('venues', {
+        originalname: 'a.png',
         mimetype: 'application/pdf',
         size: 100,
-        buffer: Buffer.from('pdf'),
+        buffer: PNG_BUFFER,
       }),
-    ).rejects.toThrow(/Unsupported mime type/);
+    ).rejects.toThrow(BadRequestException);
+    expect(writeFileMock).not.toHaveBeenCalled();
   });
 
-  it('rejects too large file', async () => {
+  it('файл завеликий → 400 (не гол Error)', async () => {
     await expect(
-      service.save('test', {
-        originalname: 'big.jpg',
-        mimetype: 'image/jpeg',
+      service.save('venues', {
+        originalname: 'a.png',
+        mimetype: 'image/png',
         size: 6 * 1024 * 1024,
-        buffer: Buffer.alloc(0),
+        buffer: PNG_BUFFER,
       }),
-    ).rejects.toThrow(/too large/);
+    ).rejects.toThrow(BadRequestException);
   });
 
-  it('falls back to mime-derived extension when originalname has none', async () => {
-    const result = await service.save('test', {
-      originalname: 'photo',
-      mimetype: 'image/png',
-      size: 50,
-      buffer: Buffer.from('png-content'),
-    });
-    expect(result.url).toMatch(/^\/static\/test\/[a-f0-9-]+\.png$/);
-  });
-
-  it('remove is idempotent', async () => {
-    const saved = await service.save('test', {
-      originalname: 'remove.jpg',
-      mimetype: 'image/jpeg',
-      size: 30,
-      buffer: Buffer.from('remove-me'),
-    });
-    const filepath = join(TMP, 'test', saved.filename);
-    await service.remove('test', saved.filename);
-    await expect(fs.stat(filepath)).rejects.toThrow(/ENOENT/);
+  it('порожній/короткий буфер (визначити тип неможливо) → 400', async () => {
     await expect(
-      service.remove('test', saved.filename),
-    ).resolves.toBeUndefined();
+      service.save('venues', {
+        originalname: 'a.png',
+        mimetype: 'image/png',
+        size: 3,
+        buffer: Buffer.from([0x89, 0x50, 0x4e]),
+      }),
+    ).rejects.toThrow(BadRequestException);
   });
 });

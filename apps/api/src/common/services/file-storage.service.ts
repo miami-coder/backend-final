@@ -1,11 +1,49 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { promises as fs } from 'fs';
-import { extname, join } from 'path';
+import { join } from 'path';
 import { randomUUID } from 'crypto';
 import { put, del } from '@vercel/blob';
 
 const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
+
+/** Реальний тип зображення за магічними байтами (рев'ю викладача: тип
+ *  визначається перевіреним вмістом, а не заявою клієнта). */
+function detectImageType(
+  buffer: Buffer,
+): 'jpeg' | 'png' | 'webp' | null {
+  const isPng =
+    buffer.length >= 8 &&
+    buffer[0] === 0x89 &&
+    buffer[1] === 0x50 &&
+    buffer[2] === 0x4e &&
+    buffer[3] === 0x47;
+  if (isPng) return 'png';
+  const isJpeg =
+    buffer.length >= 3 &&
+    buffer[0] === 0xff &&
+    buffer[1] === 0xd8 &&
+    buffer[2] === 0xff;
+  if (isJpeg) return 'jpeg';
+  const isWebp =
+    buffer.length >= 12 &&
+    buffer.subarray(0, 4).toString('latin1') === 'RIFF' &&
+    buffer.subarray(8, 12).toString('latin1') === 'WEBP';
+  if (isWebp) return 'webp';
+  return null;
+}
+
+const EXT_FROM_TYPE: Record<'jpeg' | 'png' | 'webp', string> = {
+  jpeg: '.jpg',
+  png: '.png',
+  webp: '.webp',
+};
+
+const MIME_FROM_TYPE: Record<'jpeg' | 'png' | 'webp', string> = {
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  webp: 'image/webp',
+};
 
 /**
  * Зберігання завантажених файлів у двох режимах:
@@ -24,21 +62,25 @@ export class FileStorageService {
       buffer: Buffer;
     },
   ): Promise<{ url: string; filename: string; size: number }> {
-    if (!ALLOWED_MIME.has(file.mimetype)) {
-      throw new Error(`Unsupported mime type: ${file.mimetype}`);
-    }
     if (file.size > MAX_BYTES) {
-      throw new Error(`File too large: ${file.size} bytes (max ${MAX_BYTES})`);
+      throw new BadRequestException('Файл завеликий (максимум 5 МБ)');
     }
-    const ext =
-      extname(file.originalname).toLowerCase() ||
-      this.extFromMime(file.mimetype);
-    const filename = `${randomUUID()}${ext}`;
+    if (!ALLOWED_MIME.has(file.mimetype)) {
+      throw new BadRequestException('Некоректний тип файлу');
+    }
+    const detected = detectImageType(file.buffer);
+    if (!detected) {
+      throw new BadRequestException('Некоректний вміст файлу');
+    }
+    // Розширення — тільки від перевіреного типу; originalname не береться
+    // взагалі (x.html не має шансів зберегтись як .html).
+    const filename = `${randomUUID()}${EXT_FROM_TYPE[detected]}`;
+    const contentType = MIME_FROM_TYPE[detected];
 
     if (this.useBlobMode) {
       const blob = await put(`${folder}/${filename}`, file.buffer, {
         access: 'public',
-        contentType: file.mimetype,
+        contentType,
       });
       return { url: blob.url, filename, size: file.size };
     }
@@ -69,12 +111,5 @@ export class FileStorageService {
 
   private get uploadsRoot(): string {
     return process.env.UPLOADS_DIR ?? join(process.cwd(), 'uploads');
-  }
-
-  private extFromMime(mime: string): string {
-    if (mime === 'image/jpeg') return '.jpg';
-    if (mime === 'image/png') return '.png';
-    if (mime === 'image/webp') return '.webp';
-    return '.bin';
   }
 }
