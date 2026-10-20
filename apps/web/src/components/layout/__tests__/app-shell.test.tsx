@@ -7,6 +7,11 @@ vi.mock('next/navigation', () => ({
 }))
 
 import { AppShell } from '@/components/layout/app-shell'
+// Footer тепер async (фітчить тексти сайту з GET /content) — у тесті
+// підмінюємо сервіс, щоб рендер був синхронним
+vi.mock('@/services/content.server', () => ({
+  getSiteContent: vi.fn(async () => ({ about: null, contacts: null })),
+}))
 import { UserProvider } from '@/components/providers/user-provider'
 
 const renderShell = () =>

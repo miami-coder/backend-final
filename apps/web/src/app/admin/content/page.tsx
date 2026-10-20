@@ -15,7 +15,7 @@ export default async function AdminContentPage() {
     <main className="mx-auto w-full max-w-3xl px-4 py-8">
       <h1 className="text-xl font-bold">Загальні тексти</h1>
       <p className="mt-1 text-sm text-muted">
-        Редакційні розділи сайту — редагує супер-адмін (revʼю викладача).
+        Розділи сайту («Про нас», контакти).
       </p>
       <div className="mt-6">
         <ContentManager initial={content} />

@@ -5,6 +5,7 @@ import { getMeSession } from '@/services/auth.server'
 import { UserProvider } from '@/components/providers/user-provider'
 import { ToastProvider } from '@/components/ui/toast'
 import { AppShell } from '@/components/layout/app-shell'
+import { getSiteContent } from '@/services/content.server'
 import type { SessionUser } from '@/types/user'
 import './globals.css'
 
@@ -20,6 +21,8 @@ const unbounded = Unbounded({ subsets: ['latin', 'cyrillic'], variable: '--font-
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // Гостьовий стан при протермінованому access-токені виправить UserProvider (Task 6)
   let user: SessionUser | null = null
+  // Тексти сайту для футера (позакешовано — правки з адмінки видно одразу)
+  const siteContent = await getSiteContent().catch(() => null)
   const tokens = await getSessionTokens()
   if (tokens) {
     try {
@@ -34,7 +37,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         <UserProvider initialUser={user}>
           <ToastProvider>
-            <AppShell>{children}</AppShell>
+            <AppShell siteContent={siteContent}>{children}</AppShell>
           </ToastProvider>
         </UserProvider>
       </body>

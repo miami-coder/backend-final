@@ -5,9 +5,16 @@
 import type { ReactNode } from 'react'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
+import type { SiteContentMap } from '@/services/content'
 import { AgeGate, useAgeConfirmed } from '@/components/layout/age-gate'
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({
+  children,
+  siteContent,
+}: {
+  children: ReactNode
+  siteContent?: SiteContentMap | null
+}) {
   const confirmed = useAgeConfirmed()
   return (
     <>
@@ -15,7 +22,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div inert={!confirmed} className="flex min-h-svh flex-col">
         <Header />
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">{children}</main>
-        <Footer />
+        <Footer content={siteContent ?? null} />
       </div>
       <AgeGate />
     </>
