@@ -190,7 +190,11 @@ export class AnalyticsController {
   @ApiBadRequestResponse({ description: 'Невалідна гранулярність' })
   getTimeseries(
     @Query()
-    q: { from?: string; to?: string; granularity?: string },
+    q: {
+      from?: string;
+      to?: string;
+      granularity?: string;
+    },
   ) {
     const granularity = (['day', 'week', 'month'] as const).find(
       (g) => g === (q.granularity ?? 'day'),
@@ -239,7 +243,12 @@ export class AnalyticsController {
   @ApiForbiddenResponse({ description: 'Немає дозволу analytics:view:all' })
   getVenueStats(
     @Query()
-    q: { from?: string; to?: string; page?: number; limit?: number },
+    q: {
+      from?: string;
+      to?: string;
+      page?: number;
+      limit?: number;
+    },
   ) {
     return this.analytics.getVenueStats(q);
   }

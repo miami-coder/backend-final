@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { VenueView } from './entities/venue-view.entity';
+import { Venue } from '../venues/entities/venue.entity';
 import { AnalyticsEvent } from './entities/analytics-event.entity';
 import { AnalyticsService } from './analytics.service';
 import { AnalyticsController } from './analytics.controller';
@@ -10,7 +11,7 @@ import { RbacModule } from '../rbac/rbac.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([VenueView, AnalyticsEvent]),
+    TypeOrmModule.forFeature([VenueView, AnalyticsEvent, Venue]),
     VenuesModule,
     RbacModule,
   ],

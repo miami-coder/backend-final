@@ -5,6 +5,7 @@ import { VenueView } from './entities/venue-view.entity';
 import { AnalyticsEvent } from './entities/analytics-event.entity';
 import { Venue } from '../venues/entities/venue.entity';
 import { CacheService } from '../../common/services/cache.service';
+import { Venue } from '../venues/entities/venue.entity';
 import {
   buildMeta,
   normalizePagination,
@@ -21,6 +22,8 @@ export class AnalyticsService {
     private readonly views: Repository<VenueView>,
     @InjectRepository(AnalyticsEvent)
     private readonly eventsRepo: Repository<AnalyticsEvent>,
+    @InjectRepository(Venue)
+    private readonly venues: Repository<Venue>,
     private readonly cache: CacheService,
   ) {}
 
@@ -41,6 +44,8 @@ export class AnalyticsService {
       userId: userId ?? null,
       sessionId: sessionId ?? null,
     });
+    // Лічильник закладу ніколи не оновлювався і був завжди 0 (ревʼю крок 3)
+    await this.venues.increment({ id: venueId }, 'viewCount', 1);
     return { recorded: true };
   }
 
@@ -70,7 +75,12 @@ export class AnalyticsService {
       .groupBy('date')
       .orderBy('date', 'ASC');
     if (from) viewsQb.andWhere('v."viewedAt" >= :from', { from });
-    if (to) viewsQb.andWhere('v."viewedAt" <= :to', { to });
+    if (to)
+      // to — дата без часу: включно до кінця дня (ревʼю крок 3:
+      // «останній день діапазону не рахується» — <= to зрізає опівноччя)
+      viewsQb.andWhere('v."viewedAt" < :toExclusive', {
+        toExclusive: `${to} 23:59:59.999`,
+      });
     const viewsByDay = await viewsQb.getRawMany<{
       date: string;
       count: number;
@@ -84,13 +94,18 @@ export class AnalyticsService {
       .groupBy('e."eventType"')
       .orderBy('count', 'DESC');
     if (from) eventsQb.andWhere('e."occurredAt" >= :from', { from });
-    if (to) eventsQb.andWhere('e."occurredAt" <= :to', { to });
+    if (to)
+      eventsQb.andWhere('e."occurredAt" < :toExclusive', {
+        toExclusive: `${to} 23:59:59.999`,
+      });
     const eventsByType = await eventsQb.getRawMany<{
       eventType: string;
       count: number;
     }>();
 
-    const totalViews = await this.views.count({ where: { venueId } });
+    // total — сума тих самих днів (діапазон поважається; ревʼю крок 3:
+    // «загальна цифра ігнорує вибраний діапазон дат»)
+    const totalViews = viewsByDay.reduce((sum, d) => sum + Number(d.count), 0);
     return { totalViews, viewsByDay, eventsByType };
   }
 
@@ -162,7 +177,8 @@ export class AnalyticsService {
     const totalQb = this.views
       .createQueryBuilder('v')
       .select('COUNT(DISTINCT v."venueId")::int', 'total');
-    if (opts.from) totalQb.andWhere('v."viewedAt" >= :from', { from: opts.from });
+    if (opts.from)
+      totalQb.andWhere('v."viewedAt" >= :from', { from: opts.from });
     if (opts.to) totalQb.andWhere('v."viewedAt" <= :to', { to: opts.to });
     const row = await totalQb.getRawOne<{ total: number }>();
     return { data, meta: buildMeta({ page, limit, offset }, row?.total ?? 0) };

@@ -71,11 +71,15 @@ describe('AllExceptionsFilter — невалідний UUID (ревʼю крок
         getRequest: () => ({ method: 'GET', url: '/x' }),
       }),
     } as unknown as ArgumentsHost;
-    const err = new Error('invalid input syntax for type uuid: "abc"') as Error & { code?: string };
+    const err = new Error(
+      'invalid input syntax for type uuid: "abc"',
+    ) as Error & { code?: string };
     err.code = '22P02';
     filter.catch(err, host);
     expect(json).toHaveBeenCalledWith(
-      expect.objectContaining({ error: expect.objectContaining({ code: 'BAD_REQUEST' }) }),
+      expect.objectContaining({
+        error: expect.objectContaining({ code: 'BAD_REQUEST' }),
+      }),
     );
   });
 
@@ -90,7 +94,9 @@ describe('AllExceptionsFilter — невалідний UUID (ревʼю крок
     } as unknown as ArgumentsHost;
     filter.catch(new Error('boom'), host);
     expect(json).toHaveBeenCalledWith(
-      expect.objectContaining({ error: expect.objectContaining({ code: 'INTERNAL_ERROR' }) }),
+      expect.objectContaining({
+        error: expect.objectContaining({ code: 'INTERNAL_ERROR' }),
+      }),
     );
   });
 });
