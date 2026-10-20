@@ -18,6 +18,7 @@ import {
 import { HangoutParticipant } from './entities/hangout-participant.entity';
 import { CreateHangoutDto } from './dto/create-hangout.dto';
 import { VenuesService } from '../venues/venues.service';
+import { VenueStatus } from '../venues/entities/venue.entity';
 import { CacheService } from '../../common/services/cache.service';
 import {
   buildMeta,
@@ -44,7 +45,11 @@ export class HangoutsService {
     venueId: string,
     dto: CreateHangoutDto,
   ): Promise<Hangout> {
-    await this.venues.findOneOrThrow(venueId);
+    const venue = await this.venues.findOneOrThrow(venueId);
+    if (venue.status !== VenueStatus.Approved)
+      throw new ForbiddenException(
+        'Пиячки можна створювати лише на схвалені заклади',
+      );
     if (new Date(dto.date) < this.startOfToday()) {
       throw new BadRequestException('Дата має бути сьогодні або в майбутньому');
     }
@@ -130,7 +135,9 @@ export class HangoutsService {
     const cacheKey = `hangouts:list:${createHash('sha1').update(JSON.stringify(opts)).digest('hex')}`;
     // Кешуємо {data, total}, а не довжину сторінки — total на хіті
     // інакше рахується як кількість рядків сторінки (ревʼю крок 2).
-    const cached = await this.cache.get<{ data: Hangout[]; total: number }>(cacheKey);
+    const cached = await this.cache.get<{ data: Hangout[]; total: number }>(
+      cacheKey,
+    );
     if (cached) {
       return {
         data: cached.data,
@@ -166,7 +173,13 @@ export class HangoutsService {
    */
   async getOne(hangoutId: string): Promise<
     Omit<Hangout, 'participants'> & {
-      participants: { hangoutId: string; userId: string; joinedAt: Date; firstname: string; lastname: string }[];
+      participants: {
+        hangoutId: string;
+        userId: string;
+        joinedAt: Date;
+        firstname: string;
+        lastname: string;
+      }[];
     }
   > {
     const h = await this.hangouts.findOne({

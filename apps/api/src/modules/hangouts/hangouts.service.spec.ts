@@ -53,7 +53,11 @@ describe('HangoutsService', () => {
       findOne: jest.fn(),
       count: jest.fn().mockResolvedValue(0),
     };
-    venues = { findOneOrThrow: jest.fn().mockResolvedValue({ id: 'v1' }) };
+    venues = {
+      findOneOrThrow: jest
+        .fn()
+        .mockResolvedValue({ id: 'v1', status: 'approved' }),
+    };
     cache = {
       get: jest.fn().mockResolvedValue(null),
       set: jest.fn().mockResolvedValue(undefined),
@@ -185,7 +189,9 @@ describe('HangoutsService', () => {
     hangouts.findOne.mockResolvedValueOnce({
       id: 'h1',
       status: HangoutStatus.Open,
-      participants: [{ hangoutId: 'h1', userId: 'u1', joinedAt: new Date(), user: null }],
+      participants: [
+        { hangoutId: 'h1', userId: 'u1', joinedAt: new Date(), user: null },
+      ],
       venue: null,
     });
     const h = await service.getOne('h1');
@@ -230,9 +236,98 @@ describe('HangoutsService.listPublic — кеш-хіт сторінок', () => 
   });
 
   it('кеш-хіт сторінки 2: total повний (не довжина сторінки)', async () => {
-    cache.get.mockResolvedValueOnce({ data: [{ id: 'h1' }, { id: 'h2' }], total: 14 });
+    cache.get.mockResolvedValueOnce({
+      data: [{ id: 'h1' }, { id: 'h2' }],
+      total: 14,
+    });
     const res = await service.listPublic({ page: 2, limit: 12 });
     expect(res.data).toHaveLength(2);
     expect(res.meta.total).toBe(14);
+  });
+});
+
+describe('HangoutsService.create — лише схвалені заклади', () => {
+  let service: HangoutsService;
+  let hangouts: any;
+  let venues: any;
+  let participants: any;
+  let cache: any;
+  let events: any;
+
+  beforeEach(async () => {
+    hangouts = {
+      save: jest.fn(),
+      create: jest.fn((x) => x),
+      findOne: jest.fn(),
+    };
+    participants = { save: jest.fn() };
+    venues = {
+      findOneOrThrow: jest
+        .fn()
+        .mockResolvedValue({ id: 'v1', status: 'pending' }),
+    };
+    cache = { get: jest.fn(), set: jest.fn(), delByPattern: jest.fn() };
+    events = { emit: jest.fn() };
+    const module = await Test.createTestingModule({
+      providers: [
+        HangoutsService,
+        { provide: getRepositoryToken(Hangout), useValue: hangouts },
+        {
+          provide: getRepositoryToken(HangoutParticipant),
+          useValue: participants,
+        },
+        { provide: VenuesService, useValue: venues },
+        { provide: CacheService, useValue: cache },
+        { provide: EventEmitter2, useValue: events },
+      ],
+    }).compile();
+    service = module.get(HangoutsService);
+  });
+
+  const futureDate = () => {
+    const d = new Date();
+    d.setDate(d.getDate() + 5);
+    return d.toISOString().slice(0, 10);
+  };
+
+  it('create пиячок на pending-заклад → ForbiddenException', async () => {
+    await expect(
+      service.create('u1', 'v1', {
+        date: futureDate(),
+        time: '20:00',
+        purpose: 'Пива',
+        groupSize: 3,
+      }),
+    ).rejects.toThrow(ForbiddenException);
+  });
+
+  it('create пиячок на archived-заклад → ForbiddenException', async () => {
+    venues.findOneOrThrow.mockResolvedValueOnce({
+      id: 'v1',
+      status: 'archived',
+    });
+    await expect(
+      service.create('u1', 'v1', {
+        date: futureDate(),
+        time: '20:00',
+        purpose: 'Пива',
+        groupSize: 3,
+      }),
+    ).rejects.toThrow(ForbiddenException);
+  });
+
+  it('create на approved — ок', async () => {
+    venues.findOneOrThrow.mockResolvedValueOnce({
+      id: 'v1',
+      status: 'approved',
+    });
+    await expect(
+      service.create('u1', 'v1', {
+        date: futureDate(),
+        time: '20:00',
+        purpose: 'Пива',
+        groupSize: 3,
+      }),
+    ).resolves.toBeDefined();
   });
 });

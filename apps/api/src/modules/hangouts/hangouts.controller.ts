@@ -158,7 +158,9 @@ export class HangoutsController {
   @ApiBearerAuth('access-token')
   @UseGuards(JwtAuthGuard)
   @Get('hangouts/:id')
-  @ApiOperation({ summary: 'Переглянути зустріч (для будь-якого залогіненого)' })
+  @ApiOperation({
+    summary: 'Переглянути зустріч (для будь-якого залогіненого)',
+  })
   @ApiExtraModels(Hangout)
   @ApiOkResponse({
     description: 'Деталі зустрічі з учасниками (імʼя/прізвище, joinedAt)',
@@ -170,7 +172,8 @@ export class HangoutsController {
           properties: {
             participants: {
               type: 'array',
-              description: 'Імʼя/прізвище учасника; повні дані користувача не віддаються',
+              description:
+                'Імʼя/прізвище учасника; повні дані користувача не віддаються',
               items: {
                 type: 'object',
                 properties: {

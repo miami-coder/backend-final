@@ -61,7 +61,11 @@ describe('ReviewsService', () => {
   });
 
   it('create throws 403 when reviewer is the venue owner', async () => {
-    venues.findOne.mockResolvedValueOnce({ id: 'v1', ownerId: 'u1' });
+    venues.findOne.mockResolvedValueOnce({
+      id: 'v1',
+      ownerId: 'u1',
+      status: 'approved',
+    });
     reviews.save.mockResolvedValueOnce({ id: 'r-new' });
     await expect(
       service.create('u1', 'v1', {
@@ -73,7 +77,7 @@ describe('ReviewsService', () => {
   });
 
   it('create throws 409 on duplicate review', async () => {
-    venues.findOne.mockResolvedValueOnce({ id: 'v1' });
+    venues.findOne.mockResolvedValueOnce({ id: 'v1', status: 'approved' });
     reviews.findOne.mockResolvedValueOnce({ id: 'r1' });
     await expect(
       service.create('u1', 'v1', {
@@ -84,7 +88,7 @@ describe('ReviewsService', () => {
   });
 
   it('create saves and recalcs rating', async () => {
-    venues.findOne.mockResolvedValueOnce({ id: 'v1' });
+    venues.findOne.mockResolvedValueOnce({ id: 'v1', status: 'approved' });
     reviews.findOne.mockResolvedValueOnce(null);
     reviews.save.mockResolvedValueOnce({ id: 'r-new' });
     const r = await service.create('u1', 'v1', {
@@ -227,5 +231,78 @@ describe('ReviewsService — санітизація авторів відгук�
     expect(res.data[0].user).not.toHaveProperty('emailVerified');
     expect(res.data[0].user).not.toHaveProperty('deletedAt');
     expect(res.data[0].user.profile.firstname).toBe('Іван');
+  });
+});
+
+describe('ReviewsService.create — лише схвалені заклади', () => {
+  let service: ReviewsService;
+  let reviews: any;
+  let venues: any;
+  let perms: any;
+  let events: any;
+
+  beforeEach(async () => {
+    reviews = {
+      create: jest.fn((x) => x),
+      save: jest.fn((x) => x),
+      findOne: jest.fn(),
+      delete: jest.fn(),
+      createQueryBuilder: jest.fn().mockReturnValue(qb()),
+    };
+    venues = {
+      findOne: jest
+        .fn()
+        .mockResolvedValue({ id: 'v1', ownerId: 'u9', status: 'pending' }),
+      update: jest.fn(),
+    };
+    perms = { hasPermission: jest.fn() };
+    events = { emit: jest.fn() };
+    const module = await Test.createTestingModule({
+      providers: [
+        ReviewsService,
+        { provide: getRepositoryToken(Review), useValue: reviews },
+        { provide: getRepositoryToken(Venue), useValue: venues },
+        { provide: PermissionsService, useValue: perms },
+        { provide: EventEmitter2, useValue: events },
+      ],
+    }).compile();
+    service = module.get(ReviewsService);
+  });
+
+  it('create на pending-заклад → ForbiddenException', async () => {
+    await expect(
+      service.create('u1', 'v1', {
+        rating: 5,
+        text: 'Супер заклад! Рекомендую',
+      }),
+    ).rejects.toThrow(ForbiddenException);
+  });
+
+  it('create на archived-заклад → ForbiddenException', async () => {
+    venues.findOne.mockResolvedValueOnce({
+      id: 'v1',
+      ownerId: 'u9',
+      status: 'archived',
+    });
+    await expect(
+      service.create('u1', 'v1', {
+        rating: 5,
+        text: 'Супер заклад! Рекомендую',
+      }),
+    ).rejects.toThrow(ForbiddenException);
+  });
+
+  it('create на approved — ок', async () => {
+    venues.findOne.mockResolvedValueOnce({
+      ownerId: 'u9',
+      id: 'v1',
+      status: 'approved',
+    });
+    await expect(
+      service.create('u1', 'v1', {
+        rating: 5,
+        text: 'Супер заклад! Рекомендую',
+      }),
+    ).resolves.toBeDefined();
   });
 });

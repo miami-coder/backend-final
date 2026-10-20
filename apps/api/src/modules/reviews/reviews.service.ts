@@ -8,7 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Repository } from 'typeorm';
 import { Review } from './entities/review.entity';
-import { Venue } from '../venues/entities/venue.entity';
+import { Venue, VenueStatus } from '../venues/entities/venue.entity';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { PermissionsService } from '../rbac/permissions.service';
@@ -43,6 +43,10 @@ export class ReviewsService {
   ): Promise<Review> {
     const venue = await this.venues.findOne({ where: { id: venueId } });
     if (!venue) throw new NotFoundException('Заклад не знайдено');
+    if (venue.status !== VenueStatus.Approved)
+      throw new ForbiddenException(
+        'Можна лишати відгуки лише на схвалені заклади',
+      );
     if (venue.ownerId === userId)
       throw new ForbiddenException(
         'Не можна залишати відгук на власний заклад',

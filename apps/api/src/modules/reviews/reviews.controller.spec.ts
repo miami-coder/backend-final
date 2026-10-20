@@ -23,7 +23,10 @@ describe('ReviewsController', () => {
     const module = await Test.createTestingModule({
       controllers: [ReviewsController],
       providers: [
-        { provide: PermissionsService, useValue: { hasAnyPermission: jest.fn().mockResolvedValue(true) } },
+        {
+          provide: PermissionsService,
+          useValue: { hasAnyPermission: jest.fn().mockResolvedValue(true) },
+        },
         { provide: ReviewsService, useValue: reviews },
         { provide: FileStorageService, useValue: storage },
       ],

@@ -1,8 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Favorite } from './entities/favorite.entity';
-import { Venue } from '../venues/entities/venue.entity';
+import { Venue, VenueStatus } from '../venues/entities/venue.entity';
 import {
   buildMeta,
   normalizePagination,
@@ -64,5 +68,9 @@ export class FavoritesService {
   private async assertVenue(venueId: string) {
     const v = await this.venues.findOne({ where: { id: venueId } });
     if (!v) throw new NotFoundException('Заклад не знайдено');
+    if (v.status !== VenueStatus.Approved)
+      throw new ForbiddenException(
+        'Можна додавати в улюблене лише схвалені заклади',
+      );
   }
 }

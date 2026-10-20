@@ -90,7 +90,10 @@ export class VenuesService {
 
   async create(ownerId: string, dto: CreateVenueDto): Promise<Venue> {
     // Супер-адмін (venue:moderate) створює заклад одразу схваленим (ревʼю крок 2)
-    const autoApprove = await this.perms.hasPermission(ownerId, 'venue:moderate');
+    const autoApprove = await this.perms.hasPermission(
+      ownerId,
+      'venue:moderate',
+    );
     const venue = this.venues.create({
       ownerId,
       name: dto.name,

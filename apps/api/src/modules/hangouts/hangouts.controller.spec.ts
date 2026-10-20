@@ -20,7 +20,13 @@ describe('HangoutsController', () => {
     };
     const module = await Test.createTestingModule({
       controllers: [HangoutsController],
-      providers: [{ provide: PermissionsService, useValue: { hasAnyPermission: jest.fn().mockResolvedValue(true) } }, { provide: HangoutsService, useValue: hangouts }],
+      providers: [
+        {
+          provide: PermissionsService,
+          useValue: { hasAnyPermission: jest.fn().mockResolvedValue(true) },
+        },
+        { provide: HangoutsService, useValue: hangouts },
+      ],
     }).compile();
     controller = module.get(HangoutsController);
   });
