@@ -39,6 +39,17 @@ import {
   VenueUpdatedEvent,
 } from './events';
 
+
+/** CSV «wifi, parking» → [ 'wifi', 'parking' ] (пробіли по краях зріжувати). */
+function csvCodes(csv: string): string[] {
+  return csv.split(',').map((s) => s.trim()).filter(Boolean);
+}
+
+/** Екранування % та _ для ILIKE: вони не wildcard, а літерали (ревʼю крок 3). */
+function escapeLike(input: string): string {
+  return input.replace(/[!%_\\]/g, (ch) => `!${ch}`);
+}
+
 @Injectable()
 export class VenuesService {
   constructor(
@@ -288,11 +299,13 @@ export class VenuesService {
       .where('v.status = :status', { status: VenueStatus.Approved });
 
     if (query.q) {
+      // % и _ — літерали, не wildcard (ревʼю крок 3)
+      const safe = `%${escapeLike(query.q)}%`;
       qb.andWhere(
         new Brackets((b) =>
           b
-            .where('v.name ILIKE :q', { q: `%${query.q}%` })
-            .orWhere('v.address ILIKE :q', { q: `%${query.q}%` }),
+            .where(`v.name ILIKE :q ESCAPE '!'`, { q: safe })
+            .orWhere(`v.address ILIKE :q ESCAPE '!'`, { q: safe }),
         ),
       );
     }
@@ -303,15 +316,25 @@ export class VenuesService {
     if (query.maxCheck != null)
       qb.andWhere('v.averageCheck <= :maxCheck', { maxCheck: query.maxCheck });
     if (query.feature) {
-      // CSV з пробілами («wifi, parking») — тримимо, інакше « wifi» не матчиться
-      qb.andWhere('f.code IN (:...features)', {
-        features: query.feature.split(',').map((s) => s.trim()),
-      });
+      // AND-семантика (ревʼю крок 3): заклад має ВСІ запитані фічі —
+      // окремий EXISTS-підзапит на кожен код, а не один IN (OR).
+      for (const code of csvCodes(query.feature)) {
+        const key = `feature_${code.replace(/\W/g, '')}`;
+        qb.andWhere(
+          `EXISTS (SELECT 1 FROM venue_feature_assignments fa2 JOIN venue_features f2 ON f2.id = fa2."featureId" WHERE fa2."venueId" = v.id AND f2.code = :${key})`,
+          { [key]: code },
+        );
+      }
     }
     if (query.tag) {
-      qb.andWhere('t.slug IN (:...tags)', {
-        tags: query.tag.split(',').map((s) => s.trim()),
-      });
+      // AND-семантика для тегів — так само
+      for (const slug of csvCodes(query.tag)) {
+        const key = `tag_${slug.replace(/\W/g, '')}`;
+        qb.andWhere(
+          `EXISTS (SELECT 1 FROM venue_tags vt2 JOIN tags t2 ON t2.id = vt2."tagId" WHERE vt2."venueId" = v.id AND t2.slug = :${key})`,
+          { [key]: slug },
+        );
+      }
     }
     if (query.type) qb.andWhere('ty.slug = :type', { type: query.type });
     if (query.lat != null && query.lng != null && query.radiusKm != null) {

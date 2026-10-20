@@ -282,7 +282,7 @@ describe('VenuesService', () => {
     expect(res.data).toEqual([]);
   });
 
-  it('search тримить CSV тегів/фіч — « cocktails, dj » не втрачає dj', async () => {
+  it('search: фічі/теги — AND-семантика (заклад має ВСІ запитані), CSV не втрачає значення', async () => {
     const mockQb = venues.createQueryBuilder(); // той самий обʼєкт, що піде у search
     await service.search({
       page: 1,
@@ -290,9 +290,19 @@ describe('VenuesService', () => {
       tag: ' cocktails, dj ',
       feature: 'wifi, parking',
     });
-    const params = mockQb.andWhere.mock.calls.map((c) => c[1]).filter(Boolean);
-    expect(params).toContainEqual({ tags: ['cocktails', 'dj'] });
-    expect(params).toContainEqual({ features: ['wifi', 'parking'] });
+    const sqls = mockQb.andWhere.mock.calls.map((c) => c[0] as string);
+    // Для КОЖНОГО запитаного коду свій EXISTS-підзапит (AND), а не один IN (OR)
+    for (const code of ['wifi', 'parking']) {
+      expect(sqls.some((s) => s.includes('EXISTS') && s.includes(`f2.code = :feature_${code.replace(/\W/g, '')}`))).toBe(true);
+    }
+    const andParams = mockQb.andWhere.mock.calls.flat().filter((x) => typeof x === 'object' && x !== null) as Record<string, string>[];
+    const flat = andParams.map((o) => Object.entries(o)).flat();
+    for (const code of ['wifi', 'parking']) {
+      expect(flat.some(([k, v]) => k.includes('feature') && v === code)).toBe(true);
+    }
+    for (const slug of ['cocktails', 'dj']) {
+      expect(flat.some(([k, v]) => k.includes('tag') && v === slug)).toBe(true);
+    }
   });
 
   it('changeStatus emits status_changed event', async () => {
@@ -729,5 +739,64 @@ describe('VenuesService — модерація закладів (ревʼю кр
     perms.hasPermission.mockResolvedValue(false);
     const v = await service.create('u1', { name: 'Звичайний', address: 'а' });
     expect(v.status).toBe('pending');
+  });
+});
+
+describe('VenuesService.search — %/_ літерали, не wildcard (ревʼю крок 3)', () => {
+  it('q з % та _ залишається літералом у ILIKE', async () => {
+    const venues = {
+      findOne: jest.fn(),
+      save: jest.fn(),
+      create: jest.fn(),
+      findAndCount: jest.fn().mockResolvedValue([[], 0]),
+      createQueryBuilder: jest.fn().mockReturnValue(qb()),
+    };
+    const module = await Test.createTestingModule({
+      providers: [
+        VenuesService,
+        { provide: getRepositoryToken(Venue), useValue: venues },
+        { provide: getRepositoryToken(VenuePhoto), useValue: {} },
+        { provide: getRepositoryToken(VenueFeature), useValue: {} },
+        { provide: getRepositoryToken(VenueFeatureAssignment), useValue: {} },
+        { provide: getRepositoryToken(Tag), useValue: {} },
+        { provide: getRepositoryToken(VenueTag), useValue: {} },
+        { provide: getRepositoryToken(VenueType), useValue: {} },
+        { provide: getRepositoryToken(VenueTypeAssignment), useValue: {} },
+        { provide: PermissionsService, useValue: { hasPermission: jest.fn() } },
+        { provide: CacheService, useValue: { get: jest.fn(), set: jest.fn() } },
+        { provide: FileStorageService, useValue: { save: jest.fn() } },
+        { provide: getRepositoryToken(Role), useValue: {} },
+        { provide: getRepositoryToken(UserRole), useValue: {} },
+        { provide: AuditService, useValue: {} },
+        { provide: EventEmitter2, useValue: { emit: jest.fn() } },
+      ],
+    }).compile();
+    const service = module.get(VenuesService);
+    await service.search({ page: 1, limit: 20, q: '10%_off' });
+    const calls = venues.createQueryBuilder().andWhere.mock.calls;
+    // ILIKE живе в Brackets — розгортаємо фабрику проти фейкового будівника
+    const bracketArg = calls.map((c) => c[0]).find(
+      (a: any) => a && typeof a.whereFactory === 'function',
+    );
+    expect(bracketArg).toBeTruthy();
+    const rec: { sql: string[]; params: Record<string, unknown>[] } = {
+      sql: [],
+      params: [],
+    };
+    const recorder = {
+      where(sql: string, params?: Record<string, unknown>) {
+        rec.sql.push(sql);
+        if (params) rec.params.push(params);
+        return recorder;
+      },
+      orWhere(sql: string, params?: Record<string, unknown>) {
+        rec.sql.push(sql);
+        if (params) rec.params.push(params);
+        return recorder;
+      },
+    };
+    bracketArg.whereFactory(recorder);
+    expect(rec.sql[0]).toContain("ESCAPE '!'");
+    expect(rec.params[0].q).toBe('%10!%!_off%');
   });
 });
