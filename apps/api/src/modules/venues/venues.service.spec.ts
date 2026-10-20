@@ -569,3 +569,74 @@ describe('VenuesService.findOnePublic — санітизація власник�
     expect((own.profile as Record<string, unknown>).firstname).toBe('Олег');
   });
 });
+
+describe('VenuesService.search — кеш-хіт повторної сторінки (ревʼю крок 2)', () => {
+  let service: VenuesService;
+  let venues: any;
+  let cache: any;
+  let perms: any;
+  let cacheSvc: any;
+  let events: any;
+  let storage: any;
+  let audit: any;
+  let roles: any;
+  let userRoles: any;
+
+  beforeEach(async () => {
+    perms = { hasPermission: jest.fn().mockResolvedValue(false) };
+    cache = { get: jest.fn().mockResolvedValue(undefined), set: jest.fn() };
+    events = { emit: jest.fn() };
+    storage = { save: jest.fn(), remove: jest.fn() };
+    audit = {};
+    roles = {};
+    userRoles = {};
+    venues = {
+      findOne: jest.fn(),
+      save: jest.fn(),
+      create: jest.fn(),
+      findAndCount: jest.fn().mockResolvedValue([[], 0]),
+      createQueryBuilder: jest.fn().mockReturnValue(qb()),
+    };
+    const module = await Test.createTestingModule({
+      providers: [
+        VenuesService,
+        { provide: getRepositoryToken(Venue), useValue: venues },
+        { provide: getRepositoryToken(VenuePhoto), useValue: {} },
+        { provide: getRepositoryToken(VenueFeature), useValue: {} },
+        { provide: getRepositoryToken(VenueFeatureAssignment), useValue: {} },
+        { provide: getRepositoryToken(Tag), useValue: {} },
+        { provide: getRepositoryToken(VenueTag), useValue: {} },
+        { provide: getRepositoryToken(VenueType), useValue: {} },
+        { provide: getRepositoryToken(VenueTypeAssignment), useValue: {} },
+        { provide: PermissionsService, useValue: perms },
+        { provide: CacheService, useValue: cache },
+        { provide: FileStorageService, useValue: storage },
+        { provide: getRepositoryToken(Role), useValue: roles },
+        { provide: getRepositoryToken(UserRole), useValue: userRoles },
+        { provide: AuditService, useValue: audit },
+        { provide: EventEmitter2, useValue: events },
+      ],
+    }).compile();
+    service = module.get(VenuesService);
+  });
+
+  it('повторний запит сторінки 2 при 16 закладах НЕ порожній (без пере-зріжування)', async () => {
+    // перший запит сторінки 2: БД повертає єдиний 16-й рядок
+    const pageTwoQb = {
+      ...qb(),
+      getManyAndCount: jest.fn().mockResolvedValue([[{ id: 'v16' }], 16]),
+    };
+    venues.createQueryBuilder.mockReturnValueOnce(pageTwoQb);
+    const first = await service.search({ page: 2, limit: 15 });
+    expect(first.data).toHaveLength(1);
+    expect(first.meta.total).toBe(16);
+    // кеш збережений
+    expect(cache.set).toHaveBeenCalled();
+    // повторний запит: кеш-хіт із тим самим сторінковим data
+    cache.get.mockResolvedValueOnce({ data: [{ id: 'v16' }], total: 16 });
+    const second = await service.search({ page: 2, limit: 15 });
+    expect(second.data).toHaveLength(1);
+    expect(second.meta.total).toBe(16);
+    expect(second.data[0].id).toBe('v16');
+  });
+});

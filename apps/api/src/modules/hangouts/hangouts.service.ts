@@ -128,11 +128,13 @@ export class HangoutsService {
   }) {
     const { page, limit, offset } = normalizePagination(opts);
     const cacheKey = `hangouts:list:${createHash('sha1').update(JSON.stringify(opts)).digest('hex')}`;
-    const cached = await this.cache.get<Hangout[]>(cacheKey);
+    // Кешуємо {data, total}, а не довжину сторінки — total на хіті
+    // інакше рахується як кількість рядків сторінки (ревʼю крок 2).
+    const cached = await this.cache.get<{ data: Hangout[]; total: number }>(cacheKey);
     if (cached) {
       return {
-        data: cached,
-        meta: buildMeta({ page, limit, offset }, cached.length),
+        data: cached.data,
+        meta: buildMeta({ page, limit, offset }, cached.total),
       };
     }
     const qb = this.hangouts
@@ -152,7 +154,7 @@ export class HangoutsService {
       .skip(offset)
       .take(limit);
     const [data, total] = await qb.getManyAndCount();
-    await this.cache.set(cacheKey, data, 30);
+    await this.cache.set(cacheKey, { data, total }, 30);
     return { data, meta: buildMeta({ page, limit, offset }, total) };
   }
 

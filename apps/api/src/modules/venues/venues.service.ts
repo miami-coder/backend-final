@@ -263,8 +263,10 @@ export class VenuesService {
       cacheKey,
     );
     if (cached) {
+      // cached.data — це вже сторінка (ключ включає page); повторне
+      // зріжування робило повторні сторінки порожніми (ревʼю крок 2).
       return {
-        data: cached.data.slice(offset, offset + limit),
+        data: cached.data,
         meta: buildMeta({ page, limit, offset }, cached.total),
       };
     }

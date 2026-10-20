@@ -11,6 +11,8 @@ import { Hangout, HangoutStatus } from './entities/hangout.entity';
 import { HangoutParticipant } from './entities/hangout-participant.entity';
 import { VenuesService } from '../venues/venues.service';
 import { CacheService } from '../../common/services/cache.service';
+import { PermissionsService } from '../rbac/permissions.service';
+import { Venue } from '../venues/entities/venue.entity';
 
 describe('HangoutsService', () => {
   let service: HangoutsService;
@@ -189,5 +191,48 @@ describe('HangoutsService', () => {
     const h = await service.getOne('h1');
     expect(h.participants[0].firstname).toBe('');
     expect(h.participants[0].lastname).toBe('');
+  });
+});
+
+describe('HangoutsService.listPublic — кеш-хіт сторінок', () => {
+  let service: HangoutsService;
+  let hangouts: any;
+  let cache: any;
+  let venues: any;
+  let perms: any;
+  let events: any;
+
+  beforeEach(async () => {
+    hangouts = {
+      save: jest.fn(),
+      create: jest.fn(),
+      findOne: jest.fn(),
+      createQueryBuilder: jest.fn(),
+    };
+    cache = { get: jest.fn(), set: jest.fn() };
+    venues = { findOne: jest.fn(), createQueryBuilder: jest.fn() };
+    perms = {};
+    events = { emit: jest.fn() };
+    const module = await Test.createTestingModule({
+      providers: [
+        HangoutsService,
+        { provide: getRepositoryToken(Hangout), useValue: hangouts },
+        {
+          provide: getRepositoryToken(HangoutParticipant),
+          useValue: {},
+        },
+        { provide: VenuesService, useValue: venues },
+        { provide: CacheService, useValue: cache },
+        { provide: EventEmitter2, useValue: events },
+      ],
+    }).compile();
+    service = module.get(HangoutsService);
+  });
+
+  it('кеш-хіт сторінки 2: total повний (не довжина сторінки)', async () => {
+    cache.get.mockResolvedValueOnce({ data: [{ id: 'h1' }, { id: 'h2' }], total: 14 });
+    const res = await service.listPublic({ page: 2, limit: 12 });
+    expect(res.data).toHaveLength(2);
+    expect(res.meta.total).toBe(14);
   });
 });
