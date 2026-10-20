@@ -23,7 +23,10 @@ describe('PermissionsGuard', () => {
   beforeEach(() => {
     reflector = new Reflector();
     perms = { hasAnyPermission: jest.fn().mockResolvedValue(false) };
-    guard = new PermissionsGuard(reflector, perms as unknown as PermissionsService);
+    guard = new PermissionsGuard(
+      reflector,
+      perms as unknown as PermissionsService,
+    );
   });
 
   it('passes when no permissions required (service not consulted)', async () => {
@@ -46,9 +49,9 @@ describe('PermissionsGuard', () => {
     jest
       .spyOn(reflector, 'getAllAndOverride')
       .mockReturnValue(['venue:create']);
-    await expect(guard.canActivate(makeCtx(undefined, () => {}))).rejects.toThrow(
-      ForbiddenException,
-    );
+    await expect(
+      guard.canActivate(makeCtx(undefined, () => {})),
+    ).rejects.toThrow(ForbiddenException);
     expect(perms.hasAnyPermission).not.toHaveBeenCalled();
   });
 
@@ -62,9 +65,7 @@ describe('PermissionsGuard', () => {
   });
 
   it('throws when user is authenticated but lacks the permission (RBAC hole)', async () => {
-    jest
-      .spyOn(reflector, 'getAllAndOverride')
-      .mockReturnValue(['user:manage']);
+    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['user:manage']);
     perms.hasAnyPermission.mockResolvedValue(false);
     await expect(
       guard.canActivate(
@@ -85,9 +86,7 @@ describe('PermissionsGuard', () => {
   });
 
   it('passes when user has the required permission (DB-backed)', async () => {
-    jest
-      .spyOn(reflector, 'getAllAndOverride')
-      .mockReturnValue(['user:manage']);
+    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['user:manage']);
     perms.hasAnyPermission.mockResolvedValue(true);
     expect(
       await guard.canActivate(
@@ -105,7 +104,9 @@ describe('PermissionsGuard', () => {
       .mockReturnValue(['venue:edit:own', 'complaint:manage']);
     perms.hasAnyPermission.mockResolvedValue(true);
     expect(
-      await guard.canActivate(makeCtx({ sub: 'v1', roles: ['venue_admin'] }, () => {})),
+      await guard.canActivate(
+        makeCtx({ sub: 'v1', roles: ['venue_admin'] }, () => {}),
+      ),
     ).toBe(true);
     expect(perms.hasAnyPermission).toHaveBeenCalledWith('v1', [
       'venue:edit:own',

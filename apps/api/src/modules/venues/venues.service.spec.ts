@@ -268,7 +268,12 @@ describe('VenuesService', () => {
 
   it('search тримить CSV тегів/фіч — « cocktails, dj » не втрачає dj', async () => {
     const mockQb = venues.createQueryBuilder(); // той самий обʼєкт, що піде у search
-    await service.search({ page: 1, limit: 20, tag: ' cocktails, dj ', feature: 'wifi, parking' });
+    await service.search({
+      page: 1,
+      limit: 20,
+      tag: ' cocktails, dj ',
+      feature: 'wifi, parking',
+    });
     const params = mockQb.andWhere.mock.calls.map((c) => c[1]).filter(Boolean);
     expect(params).toContainEqual({ tags: ['cocktails', 'dj'] });
     expect(params).toContainEqual({ features: ['wifi', 'parking'] });
@@ -482,6 +487,7 @@ describe('VenuesService.findOnePublic — санітизація власник�
       findOne: jest.fn(),
       save: jest.fn(),
       create: jest.fn(),
+      findAndCount: jest.fn().mockResolvedValue([[], 0]),
       createQueryBuilder: jest.fn().mockReturnValue(qb()),
     };
     const module = await Test.createTestingModule({
@@ -507,7 +513,7 @@ describe('VenuesService.findOnePublic — санітизація власник�
     service = module.get(VenuesService);
   });
 
-  it('owner у відповіді без email/passwordHash/emailVerified/deletedAt', async () => {
+  it('owner без email/passwordHash/emailVerified/deletedAt і БЕЗ телефона', async () => {
     const venue = {
       id: 'v1',
       status: 'approved',
@@ -517,7 +523,13 @@ describe('VenuesService.findOnePublic — санітизація власник�
         passwordHash: '$2b$10$secretsecretsecret',
         emailVerified: true,
         deletedAt: null,
-        profile: { firstname: 'Олена', avatarUrl: null, phone: '099…' },
+        profile: {
+          firstname: 'Олена',
+          lastname: 'Ковальчук',
+          avatarUrl: null,
+          age: 30,
+          phone: '+380991234567',
+        },
       },
     };
     venues.createQueryBuilder.mockReturnValueOnce({
@@ -531,5 +543,29 @@ describe('VenuesService.findOnePublic — санітизація власник�
     expect(res.owner).not.toHaveProperty('emailVerified');
     expect(res.owner).not.toHaveProperty('deletedAt');
     expect(res.owner.profile.firstname).toBe('Олена');
+    expect(res.owner.profile.phone).toBeUndefined();
+  });
+
+  it('findApproved (адмінський список модерації) — owner без passwordHash/email/phone', async () => {
+    venues.findAndCount.mockResolvedValueOnce([
+      [
+        {
+          id: 'v1',
+          owner: {
+            id: 'u1',
+            email: 'o@x.com',
+            passwordHash: '$2b$10$secret',
+            profile: { firstname: 'Олег', phone: '+380991234567' },
+          },
+        },
+      ],
+      1,
+    ]);
+    const res = await service.findApproved({ page: 1, limit: 20 });
+    const own = res.data[0].owner as Record<string, unknown>;
+    expect(own).not.toHaveProperty('passwordHash');
+    expect(own).not.toHaveProperty('email');
+    expect((own.profile as Record<string, unknown>).phone).toBeUndefined();
+    expect((own.profile as Record<string, unknown>).firstname).toBe('Олег');
   });
 });

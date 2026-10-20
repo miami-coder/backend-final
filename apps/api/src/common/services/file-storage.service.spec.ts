@@ -32,7 +32,9 @@ describe('FileStorageService — тип файлу за magic bytes (ревʼю 
     jest
       .spyOn(service as any, 'uploadsRoot', 'get')
       .mockReturnValue('/tmp/test-uploads');
-    jest.spyOn(require('fs').promises, 'writeFile').mockImplementation(writeFileMock);
+    jest
+      .spyOn(require('fs').promises, 'writeFile')
+      .mockImplementation(writeFileMock);
     jest.spyOn(require('fs').promises, 'mkdir').mockResolvedValue(undefined);
   });
 

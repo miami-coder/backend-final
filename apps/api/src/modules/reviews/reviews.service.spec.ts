@@ -163,9 +163,7 @@ describe('ReviewsService', () => {
 
     it('feature/unfeature throws 404 when review missing', async () => {
       reviews.findOne.mockResolvedValue(null);
-      await expect(service.feature('nope')).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(service.feature('nope')).rejects.toThrow(NotFoundException);
       await expect(service.unfeature('nope')).rejects.toThrow(
         NotFoundException,
       );
@@ -219,7 +217,9 @@ describe('ReviewsService — санітизація авторів відгук�
       addOrderBy: jest.fn().mockReturnThis(),
       skip: jest.fn().mockReturnThis(),
       take: jest.fn().mockReturnThis(),
-      getManyAndCount: jest.fn().mockResolvedValue([[{ id: 'r1', user: author }], 1]),
+      getManyAndCount: jest
+        .fn()
+        .mockResolvedValue([[{ id: 'r1', user: author }], 1]),
     });
     const res = await service.listForVenue('v1');
     expect(res.data[0].user).not.toHaveProperty('email');

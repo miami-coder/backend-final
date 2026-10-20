@@ -80,7 +80,12 @@ export class VenuesService {
       .groupBy('t.id')
       .orderBy('venueCount', 'DESC')
       .addOrderBy('t.name', 'ASC')
-      .getRawMany<{ id: string; name: string; slug: string; venueCount: number }>();
+      .getRawMany<{
+        id: string;
+        name: string;
+        slug: string;
+        venueCount: number;
+      }>();
   }
 
   async create(ownerId: string, dto: CreateVenueDto): Promise<Venue> {
@@ -292,12 +297,9 @@ export class VenuesService {
       qb.andWhere('v.averageCheck <= :maxCheck', { maxCheck: query.maxCheck });
     if (query.feature) {
       // CSV з пробілами («wifi, parking») — тримимо, інакше « wifi» не матчиться
-      qb.andWhere(
-        'f.code IN (:...features)',
-        {
-          features: query.feature.split(',').map((s) => s.trim()),
-        },
-      );
+      qb.andWhere('f.code IN (:...features)', {
+        features: query.feature.split(',').map((s) => s.trim()),
+      });
     }
     if (query.tag) {
       qb.andWhere('t.slug IN (:...tags)', {
@@ -381,7 +383,11 @@ export class VenuesService {
       // Для передачі керування потрібен лише поточний власник
       relations: { owner: { profile: true } },
     });
-    return { data: rows, meta: buildMeta({ page, limit, offset }, total) };
+    const data = rows.map((v) => {
+      if (v.owner) v.owner = sanitizeUser(v.owner) as unknown as Venue['owner'];
+      return v;
+    });
+    return { data, meta: buildMeta({ page, limit, offset }, total) };
   }
 
   async changeStatus(venueId: string, to: VenueStatus): Promise<Venue> {

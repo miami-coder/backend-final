@@ -9,9 +9,7 @@ const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 
 /** Реальний тип зображення за магічними байтами (рев'ю викладача: тип
  *  визначається перевіреним вмістом, а не заявою клієнта). */
-function detectImageType(
-  buffer: Buffer,
-): 'jpeg' | 'png' | 'webp' | null {
+function detectImageType(buffer: Buffer): 'jpeg' | 'png' | 'webp' | null {
   const isPng =
     buffer.length >= 8 &&
     buffer[0] === 0x89 &&
@@ -106,7 +104,9 @@ export class FileStorageService {
   // (Vercel Marketplace Blob інжектить BLOB_STORE_ID; @vercel/blob 2.8+
   // сам ресолвить OIDC-креденшіали в середовищі Vercel).
   private get useBlobMode(): boolean {
-    return Boolean(process.env.BLOB_STORE_ID || process.env.BLOB_READ_WRITE_TOKEN);
+    return Boolean(
+      process.env.BLOB_STORE_ID || process.env.BLOB_READ_WRITE_TOKEN,
+    );
   }
 
   private get uploadsRoot(): string {
