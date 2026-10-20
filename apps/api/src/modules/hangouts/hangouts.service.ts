@@ -19,6 +19,7 @@ import { HangoutParticipant } from './entities/hangout-participant.entity';
 import { CreateHangoutDto } from './dto/create-hangout.dto';
 import { VenuesService } from '../venues/venues.service';
 import { VenueStatus } from '../venues/entities/venue.entity';
+import { sanitizeUser } from '../../common/utils/sanitize-user';
 import { CacheService } from '../../common/services/cache.service';
 import {
   buildMeta,
@@ -189,13 +190,20 @@ export class HangoutsService {
     if (!h) throw new NotFoundException('Заявку не знайдено');
     return {
       ...h,
-      participants: h.participants.map((p) => ({
-        hangoutId: p.hangoutId,
-        userId: p.userId,
-        joinedAt: p.joinedAt,
-        firstname: p.user?.profile?.firstname ?? '',
-        lastname: p.user?.profile?.lastname ?? '',
-      })),
+      participants: h.participants.map((p) => {
+        const author = sanitizeUser(p.user);
+        const authorProfile = (author?.profile ?? {}) as {
+          firstname?: string;
+          lastname?: string;
+        };
+        return {
+          hangoutId: p.hangoutId,
+          userId: p.userId,
+          joinedAt: p.joinedAt,
+          firstname: authorProfile.firstname ?? '',
+          lastname: authorProfile.lastname ?? '',
+        };
+      }),
     };
   }
 

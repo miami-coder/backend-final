@@ -34,12 +34,16 @@ describe('JwtStrategy — видалений юзер (ревʼю крок 2)', 
     process.env.JWT_ACCESS_SECRET = SECRET;
   });
 
-  it('cache deleted:true → UnauthorizedException', async () => {
-    const cache = { get: jest.fn().mockResolvedValue(true) };
+  it('cache deleted:true → UnauthorizedException + TTL прапора продовжується (sliding 960)', async () => {
+    const cache = {
+      get: jest.fn().mockResolvedValue(true),
+      set: jest.fn().mockResolvedValue(undefined),
+    };
     const strategy = new JwtStrategy(cache as any);
     await expect(
       strategy.validate({ sub: 'u-del', email: 'a@b.com', roles: ['user'] }),
     ).rejects.toThrow(UnauthorizedException);
+    expect(cache.set).toHaveBeenCalledWith('deleted:u-del', true, 960);
   });
 
   it('cache miss → користувач проходить', async () => {

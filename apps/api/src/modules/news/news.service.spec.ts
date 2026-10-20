@@ -241,3 +241,64 @@ describe('NewsService — видимість новин і «просунути�
     );
   });
 });
+
+describe('NewsService.listPublic — фільтр схованого закладу (ревʼю Stage 2)', () => {
+  let service: NewsService;
+  let news: any;
+  let venues: any;
+  let perms: any;
+
+  beforeEach(async () => {
+    news = {
+      save: jest.fn(),
+      findOne: jest.fn(),
+      createQueryBuilder: jest.fn(),
+    };
+    venues = { findOneOrThrow: jest.fn() };
+    perms = { hasPermission: jest.fn().mockResolvedValue(false) };
+    const module = await Test.createTestingModule({
+      providers: [
+        NewsService,
+        { provide: getRepositoryToken(News), useValue: news },
+        { provide: VenuesService, useValue: venues },
+        { provide: PermissionsService, useValue: perms },
+        { provide: FileStorageService, useValue: { save: jest.fn() } },
+      ],
+    }).compile();
+    service = module.get(NewsService);
+  });
+
+  it('список: схований заклад відфільтрований — join/andWhere з approved у запиті', async () => {
+    const chain = {
+      where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
+      leftJoin: jest.fn().mockReturnThis(),
+      orderBy: jest.fn().mockReturnThis(),
+      addOrderBy: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
+      take: jest.fn().mockReturnThis(),
+      getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
+    };
+    news.createQueryBuilder.mockReturnValueOnce(chain);
+    await service.listPublic({ venueId: 'v-pending' });
+    const andWhereCalls = chain.andWhere.mock.calls.map((c) => c[0]);
+    expect(andWhereCalls.some((sql) => sql.includes('v.status'))).toBe(true);
+  });
+
+  it('список: глобальні новини (venueId NULL) лишаються видимими — IS NULL у фільтрі', async () => {
+    const chain = {
+      where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
+      leftJoin: jest.fn().mockReturnThis(),
+      orderBy: jest.fn().mockReturnThis(),
+      addOrderBy: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
+      take: jest.fn().mockReturnThis(),
+      getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
+    };
+    news.createQueryBuilder.mockReturnValueOnce(chain);
+    await service.listPublic({});
+    const andWhereCalls = chain.andWhere.mock.calls.map((c) => c[0]);
+    expect(andWhereCalls.some((sql) => sql.includes('IS NULL'))).toBe(true);
+  });
+});

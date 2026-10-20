@@ -166,9 +166,10 @@ export class AdminUsersController {
     }
     user.deletedAt = new Date();
     await this.users.save(user);
-    // Прапор для jwt-strategy: старий access-токен живе не довше TTL кешу,
-    // refresh/login блокуються по deletedAt з БД.
-    await this.cache.set(`deleted:${id}`, true, 300);
+    // Прапор для jwt-strategy: TTL ≥ lifetime access-токена (15m) + запас,
+    // інакше видалений юзер знову проходить по старому токену після 5 хв
+    // (ревʼю Stage 2). refresh/login блокуються по deletedAt з БД завжди.
+    await this.cache.set(`deleted:${id}`, true, 960);
     await this.audit.log(u.sub, 'soft_delete', 'user', id, null, {
       deletedAt: user.deletedAt,
     });

@@ -331,3 +331,68 @@ describe('HangoutsService.create — лише схвалені заклади', 
     ).resolves.toBeDefined();
   });
 });
+
+describe('HangoutsService.getOne — видалений учасник (ревʼю Stage 2)', () => {
+  it('імʼя видаленого учасника приховано як «Обліковий запис видалено»', async () => {
+    const repo = () => ({
+      save: jest.fn(),
+      create: jest.fn((x) => x),
+      findOne: jest.fn(),
+      createQueryBuilder: jest.fn(),
+    });
+    const hangouts = repo();
+    hangouts.findOne = jest.fn().mockResolvedValue({
+      id: 'h1',
+      participants: [
+        {
+          hangoutId: 'h1',
+          userId: 'u-del',
+          joinedAt: new Date(),
+          user: {
+            id: 'u-del',
+            email: 'del@x.com',
+            deletedAt: new Date(),
+            profile: { firstname: 'Тарас', lastname: 'Секретний' },
+          },
+        },
+        {
+          hangoutId: 'h1',
+          userId: 'u-ok',
+          joinedAt: new Date(),
+          user: {
+            id: 'u-ok',
+            email: 'ok@x.com',
+            deletedAt: null,
+            profile: { firstname: 'Олег', lastname: 'Савчук' },
+          },
+        },
+      ],
+    });
+    const venues = repo();
+    venues.findOneOrThrow = jest
+      .fn()
+      .mockResolvedValue({ id: 'v1', status: 'approved' });
+    const module = await Test.createTestingModule({
+      providers: [
+        HangoutsService,
+        { provide: getRepositoryToken(Hangout), useValue: hangouts },
+        { provide: getRepositoryToken(HangoutParticipant), useValue: repo() },
+        { provide: VenuesService, useValue: venues },
+        {
+          provide: CacheService,
+          useValue: { get: jest.fn(), set: jest.fn(), delByPattern: jest.fn() },
+        },
+        { provide: EventEmitter2, useValue: { emit: jest.fn() } },
+      ],
+    }).compile();
+    const service = module.get(HangoutsService);
+    const res = await service.getOne('h1');
+    const del = res.participants.find((p) => p.userId === 'u-del');
+    const ok = res.participants.find((p) => p.userId === 'u-ok');
+    expect(del.firstname).toBe('Обліковий запис');
+    expect(del.lastname).toBe('видалено');
+    expect(ok.firstname).toBe('Олег');
+    expect(ok.lastname).toBe('Савчук');
+    expect(JSON.stringify(res)).not.toContain('Секретний');
+  });
+});

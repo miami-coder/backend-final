@@ -306,3 +306,59 @@ describe('ReviewsService.create — лише схвалені заклади', (
     ).resolves.toBeDefined();
   });
 });
+
+describe('ReviewsService.listForVenue — видалений автор (ревʼю Stage 2)', () => {
+  it('автор з deletedAt → isDeleted-псевдо-профіль замість реальних даних', async () => {
+    let service: ReviewsService;
+    const reviews = {
+      create: jest.fn((x) => x),
+      save: jest.fn(),
+      findOne: jest.fn(),
+      delete: jest.fn(),
+      createQueryBuilder: jest.fn().mockReturnValueOnce({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([
+          [
+            {
+              id: 'r1',
+              user: {
+                id: 'u-del',
+                email: 'del@x.com',
+                passwordHash: '$2b$10$secret',
+                deletedAt: new Date(),
+                profile: { firstname: 'Тарас', lastname: 'Секретний' },
+              },
+            },
+          ],
+          1,
+        ]),
+      }),
+    };
+    const module = await Test.createTestingModule({
+      providers: [
+        ReviewsService,
+        { provide: getRepositoryToken(Review), useValue: reviews },
+        {
+          provide: getRepositoryToken(Venue),
+          useValue: { findOne: jest.fn() },
+        },
+        { provide: PermissionsService, useValue: { hasPermission: jest.fn() } },
+        { provide: EventEmitter2, useValue: { emit: jest.fn() } },
+      ],
+    }).compile();
+    service = module.get(ReviewsService);
+    const res = await service.listForVenue('v1');
+    const u = res.data[0].user as Record<string, unknown>;
+    expect(u.isDeleted).toBe(true);
+    expect(u.profile).toEqual({
+      firstname: 'Обліковий запис',
+      lastname: 'видалено',
+    });
+    expect(JSON.stringify(res)).not.toContain('Секретний');
+  });
+});
