@@ -99,7 +99,7 @@ function PendingVenueCard({ v }: { v: Venue }) {
           <div className="flex gap-1.5">
             <dt className="shrink-0 text-muted">Власник:</dt>
             <dd className="min-w-0 truncate text-ink">
-              {v.owner ? `${v.owner.name ? `${v.owner.name} · ` : ''}${v.owner.email}` : '—'}
+              {v.owner?.name ?? '—'}
             </dd>
           </div>
           <div className="flex gap-1.5">
@@ -151,7 +151,7 @@ function ApprovedVenueRow({ v }: { v: Venue }) {
         <p className="truncate text-sm text-muted">{v.address}</p>
       </td>
       <td className="max-w-[220px] truncate px-4 py-2 text-sm text-muted">
-        {v.owner ? `${v.owner.name ? `${v.owner.name} · ` : ''}${v.owner.email}` : '—'}
+        {v.owner?.name ?? '—'}
       </td>
       <td className="px-4 py-2 text-sm text-muted">{formatDate(v.createdAt)}</td>
       <td className="px-4 py-2">

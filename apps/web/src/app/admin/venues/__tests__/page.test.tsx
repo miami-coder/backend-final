@@ -118,7 +118,7 @@ describe('/admin/venues — черга модерації', () => {
     })
     // схвалені — лінк на публічну сторінку є
     expect(html).toContain('href="/venues/v1"')
-    expect(html).toContain('owner@test.dev')
+    expect(html).toContain('Остап Бендер')
     expect(html).toContain('Остап Бендер')
     // кнопка передачі керування з venueId (мок повертає assign-owner:<id>)
     expect(html).toContain('assign-owner:v1')
@@ -168,7 +168,7 @@ describe('/admin/venues — черга модерації', () => {
     expect(html).toContain('+380501234567')
     expect(html).toContain('@u_pana')
     expect(html).toContain('Пн 10:00-23:00')
-    expect(html).toContain('owner@test.dev')
+    expect(html).toContain('Остап Бендер')
     expect(html).toContain('Остап Бендер')
     expect(html).toContain('Крафтове пиво')
     expect(html).toContain('#bar')
