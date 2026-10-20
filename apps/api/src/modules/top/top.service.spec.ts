@@ -43,7 +43,9 @@ describe('TopService (фіча «Топ закладів» — ревʼю вик
   });
 
   it('createCategory: тітул тримиться, position за замовчуванням 0', async () => {
-    const c = await service.createCategory({ title: ' Найкращий для весілля ' });
+    const c = await service.createCategory({
+      title: ' Найкращий для весілля ',
+    });
     expect(c.title).toBe('Найкращий для весілля');
     expect(c.position).toBe(0);
   });
@@ -51,18 +53,18 @@ describe('TopService (фіча «Топ закладів» — ревʼю вик
   it('addEntry: pending-заклад → 409 «лише схвалені»', async () => {
     categories.findOne.mockResolvedValueOnce({ id: 'c1' });
     venues.findOne.mockResolvedValueOnce({ id: 'v1', status: 'pending' });
-    await expect(
-      service.addEntry('c1', { venueId: 'v1' }),
-    ).rejects.toThrow(ConflictException);
+    await expect(service.addEntry('c1', { venueId: 'v1' })).rejects.toThrow(
+      ConflictException,
+    );
     expect(entries.save).not.toHaveBeenCalled();
   });
 
   it('addEntry: дубль у категорії → 409', async () => {
     categories.findOne.mockResolvedValueOnce({ id: 'c1' });
     entries.findOne.mockResolvedValueOnce({ id: 'e1' });
-    await expect(
-      service.addEntry('c1', { venueId: 'v1' }),
-    ).rejects.toThrow(ConflictException);
+    await expect(service.addEntry('c1', { venueId: 'v1' })).rejects.toThrow(
+      ConflictException,
+    );
   });
 
   it('removeEntry: неіснуючий запис → 404', async () => {

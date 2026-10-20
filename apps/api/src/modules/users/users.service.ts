@@ -13,6 +13,7 @@ import { Role } from '../rbac/entities/role.entity';
 import { UserRole } from '../rbac/entities/user-role.entity';
 import { RoleCode } from '../rbac/entities/role.enum';
 import { PermissionsService } from '../rbac/permissions.service';
+import { CacheService } from '../../common/services/cache.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 
@@ -28,6 +29,7 @@ export class UsersService {
     @InjectRepository(Role) private readonly roleRepo: Repository<Role>,
     @InjectRepository(UserRole)
     private readonly userRoles: Repository<UserRole>,
+    private readonly cache: CacheService,
     private readonly perms: PermissionsService,
   ) {}
 
@@ -133,6 +135,9 @@ export class UsersService {
     if (!user) throw new NotFoundException('Користувача не знайдено');
     user.deletedAt = new Date();
     await this.users.save(user);
+    // Симметрія з AdminUsersService.softDelete (M4 Stage 4): старий
+    // access-токен самовидаленого юзера теж вмирає одразу.
+    await this.cache.set(`deleted:${userId}`, true, 960);
   }
 
   /** Soft-видалений акаунт (.deletedAt) знову заходить (OAuth або паролем):

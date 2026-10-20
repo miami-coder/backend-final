@@ -20,7 +20,9 @@ export function TopManager({ categories }: { categories: TopCategoryAdmin[] }) {
   const router = useRouter()
   const [title, setTitle] = useState('')
   const [busyCat, setBusyCat] = useState<string | null>(null)
-  const [venueId, setVenueId] = useState('')
+  // Ревʼю Stage 4 M1: спільний venueId-стан дзеркалився в усі категорії —
+  // тепер у кожної категорії свій інпут
+  const [entryInputs, setEntryInputs] = useState<Record<string, string>>({})
 
   async function run(fn: () => Promise<unknown>, done: string) {
     try {
@@ -109,16 +111,18 @@ export function TopManager({ categories }: { categories: TopCategoryAdmin[] }) {
               className="mt-3 flex gap-2"
               onSubmit={(e) => {
                 e.preventDefault()
-                if (!venueId.trim()) return
-                void run(
-                  () => addTopEntry(c.id, venueId.trim()),
-                  'Заклад додано',
-                ).then(() => setVenueId(''))
+                const idValue = (entryInputs[c.id] ?? '').trim()
+                if (!idValue) return
+                void run(() => addTopEntry(c.id, idValue), 'Заклад додано').then(
+                  () => setEntryInputs((m) => ({ ...m, [c.id]: '' })),
+                )
               }}
             >
               <input
-                value={venueId}
-                onChange={(e) => setVenueId(e.target.value)}
+                value={entryInputs[c.id] ?? ''}
+                onChange={(e) =>
+                  setEntryInputs((m) => ({ ...m, [c.id]: e.target.value }))
+                }
                 placeholder="UUID закладу (див. каталог адмінки)"
                 aria-label={`UUID закладу для категорії ${c.title}`}
                 className="flex-1 rounded-xl border border-line bg-surface px-3 py-1.5 text-xs text-ink outline-none focus-visible:border-amber-500"

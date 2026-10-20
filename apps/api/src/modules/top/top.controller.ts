@@ -8,16 +8,17 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { Public } from '../../common/decorators/public.decorator';
-import { TopService, type CreateTopCategoryDto, type CreateTopEntryDto } from './top.service';
+import { TopService } from './top.service';
+import {
+  CreateTopCategoryDto,
+  CreateTopEntryDto,
+  UpdateTopCategoryDto,
+} from './dto/top.dto';
 
 @ApiTags('Top')
 @Controller()
@@ -56,7 +57,7 @@ export class TopController {
   @Permissions('user:manage')
   @Patch('admin/top/categories/:id')
   @ApiOperation({ summary: 'Адмін: оновити категорію Топу' })
-  updateCategory(@Param('id') id: string, @Body() dto: Partial<CreateTopCategoryDto>) {
+  updateCategory(@Param('id') id: string, @Body() dto: UpdateTopCategoryDto) {
     return this.top.updateCategory(id, dto).then((data) => ({ data }));
   }
 

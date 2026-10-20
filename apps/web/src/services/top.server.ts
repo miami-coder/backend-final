@@ -11,10 +11,13 @@ export interface TopCategoryPublic {
   }[]
 }
 
-/** Публічний Топ: GET /top (revʼю викладача — розділ «Топ»). */
+/**
+ * Публічний Топ: GET /top (revʼю викладача — розділ «Топ»).
+ * Увага (ревʼю Stage 4 C1): serverFetch вже повертає розгорнуте data —
+ * другий .data тут давав завжди порожній список на живій сторінці.
+ */
 export async function getTop(revalidate = 60): Promise<TopCategoryPublic[]> {
-  const res = await serverFetch<{ data: TopCategoryPublic[] }>('/top', {
-    revalidate,
-  }).catch(() => null)
-  return res?.data ?? []
+  return serverFetch<TopCategoryPublic[]>('/top', { revalidate }).catch(
+    () => [],
+  )
 }

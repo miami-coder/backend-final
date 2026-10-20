@@ -8,6 +8,7 @@ import { OAuthAccount } from './entities/oauth-account.entity';
 import { Role } from '../rbac/entities/role.entity';
 import { UserRole } from '../rbac/entities/user-role.entity';
 import { PermissionsService } from '../rbac/permissions.service';
+import { CacheService } from '../../common/services/cache.service';
 import * as bcrypt from 'bcryptjs';
 
 const perms = { invalidate: jest.fn().mockResolvedValue(undefined) };
@@ -45,6 +46,7 @@ describe('UsersService', () => {
         { provide: getRepositoryToken(Role), useValue: roles },
         { provide: getRepositoryToken(UserRole), useValue: userRoles },
         { provide: PermissionsService, useValue: perms },
+        { provide: CacheService, useValue: { get: jest.fn(), set: jest.fn() } },
       ],
     }).compile();
     service = module.get(UsersService);
@@ -271,6 +273,7 @@ describe('UsersService — OAuth-регістрація на видалений 
           useValue: { save: jest.fn(), findOne: jest.fn() },
         },
         { provide: PermissionsService, useValue: { invalidate: jest.fn() } },
+        { provide: CacheService, useValue: { get: jest.fn(), set: jest.fn() } },
       ],
     }).compile();
     const service = module.get(UsersService);
@@ -298,11 +301,21 @@ describe('UsersService.deleteMe — видалення власного проф
       providers: [
         UsersService,
         { provide: getRepositoryToken(User), useValue: users },
-        { provide: getRepositoryToken(Profile), useValue: { findOne: jest.fn(), save: jest.fn() } },
-        { provide: getRepositoryToken(OAuthAccount), useValue: { findOne: jest.fn() } },
+        {
+          provide: getRepositoryToken(Profile),
+          useValue: { findOne: jest.fn(), save: jest.fn() },
+        },
+        {
+          provide: getRepositoryToken(OAuthAccount),
+          useValue: { findOne: jest.fn() },
+        },
         { provide: getRepositoryToken(Role), useValue: { findOne: jest.fn() } },
-        { provide: getRepositoryToken(UserRole), useValue: { save: jest.fn(), findOne: jest.fn() } },
+        {
+          provide: getRepositoryToken(UserRole),
+          useValue: { save: jest.fn(), findOne: jest.fn() },
+        },
         { provide: PermissionsService, useValue: { invalidate: jest.fn() } },
+        { provide: CacheService, useValue: { get: jest.fn(), set: jest.fn() } },
       ],
     }).compile();
     const service = module.get(UsersService);

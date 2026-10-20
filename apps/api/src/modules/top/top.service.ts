@@ -31,7 +31,16 @@ export class TopService {
 
   /** Публічний Топ: категорії за позицією, усередині — заклади за позицією. */
   async listPublic(): Promise<
-    { id: string; title: string; venues: { id: string; name: string; mainPhotoUrl: string | null; ratingAvg: number | null }[] }[]
+    {
+      id: string;
+      title: string;
+      venues: {
+        id: string;
+        name: string;
+        mainPhotoUrl: string | null;
+        ratingAvg: number | null;
+      }[];
+    }[]
   > {
     const cats = await this.categories.find({ order: { position: 'ASC' } });
     if (cats.length === 0) return [];
@@ -100,14 +109,22 @@ export class TopService {
     const dupe = await this.entries.findOne({
       where: { categoryId, venueId: dto.venueId },
     });
-    if (dupe)
-      throw new ConflictException('Заклад уже в цій категорії Топу');
+    if (dupe) throw new ConflictException('Заклад уже в цій категорії Топу');
     const entry = this.entries.create({
       categoryId,
       venueId: dto.venueId,
       position: dto.position ?? 0,
     });
-    return this.entries.save(entry);
+    try {
+      return await this.entries.save(entry);
+    } catch (e) {
+      // Гонка дублікатів: service-level findOne пропускає обидва паралельні
+      // запити, UNIQUE(categoryId, venueId) ріже другий — 409, не 500 (M3).
+      if ((e as { code?: string }).code === '23505') {
+        throw new ConflictException('Заклад уже в цій категорії Топу');
+      }
+      throw e;
+    }
   }
 
   async removeEntry(categoryId: string, entryId: string): Promise<void> {

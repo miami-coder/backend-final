@@ -70,7 +70,7 @@ pnpm typecheck       # tsc обох частин (--if-present)
 pnpm build           # nest build + next build
 ```
 
-e2e бека — `pnpm test:e2e` з кореня: сам створює роль/БД `piyachok_test` у докер-контейнері postgres (потрібен піднятий стекс: `docker compose up -d postgres redis`), накочує міграції й ганяє сюіти. Відомі 2 e2e-фейли auth (ревокація refresh-токена: `rotates refresh token`/`logs out`) — пережиті з попередньої архітектури сесії, існують і на чистій мастер-голові; все решта зелена (юніт бека 291, фрона 398).
+e2e бека — `pnpm test:e2e` з кореня: сам створює роль/БД `piyachok_test` у докер-контейнері postgres (потрібен піднятий стекс: `docker compose up -d postgres redis`), накочує міграції й ганяє сюіти. Прогін 2026-10-20 (фінал fix-хвилі): **юніт бека 292+/292+, юніт фронта 398/398, e2e 25/25 — все зелене**.
 
 Прийоми, якщо щось не так:
 - api у docker іноді зависає на компіляції при редагуваннях ззовні — `docker restart piyachok-api-1`;
