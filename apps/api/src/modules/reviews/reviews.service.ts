@@ -17,6 +17,15 @@ import {
   buildMeta,
   normalizePagination,
 } from '../../common/utils/pagination.util';
+import { sanitizeUser } from '../../common/utils/sanitize-user';
+
+/** Жодних приватних даних авторів у відповідях (рев'ю викладача). */
+function sanitizeReviewAuthors(data: Review[]) {
+  return data.map((r) => ({
+    ...r,
+    user: sanitizeUser(r.user),
+  }));
+}
 
 @Injectable()
 export class ReviewsService {
@@ -119,7 +128,10 @@ export class ReviewsService {
       .skip(offset)
       .take(limit)
       .getManyAndCount();
-    return { data, meta: buildMeta({ page, limit, offset }, total) };
+    return {
+      data: sanitizeReviewAuthors(data),
+      meta: buildMeta({ page, limit, offset }, total),
+    };
   }
 
   async listForUser(userId: string) {
@@ -141,7 +153,10 @@ export class ReviewsService {
       qb.where('r.venueId = :venueId', { venueId: opts.venueId });
     qb.orderBy('r.createdAt', 'DESC').skip(offset).take(limit);
     const [data, total] = await qb.getManyAndCount();
-    return { data, meta: buildMeta({ page, limit, offset }, total) };
+    return {
+      data: sanitizeReviewAuthors(data),
+      meta: buildMeta({ page, limit, offset }, total),
+    };
   }
 
   async feature(reviewId: string) {

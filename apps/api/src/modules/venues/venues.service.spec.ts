@@ -456,3 +456,80 @@ describe('VenuesService', () => {
     });
   });
 });
+
+describe('VenuesService.findOnePublic — санітизація власника', () => {
+  let service: VenuesService;
+  let venues: any;
+  let perms: any;
+  let cache: any;
+  let events: any;
+  let storage: any;
+  let photos: any;
+  let roles: any;
+  let userRoles: any;
+  let audit: any;
+
+  beforeEach(async () => {
+    photos = {};
+    perms = { hasPermission: jest.fn().mockResolvedValue(true) };
+    cache = { get: jest.fn().mockResolvedValue(undefined), set: jest.fn() };
+    events = { emit: jest.fn() };
+    storage = { save: jest.fn(), remove: jest.fn() };
+    roles = {};
+    userRoles = {};
+    audit = {};
+    venues = {
+      findOne: jest.fn(),
+      save: jest.fn(),
+      create: jest.fn(),
+      createQueryBuilder: jest.fn().mockReturnValue(qb()),
+    };
+    const module = await Test.createTestingModule({
+      providers: [
+        VenuesService,
+        { provide: getRepositoryToken(Venue), useValue: venues },
+        { provide: getRepositoryToken(VenuePhoto), useValue: photos },
+        { provide: getRepositoryToken(VenueFeature), useValue: {} },
+        { provide: getRepositoryToken(VenueFeatureAssignment), useValue: {} },
+        { provide: getRepositoryToken(Tag), useValue: {} },
+        { provide: getRepositoryToken(VenueTag), useValue: {} },
+        { provide: getRepositoryToken(VenueType), useValue: {} },
+        { provide: getRepositoryToken(VenueTypeAssignment), useValue: {} },
+        { provide: PermissionsService, useValue: perms },
+        { provide: CacheService, useValue: cache },
+        { provide: FileStorageService, useValue: storage },
+        { provide: getRepositoryToken(Role), useValue: roles },
+        { provide: getRepositoryToken(UserRole), useValue: userRoles },
+        { provide: AuditService, useValue: audit },
+        { provide: EventEmitter2, useValue: events },
+      ],
+    }).compile();
+    service = module.get(VenuesService);
+  });
+
+  it('owner у відповіді без email/passwordHash/emailVerified/deletedAt', async () => {
+    const venue = {
+      id: 'v1',
+      status: 'approved',
+      owner: {
+        id: 'u1',
+        email: 'owner@example.com',
+        passwordHash: '$2b$10$secretsecretsecret',
+        emailVerified: true,
+        deletedAt: null,
+        profile: { firstname: 'Олена', avatarUrl: null, phone: '099…' },
+      },
+    };
+    venues.createQueryBuilder.mockReturnValueOnce({
+      ...qb(),
+      getOne: jest.fn().mockResolvedValue(venue),
+    });
+    const res = await service.findOnePublic('v1');
+    expect(res.id).toBe('v1');
+    expect(res.owner).not.toHaveProperty('email');
+    expect(res.owner).not.toHaveProperty('passwordHash');
+    expect(res.owner).not.toHaveProperty('emailVerified');
+    expect(res.owner).not.toHaveProperty('deletedAt');
+    expect(res.owner.profile.firstname).toBe('Олена');
+  });
+});

@@ -172,3 +172,60 @@ describe('ReviewsService', () => {
     });
   });
 });
+
+describe('ReviewsService — санітизація авторів відгуків', () => {
+  let service: ReviewsService;
+  let reviews: any;
+  let venues: any;
+  let perms: any;
+  let events: any;
+
+  beforeEach(async () => {
+    reviews = {
+      create: jest.fn((x) => x),
+      save: jest.fn().mockResolvedValue(undefined),
+      findOne: jest.fn(),
+      delete: jest.fn(),
+      createQueryBuilder: jest.fn().mockReturnValue(qb()),
+    };
+    venues = { findOne: jest.fn(), update: jest.fn() };
+    perms = { hasPermission: jest.fn() };
+    events = { emit: jest.fn() };
+    const module = await Test.createTestingModule({
+      providers: [
+        ReviewsService,
+        { provide: getRepositoryToken(Review), useValue: reviews },
+        { provide: getRepositoryToken(Venue), useValue: venues },
+        { provide: PermissionsService, useValue: perms },
+        { provide: EventEmitter2, useValue: events },
+      ],
+    }).compile();
+    service = module.get(ReviewsService);
+  });
+
+  it('listForVenue віддає автора без email/passwordHash/emailVerified/deletedAt', async () => {
+    const author = {
+      id: 'u1',
+      email: 'author@example.com',
+      passwordHash: '$2b$10$secretsecretsecret',
+      emailVerified: true,
+      deletedAt: null,
+      profile: { firstname: 'Іван', avatarUrl: null },
+    };
+    reviews.createQueryBuilder.mockReturnValueOnce({
+      leftJoinAndSelect: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
+      orderBy: jest.fn().mockReturnThis(),
+      addOrderBy: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
+      take: jest.fn().mockReturnThis(),
+      getManyAndCount: jest.fn().mockResolvedValue([[{ id: 'r1', user: author }], 1]),
+    });
+    const res = await service.listForVenue('v1');
+    expect(res.data[0].user).not.toHaveProperty('email');
+    expect(res.data[0].user).not.toHaveProperty('passwordHash');
+    expect(res.data[0].user).not.toHaveProperty('emailVerified');
+    expect(res.data[0].user).not.toHaveProperty('deletedAt');
+    expect(res.data[0].user.profile.firstname).toBe('Іван');
+  });
+});

@@ -16,6 +16,7 @@ import { VenueType } from './entities/venue-type.entity';
 import { VenueTypeAssignment } from './entities/venue-type-assignment.entity';
 import { CreateVenueDto } from './dto/create-venue.dto';
 import { UpdateVenueDto } from './dto/update-venue.dto';
+import { sanitizeUser } from '../../common/utils/sanitize-user';
 import { QueryVenuesDto, VenueSort } from './dto/query-venues.dto';
 import { PermissionsService } from '../rbac/permissions.service';
 import { Role } from '../rbac/entities/role.entity';
@@ -172,6 +173,7 @@ export class VenuesService {
       .andWhere('v.status = :status', { status: VenueStatus.Approved })
       .getOne();
     if (!venue) throw new NotFoundException('Заклад не знайдено');
+    if (venue.owner) venue.owner = sanitizeUser(venue.owner) as Venue['owner'];
     return venue;
   }
 
