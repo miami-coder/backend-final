@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import type { CatalogQuery } from '@/lib/venues/query'
-import { getVenueTags, type TagRef } from '@/services/venues'
+import { getVenueTags, getVenueTypes, getVenueFeatures, type TagRef, type TypeRef, type FeatureRef } from '@/services/venues'
 
 // Рейтинг-фільтр зірками: цілі значення 1..5 (у URL досі можна 0.5-крок)
 const RATING_STARS = [1, 2, 3, 4, 5] as const
@@ -26,6 +26,8 @@ export function VenueFilters({ initial }: { initial: CatalogQuery }) {
   const [type, setType] = useState(initial.type ?? '')
   const [tag, setTag] = useState(initial.tag.join(','))
   const [tags, setTags] = useState<TagRef[]>([])
+  const [types, setTypes] = useState<TypeRef[]>([])
+  const [features, setFeatures] = useState<FeatureRef[]>([])
   const [feature, setFeature] = useState(initial.feature.join(','))
   const [minCheck, setMinCheck] = useState(initial.minCheck?.toString() ?? '')
   const [maxCheck, setMaxCheck] = useState(initial.maxCheck?.toString() ?? '')
@@ -41,6 +43,12 @@ export function VenueFilters({ initial }: { initial: CatalogQuery }) {
     getVenueTags()
       .then(setTags)
       .catch(() => undefined)
+    getVenueTypes()
+      .then(setTypes)
+      .catch(() => undefined)
+    getVenueFeatures()
+      .then(setFeatures)
+      .catch(() => undefined)
   }, [])
 
   // Перемикання чипа: додає/забирає slug у CSV-стані тегів
@@ -50,6 +58,15 @@ export function VenueFilters({ initial }: { initial: CatalogQuery }) {
       ? active.filter((s) => s !== slug)
       : [...active, slug]
     setTag(next.join(','))
+  }
+
+  // Перемикання чипа фічі: керує CSV-станом feature
+  function toggleFeatureSlug(code: string) {
+    const active = feature.split(',').map((s) => s.trim()).filter(Boolean)
+    const next = active.includes(code)
+      ? active.filter((s) => s !== code)
+      : [...active, code]
+    setFeature(next.join(','))
   }
 
   function apply(e: FormEvent) {
@@ -114,8 +131,13 @@ export function VenueFilters({ initial }: { initial: CatalogQuery }) {
           </Select>
         </label>
         <label className="w-44 shrink-0 text-sm lg:w-auto">
-          Тип закладу (slug)
-          <Input value={type} onChange={(e) => setType(e.target.value)} placeholder="напр. bar" className="mt-1" />
+          Тип закладу
+          <Select value={type} onChange={(e) => setType(e.target.value)} className="mt-1">
+            <option value="">Всі типи</option>
+            {types.map((t) => (
+              <option key={t.id} value={t.slug}>{t.name}</option>
+            ))}
+          </Select>
         </label>
         <div className="w-44 shrink-0 text-sm lg:w-auto">
           <span>Теги</span>
@@ -139,18 +161,30 @@ export function VenueFilters({ initial }: { initial: CatalogQuery }) {
               })}
             </div>
           )}
-          <Input
-            value={tag}
-            onChange={(e) => setTag(e.target.value)}
-            placeholder="pyvo, sport"
-            aria-label="Теги вручну (через кому)"
-            className="mt-2"
-          />
         </div>
-        <label className="w-44 shrink-0 text-sm lg:w-auto">
-          Фічі (через кому)
-          <Input value={feature} onChange={(e) => setFeature(e.target.value)} placeholder="wifi, parking" className="mt-1" />
-        </label>
+        <div className="w-44 shrink-0 text-sm lg:w-auto">
+          <span>Особливості</span>
+          {features.length > 0 && (
+            <div className="mt-1 flex flex-wrap gap-1" role="group" aria-label="Особливості">
+              {features.map((f) => {
+                const active = feature.split(',').map((s) => s.trim()).includes(f.code)
+                return (
+                  <button
+                    key={f.id}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => toggleFeatureSlug(f.code)}
+                    className={`rounded-full border px-2 py-0.5 text-xs leading-none transition-colors focus:outline-none focus-visible:border-amber-500 ${
+                      active ? 'border-amber-500 text-amber-400' : 'border-line text-muted hover:text-amber-400'
+                    }`}
+                  >
+                    {f.icon ? `${f.icon} ${f.name}` : f.name}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </div>
         <label className="w-28 shrink-0 text-sm lg:w-auto">
           Чек від
           <Input type="number" min="0" value={minCheck} onChange={(e) => setMinCheck(e.target.value)} className="mt-1" />

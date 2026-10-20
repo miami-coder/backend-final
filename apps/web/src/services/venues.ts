@@ -17,6 +17,31 @@ export async function getVenueTags(): Promise<TagRef[]> {
   return res.data
 }
 
+export interface TypeRef {
+  id: string
+  name: string
+  slug: string
+}
+
+export interface FeatureRef {
+  id: string
+  name: string
+  code: string
+  icon: string | null
+}
+
+/** Довідник типів закладів GET /venues/types — публічний. */
+export async function getVenueTypes(): Promise<TypeRef[]> {
+  const res = await apiList<TypeRef>('/venues/types')
+  return res.data
+}
+
+/** Довідник особливостей GET /venues/features — публічний. */
+export async function getVenueFeatures(): Promise<FeatureRef[]> {
+  const res = await apiList<FeatureRef>('/venues/features')
+  return res.data
+}
+
 /**
  * POST /venues/:id/view — фіксація перегляду. Fire-and-forget: рекордер нічого
  * не рендерить, мережева помилка не має ніяк позначатись на UI, тому тіхає тут.
