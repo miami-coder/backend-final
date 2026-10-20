@@ -15,7 +15,10 @@ export async function createVenueReview(venueId: string, fd: FormData): Promise<
 }
 
 /** PATCH /reviews/:id — правка власного відгуку (rating + text, JSON). */
-export function updateReview(reviewId: string, data: { rating: number; text: string }): Promise<unknown> {
+export function updateReview(
+  reviewId: string,
+  data: { rating: number; text: string; billAmount?: number | null },
+): Promise<unknown> {
   return api(`/reviews/${reviewId}`, {
     method: 'PATCH',
     headers: { 'content-type': 'application/json' },

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { useUser } from '@/components/providers/user-provider'
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Modal } from '@/components/ui/modal'
 import { FilePickerButton } from '@/components/ui/file-picker-button'
@@ -37,6 +38,7 @@ export function ReviewForm({ venueId, myReview, initialEditing = false }: {
   const [deleting, setDeleting] = useState(false)
   const [checkFile, setCheckFile] = useState<File | null>(null)
   const [checkResetKey, setCheckResetKey] = useState(0)
+  const [billAmount, setBillAmount] = useState(myReview?.billAmount?.toString() ?? '')
 
   // Зміна відгуку зверху (створено/видалено) — поля синхронізуємо, редактор закриваємо.
   // Монтування пропускаємо: initialEditing уже відкрив редактор
@@ -65,6 +67,7 @@ export function ReviewForm({ venueId, myReview, initialEditing = false }: {
   function startEdit() {
     if (!myReview) return
     setRating(myReview.rating)
+    setBillAmount(myReview.billAmount?.toString() ?? '')
     setText(myReview.text)
     setError(null)
     setEditing(true)
@@ -82,7 +85,7 @@ export function ReviewForm({ venueId, myReview, initialEditing = false }: {
 
   async function submit() {
     setError(null)
-    const parsed = reviewFormSchema.safeParse({ rating, text })
+    const parsed = reviewFormSchema.safeParse({ rating, text, billAmount: billAmount ? Number(billAmount) : null })
     if (!parsed.success) {
       // помилки полів DTO на поля не маппимо — message першого issue інлайн
       setError(parsed.error.issues[0]?.message ?? 'Перевірте поля')
@@ -106,12 +109,14 @@ export function ReviewForm({ venueId, myReview, initialEditing = false }: {
         const fd = new FormData()
         fd.set('rating', String(parsed.data.rating))
         fd.set('text', parsed.data.text)
+        if (billAmount) fd.set('billAmount', String(Number(billAmount)))
         if (file) fd.set('checkPhoto', file)
         await createVenueReview(venueId, fd)
         // Після успішного створення форма заново чиста; вкладка «Редагувати»
         // відкриється повністю підставленою зі свіжого myReview
         setRating(0)
         setText('')
+        setBillAmount('')
         setCheckFile(null)
         setCheckResetKey((k) => k + 1)
       } else {
@@ -194,6 +199,18 @@ export function ReviewForm({ venueId, myReview, initialEditing = false }: {
           ))}
         </div>
       </fieldset>
+
+      <label htmlFor="review-bill" className="block text-sm font-medium">
+        Сума чека, грн (необов&apos;язково)
+      </label>
+      <Input
+        id="review-bill"
+        type="number"
+        min="0"
+        value={billAmount}
+        onChange={(e) => setBillAmount(e.target.value)}
+        placeholder="Напр. 450"
+      />
 
       <label htmlFor="review-text" className="block text-sm font-medium">
         Відгук

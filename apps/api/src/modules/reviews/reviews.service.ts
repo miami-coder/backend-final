@@ -59,6 +59,7 @@ export class ReviewsService {
       userId,
       ...dto,
       checkPhotoUrl: dto.checkPhotoUrl ?? null,
+      billAmount: dto.billAmount ?? null,
     });
     const saved = await this.reviews.save(review);
     await this.recalc(venueId);

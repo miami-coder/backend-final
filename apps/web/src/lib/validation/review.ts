@@ -5,6 +5,14 @@ export const reviewFormSchema = z.object({
   // бо 0 — валідний тип, провалюється лише межа
   rating: z.number({ message: 'Оцініть заклад' }).int().min(1, 'Оцініть заклад').max(5, 'Максимум 5'),
   text: z.string().trim().min(10, 'Мінімум 10 символів').max(2000, 'Максимум 2000 символів'),
+  // Сума чека відвідувача — необовʼязкова (ревʼю викладача)
+  billAmount: z
+    .number()
+    .int('Сума — ціле число')
+    .min(0, 'Сума не може бути відʼємною')
+    .max(1_000_000)
+    .nullable()
+    .optional(),
 })
 
 export type ReviewFormValues = z.infer<typeof reviewFormSchema>

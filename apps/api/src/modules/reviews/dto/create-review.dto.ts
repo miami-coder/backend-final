@@ -13,4 +13,7 @@ export class CreateReviewDto {
   @Type(() => Number) @IsInt() @Min(1) @Max(5) rating: number;
   @IsString() @MinLength(10) @MaxLength(2000) text: string;
   @IsOptional() @IsString() checkPhotoUrl?: string;
+  /** Сума чека відвідувача, грн (опційно; ревʼю викладача). */
+  @IsOptional() @Type(() => Number) @IsInt() @Min(0) @Max(1_000_000)
+  billAmount?: number;
 }

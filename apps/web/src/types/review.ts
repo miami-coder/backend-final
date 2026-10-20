@@ -8,6 +8,7 @@ export interface RawReview {
   rating: number
   text: string
   checkPhotoUrl: string | null
+  billAmount?: number | null
   isFeatured: boolean
   createdAt: string
   updatedAt: string
@@ -28,6 +29,7 @@ export interface Review {
   rating: number
   text: string
   checkPhotoUrl: string | null
+  billAmount: number | null
   isFeatured: boolean
   createdAt: string
   updatedAt: string
@@ -41,6 +43,7 @@ export function parseReview(raw: RawReview): Review {
     rating: raw.rating,
     text: raw.text,
     checkPhotoUrl: raw.checkPhotoUrl,
+    billAmount: raw.billAmount ?? null,
     isFeatured: Boolean(raw.isFeatured),
     createdAt: raw.createdAt,
     updatedAt: raw.updatedAt,

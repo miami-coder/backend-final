@@ -70,6 +70,11 @@ export async function ReviewList({ venueId, sort, page }: { venueId: string; sor
               )}
               {/* кнопка сама ховається, якщо глядачем не критик/супер-адмін */}
               <FeatureReviewButton reviewId={r.id} isFeatured={r.isFeatured} />
+              {r.billAmount !== null && r.billAmount !== undefined && (
+                <span className="text-xs text-muted">
+                  Чек: {r.billAmount} грн
+                </span>
+              )}
               {r.checkPhotoUrl && (
                 /* eslint-disable-next-line @next/next/no-img-element -- зовнішній URL з бекенда */
                 <img src={r.checkPhotoUrl} alt="Фото чеку" className="h-16 rounded-xl" />

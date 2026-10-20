@@ -140,7 +140,7 @@ describe('ReviewForm (редагування/видалення наявного
     expect(screen.queryByDisplayValue('Тимчасова правка')).not.toBeInTheDocument()
   })
 
-  it('edit-режим: PATCH JSON {rating,text}', async () => {
+  it('edit-режим: PATCH JSON {rating,text,billAmount}', async () => {
     const fetchMock = vi.fn(async () => ok201())
     vi.stubGlobal('fetch', fetchMock)
     renderWithProviders(
@@ -154,7 +154,22 @@ describe('ReviewForm (редагування/видалення наявного
     const [url, init] = apiCalls(fetchMock)[0]
     expect(url).toBe('/api/v1/reviews/r1')
     expect(init.method).toBe('PATCH')
-    expect(JSON.parse(String(init.body))).toEqual({ rating: 3, text: 'Стало ще краще' })
+    expect(JSON.parse(String(init.body))).toEqual({ rating: 3, text: 'Стало ще краще', billAmount: null })
+  })
+
+  it('edit-режим: уведена сума чека потрапляє в PATCH (ревʼю: сума чека у відгуку)', async () => {
+    const fetchMock = vi.fn(async () => ok201())
+    vi.stubGlobal('fetch', fetchMock)
+    renderWithProviders(
+      <ReviewForm venueId="v1" myReview={{ id: 'r1', rating: 3, text: 'Було нормально' }} />,
+      testUser,
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Редагувати/i }))
+    fireEvent.change(screen.getByLabelText(/Сума чека/i), { target: { value: '450' } })
+    fireEvent.click(screen.getByRole('button', { name: /Зберегти/i }))
+    await waitFor(() => expect(apiCalls(fetchMock)).toHaveLength(1))
+    const [, init2] = apiCalls(fetchMock)[0]
+    expect(JSON.parse(String(init2.body))).toMatchObject({ billAmount: 450 })
   })
 
   it('видалення: модалка-підтвердження → DELETE + router.refresh()', async () => {
