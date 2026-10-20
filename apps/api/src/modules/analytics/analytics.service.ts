@@ -5,7 +5,6 @@ import { VenueView } from './entities/venue-view.entity';
 import { AnalyticsEvent } from './entities/analytics-event.entity';
 import { Venue } from '../venues/entities/venue.entity';
 import { CacheService } from '../../common/services/cache.service';
-import { Venue } from '../venues/entities/venue.entity';
 import {
   buildMeta,
   normalizePagination,
