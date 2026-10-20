@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { Button } from '@/components/ui/button'
 
-// sessionStorage недоступний під час SSR: серверний снапшот — «підтверджено»
-// (до гідратації нічого не рендеримо), клієнтський читає прапорець сеансу.
+// localStorage (ревʼю крок 3): попередження 18+ — один раз на пристрій,
+// а не на кожну сесію/вкладку. localStorage недоступний під час SSR:
+// серверний снапшот — «підтверджено» (до гідратації нічого не рендеримо).
 const listeners = new Set<() => void>()
 
 function subscribe(listener: () => void) {
@@ -15,7 +16,7 @@ function subscribe(listener: () => void) {
 }
 
 function getSnapshot() {
-  return sessionStorage.getItem('age-confirmed') === '1'
+  return localStorage.getItem('age-confirmed') === '1'
 }
 
 function getServerSnapshot() {
@@ -41,7 +42,7 @@ export function AgeGate() {
   }, [confirmed])
 
   const confirm = useCallback(() => {
-    sessionStorage.setItem('age-confirmed', '1')
+    localStorage.setItem('age-confirmed', '1')
     listeners.forEach((listener) => listener())
   }, [])
 

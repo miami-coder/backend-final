@@ -17,7 +17,7 @@ const renderShell = () =>
   )
 
 beforeEach(() => {
-  sessionStorage.clear()
+  localStorage.clear()
   vi.stubGlobal('fetch', vi.fn(() => Promise.resolve(new Response(null, { status: 401 }))))
 })
 
@@ -28,7 +28,7 @@ describe('AppShell (AgeGate inert)', () => {
     expect(screen.getByRole('button', { name: /Підтверджую/ })).toBeInTheDocument()
   })
   it('після підтвердження — контент доступний, гейту нема', () => {
-    sessionStorage.setItem('age-confirmed', '1')
+    localStorage.setItem('age-confirmed', '1')
     const { container } = renderShell()
     expect(container.firstChild).not.toHaveAttribute('inert')
     expect(screen.queryByText(/18 років/)).not.toBeInTheDocument()
