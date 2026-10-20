@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -153,6 +154,18 @@ export class HangoutsController {
   @ApiNotFoundResponse({ description: 'Зустріч не знайдено' })
   cancel(@CurrentUser() u: JwtUser, @Param('id') id: string) {
     return this.hangouts.cancel(u.sub, id).then((data) => ({ data }));
+  }
+
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard)
+  @Delete('hangouts/:id')
+  @ApiOperation({ summary: 'Видалити запит повністю (тільки творець)' })
+  @ApiOkResponse({ description: 'Видалено' })
+  @ApiUnauthorizedResponse({ description: 'Не авторизований' })
+  @ApiForbiddenResponse({ description: 'Тільки творець може видалити' })
+  @ApiNotFoundResponse({ description: 'Зустріч не знайдено' })
+  remove(@CurrentUser() u: JwtUser, @Param('id') id: string) {
+    return this.hangouts.delete(u.sub, id).then(() => ({ data: { id } }));
   }
 
   @ApiBearerAuth('access-token')

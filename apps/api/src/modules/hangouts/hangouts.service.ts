@@ -51,8 +51,13 @@ export class HangoutsService {
       throw new ForbiddenException(
         'Пиячки можна створювати лише на схвалені заклади',
       );
-    if (new Date(dto.date) < this.startOfToday()) {
-      throw new BadRequestException('Дата має бути сьогодні або в майбутньому');
+    // Дата+час: «сьогодні о 00:01» — вже минуле (ревʼю крок 3), тільки
+    // до початку дня перевірка це пропускала.
+    const at = new Date(`${dto.date}T${dto.time}`);
+    if (Number.isNaN(at.getTime()) || at.getTime() < Date.now() - 60_000) {
+      throw new BadRequestException(
+        'Дата й час зустрічі мають бути у майбутньому',
+      );
     }
     const h = this.hangouts.create({
       creatorId: userId,
@@ -110,6 +115,17 @@ export class HangoutsService {
       h.status = HangoutStatus.Open;
       await this.hangouts.save(h);
     }
+    await this.invalidateListCache();
+  }
+
+  /** Видалення запиту автором повністю (ревʼю крок 3): cancel лишає запис
+   *  зі статусом cancelled — автор має право і стерти його зовсім. */
+  async delete(userId: string, hangoutId: string): Promise<void> {
+    const h = await this.findOneOrThrow(hangoutId);
+    if (h.creatorId !== userId) {
+      throw new ForbiddenException('Тільки творець може видалити запит');
+    }
+    await this.hangouts.delete(hangoutId);
     await this.invalidateListCache();
   }
 
@@ -256,11 +272,5 @@ export class HangoutsService {
 
   async invalidateListCache() {
     await this.cache.delByPattern('hangouts:list:*');
-  }
-
-  private startOfToday(): Date {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    return d;
   }
 }

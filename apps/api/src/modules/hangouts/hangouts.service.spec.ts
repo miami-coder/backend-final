@@ -396,3 +396,89 @@ describe('HangoutsService.getOne — видалений учасник (ревʼ
     expect(JSON.stringify(res)).not.toContain('Секретний');
   });
 });
+
+describe('HangoutsService — дата+час і видалення автором (ревʼю крок 3)', () => {
+  let service: HangoutsService;
+  let hangouts: any;
+  let participants: any;
+  let venues: any;
+  let cache: any;
+  let events: any;
+
+  beforeEach(async () => {
+    hangouts = {
+      save: jest.fn((x) => Promise.resolve(x)),
+      create: jest.fn((x) => x),
+      findOne: jest.fn(),
+      delete: jest.fn(),
+    };
+    participants = { save: jest.fn(), delete: jest.fn(), count: jest.fn() };
+    venues = {
+      findOneOrThrow: jest
+        .fn()
+        .mockResolvedValue({ id: 'v1', status: 'approved' }),
+      createQueryBuilder: jest.fn(),
+    };
+    cache = { get: jest.fn(), set: jest.fn(), delByPattern: jest.fn() };
+    events = { emit: jest.fn() };
+    const module = await Test.createTestingModule({
+      providers: [
+        HangoutsService,
+        { provide: getRepositoryToken(Hangout), useValue: hangouts },
+        {
+          provide: getRepositoryToken(HangoutParticipant),
+          useValue: participants,
+        },
+        { provide: VenuesService, useValue: venues },
+        { provide: CacheService, useValue: cache },
+        { provide: EventEmitter2, useValue: events },
+      ],
+    }).compile();
+    service = module.get(HangoutsService);
+  });
+
+  it('create на сьогодні о 00:01 (минулий час) → 400, не тільки «до початку дня»', async () => {
+    const today = new Date();
+    const date = today.toISOString().slice(0, 10);
+    await expect(
+      service.create('u1', 'v1', {
+        date,
+        time: '00:01',
+        purpose: 'Було',
+        groupSize: 3,
+      }),
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it('create на сьогодні 23:00 — ок', async () => {
+    const today = new Date();
+    const date = today.toISOString().slice(0, 10);
+    await expect(
+      service.create('u1', 'v1', {
+        date,
+        time: '23:00',
+        purpose: 'Буде',
+        groupSize: 3,
+      }),
+    ).resolves.toBeDefined();
+  });
+
+  it('delete: автор видаляє запит повністю', async () => {
+    hangouts.findOne.mockResolvedValueOnce({
+      id: 'h1',
+      creatorId: 'u1',
+      status: 'open',
+    });
+    await service.delete('u1', 'h1');
+    expect(hangouts.delete).toHaveBeenCalledWith('h1');
+    expect(cache.delByPattern).toHaveBeenCalled();
+  });
+
+  it('delete: не-автор → 403', async () => {
+    hangouts.findOne.mockResolvedValueOnce({ id: 'h1', creatorId: 'u9' });
+    await expect(service.delete('u2', 'h1')).rejects.toThrow(
+      ForbiddenException,
+    );
+    expect(hangouts.delete).not.toHaveBeenCalled();
+  });
+});
