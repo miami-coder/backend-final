@@ -12,6 +12,7 @@
     "db:down": "docker compose down",
     "migrate": "pnpm --filter backend-final migration:run",
     "seed:demo": "pnpm --filter backend-final seed:demo",
-    "seed:superadmin": "pnpm --filter backend-final seed:superadmin"
+    "seed:superadmin": "pnpm --filter backend-final seed:superadmin",
+    "test:e2e": "docker compose exec -T postgres psql -U piyachok -c \"DO \\$\\$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname='piyachok_test') THEN CREATE ROLE piyachok_test SUPERUSER LOGIN PASSWORD 'piyachok_test'; END IF; END \\$\\$\" && docker compose exec -T postgres psql -U piyachok -tc \"SELECT 1 FROM pg_database WHERE datname='piyachok_test'\" | grep -q 1 || docker compose exec -T postgres psql -U piyachok -c 'CREATE DATABASE piyachok_test OWNER piyachok_test'; DATABASE_PORT_TEST=5432 REDIS_HOST=localhost pnpm --filter backend-final test:e2e"
   }
 }
