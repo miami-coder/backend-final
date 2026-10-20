@@ -49,3 +49,7 @@ export function messageAdminUser(userId: string, data: unknown): Promise<unknown
 export function deleteAdminUser(userId: string): Promise<void> {
   return apiVoid(`/admin/users/${userId}`, { method: 'DELETE' })
 }
+/** DELETE /me — видалення власного профілю з кабінету (revʼю крок 3). */
+export function deleteMe(): Promise<void> {
+  return apiVoid('/me', { method: 'DELETE' })
+}

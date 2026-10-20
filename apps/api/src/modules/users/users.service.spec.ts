@@ -286,3 +286,29 @@ describe('UsersService — OAuth-регістрація на видалений 
     );
   });
 });
+
+describe('UsersService.deleteMe — видалення власного профілю (revʼю крок 3: кабінет)', () => {
+  it('ставить deletedAt, оживає через 401 при повторному логіні, токен-прапор — на боці адмін-логіки', async () => {
+    const users = {
+      findOne: jest.fn().mockResolvedValue({ id: 'u1', deletedAt: null }),
+      save: jest.fn((x) => Promise.resolve(x)),
+      update: jest.fn().mockResolvedValue(undefined),
+    };
+    const module = await Test.createTestingModule({
+      providers: [
+        UsersService,
+        { provide: getRepositoryToken(User), useValue: users },
+        { provide: getRepositoryToken(Profile), useValue: { findOne: jest.fn(), save: jest.fn() } },
+        { provide: getRepositoryToken(OAuthAccount), useValue: { findOne: jest.fn() } },
+        { provide: getRepositoryToken(Role), useValue: { findOne: jest.fn() } },
+        { provide: getRepositoryToken(UserRole), useValue: { save: jest.fn(), findOne: jest.fn() } },
+        { provide: PermissionsService, useValue: { invalidate: jest.fn() } },
+      ],
+    }).compile();
+    const service = module.get(UsersService);
+    await expect(service.deleteMe('u1')).resolves.toBeUndefined();
+    expect(users.save).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'u1', deletedAt: expect.any(Date) }),
+    );
+  });
+});

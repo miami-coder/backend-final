@@ -6,8 +6,10 @@
 
 import { useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
+import { useUser } from '@/components/providers/user-provider'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { deleteMe } from '@/services/users'
 import { useToast } from '@/components/ui/toast'
 import { updateMyProfile } from '@/services/users'
 import { ApiError } from '@/lib/api/parse'
@@ -24,6 +26,8 @@ export interface ProfileFields {
 export function ProfileForm({ profile }: { profile: ProfileFields }) {
   const router = useRouter()
   const { toast } = useToast()
+  const [deleting, setDeleting] = useState(false)
+  const { logout: logoutUser } = useUser()
   const [firstname, setFirstname] = useState(profile.firstname ?? '')
   const [lastname, setLastname] = useState(profile.lastname ?? '')
   const [phone, setPhone] = useState(profile.phone ?? '')
@@ -59,6 +63,19 @@ export function ProfileForm({ profile }: { profile: ProfileFields }) {
     }
   }
 
+  async function removeMe() {
+    try {
+      await deleteMe()
+      toast('Профіль видалено. До зустрічі!')
+      await logoutUser()
+      router.push('/')
+    } catch (e) {
+      toast(e instanceof ApiError ? e.message : 'Не вдалося видалити профіль', 'error')
+      setDeleting(false)
+    }
+  }
+
+
   return (
     <form onSubmit={submit} className="max-w-md space-y-3" aria-label="Профіль">
       <label className="block text-sm font-medium">Імʼя
@@ -78,6 +95,42 @@ export function ProfileForm({ profile }: { profile: ProfileFields }) {
       </label>
       {error && <p role="alert" className="text-sm text-danger">{error}</p>}
       <Button type="submit" disabled={saving}>{saving ? 'Зберігаємо…' : 'Зберегти'}</Button>
+
+      {/* Видалення профілю (revʼю крок 3): модалка-підтвердження, після —
+          логаут і редірект на каталог. */}
+      <div className="mt-6 border-t border-line pt-4">
+        <button
+          type="button"
+          onClick={() => setDeleting(true)}
+          className="text-sm text-danger hover:underline"
+        >
+          Видалити профіль
+        </button>
+        {deleting && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Видалити профіль?"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-bg p-4"
+          >
+            <div className="max-w-md rounded-xl border border-line bg-surface p-8 text-center">
+              <p className="text-ink">Видалити профіль?</p>
+              <p className="mt-1 text-sm text-muted">
+                Відгуки залишаться з позначкою «Обліковий запис видалено».
+                Увійти назад цим акаунтом буде неможливо.
+              </p>
+              <div className="mt-4 flex justify-center gap-2">
+                <Button variant="secondary" onClick={() => setDeleting(false)}>
+                  Скасувати
+                </Button>
+                <Button variant="danger" onClick={() => void removeMe()}>
+                  Так, видалити
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </form>
   )
 }

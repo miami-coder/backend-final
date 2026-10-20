@@ -126,6 +126,15 @@ export class UsersService {
     return user;
   }
 
+  /** Видалення власного профілю з кабінету (revʼю крок 3): той самий
+   *  soft-delete, що й адмінський — deletedAt; логін/refresh далі 401. */
+  async deleteMe(userId: string): Promise<void> {
+    const user = await this.users.findOne({ where: { id: userId } });
+    if (!user) throw new NotFoundException('Користувача не знайдено');
+    user.deletedAt = new Date();
+    await this.users.save(user);
+  }
+
   /** Soft-видалений акаунт (.deletedAt) знову заходить (OAuth або паролем):
    *  знімаємо прапор видалення й гарантуємо дефолтну роль — акаунт оживає. */
   async restoreAccount(userId: string): Promise<void> {

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, UseGuards } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -16,7 +16,10 @@ import { MeResponseDto } from './dto/me-response.dto';
 import { Profile } from './entities/profile.entity';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
-import { ApiDataResponse } from '../../common/swagger/response-helpers';
+import {
+  ApiDataResponse,
+  ApiIdResponse,
+} from '../../common/swagger/response-helpers';
 
 @ApiTags('Users')
 @ApiBearerAuth('access-token')
@@ -65,5 +68,13 @@ export class UsersController {
   ) {
     const profile = await this.users.updateProfile(current.sub, dto);
     return { data: profile };
+  }
+
+  @Delete()
+  @ApiOperation({ summary: 'Видалити власний профіль (soft-delete)' })
+  @ApiIdResponse({ description: 'Видалено' })
+  @ApiUnauthorizedResponse({ description: 'Не авторизований' })
+  remove(@CurrentUser() u: JwtUser) {
+    return this.users.deleteMe(u.sub).then(() => ({ data: { id: u.sub } }));
   }
 }
