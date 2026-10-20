@@ -43,6 +43,8 @@ describe('Hangouts E2E', () => {
         averageCheck: 250,
       });
     const venueId = venue.body.data.id;
+    // фікстура: під новими правилами пиячок — лише на approved-закладі
+    await ds.query(`UPDATE venues SET status='approved' WHERE id = $1`, [venueId]);
 
     const hangout = await request(app.getHttpServer())
       .post(`/api/v1/venues/${venueId}/hangouts`)
