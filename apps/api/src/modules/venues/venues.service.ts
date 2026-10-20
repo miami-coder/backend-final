@@ -173,7 +173,8 @@ export class VenuesService {
       .andWhere('v.status = :status', { status: VenueStatus.Approved })
       .getOne();
     if (!venue) throw new NotFoundException('Заклад не знайдено');
-    if (venue.owner) venue.owner = sanitizeUser(venue.owner) as Venue['owner'];
+    if (venue.owner)
+      venue.owner = sanitizeUser(venue.owner) as unknown as Venue['owner'];
     return venue;
   }
 
