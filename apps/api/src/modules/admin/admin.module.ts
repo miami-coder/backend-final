@@ -6,13 +6,14 @@ import { UserRole } from '../rbac/entities/user-role.entity';
 import { Role } from '../rbac/entities/role.entity';
 import { AuditLog } from './entities/audit-log.entity';
 import { AuditService } from './audit.service';
+import { AdminUsersService } from './admin-users.service';
 import { AdminUsersController } from './admin-users.controller';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, Profile, UserRole, Role, AuditLog]),
   ],
-  providers: [AuditService],
+  providers: [AuditService, AdminUsersService],
   controllers: [AdminUsersController],
   exports: [AuditService],
 })
