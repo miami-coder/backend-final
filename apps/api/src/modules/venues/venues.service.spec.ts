@@ -185,6 +185,12 @@ describe('VenuesService', () => {
       ownerId: 'u1',
       status: VenueStatus.Pending,
     });
+    // approve: другий фетч у changeStatus (перевірка archived → потім зміна)
+    venues.findOne.mockResolvedValueOnce({
+      id: 'v1',
+      ownerId: 'u1',
+      status: VenueStatus.Pending,
+    });
     roles.findOne.mockResolvedValueOnce({ id: 'r1', code: 'venue_admin' });
     userRoles.findOne.mockResolvedValueOnce(null); // ролі ще нема
     const v = await service.approve('admin1', 'v1');
@@ -211,6 +217,11 @@ describe('VenuesService', () => {
       ownerId: 'u1',
       status: VenueStatus.Pending,
     });
+    venues.findOne.mockResolvedValueOnce({
+      id: 'v1',
+      ownerId: 'u1',
+      status: VenueStatus.Pending,
+    });
     roles.findOne.mockResolvedValueOnce({ id: 'r1', code: 'venue_admin' });
     userRoles.findOne.mockResolvedValueOnce({ userId: 'u1', roleId: 'r1' });
     await service.approve('admin1', 'v1');
@@ -218,6 +229,11 @@ describe('VenuesService', () => {
   });
 
   it('approve за відсутності ролі venue_admin у системі — статус змінює, роль не видає', async () => {
+    venues.findOne.mockResolvedValueOnce({
+      id: 'v1',
+      ownerId: 'u1',
+      status: VenueStatus.Pending,
+    });
     venues.findOne.mockResolvedValueOnce({
       id: 'v1',
       ownerId: 'u1',
@@ -638,5 +654,80 @@ describe('VenuesService.search — кеш-хіт повторної сторін
     expect(second.data).toHaveLength(1);
     expect(second.meta.total).toBe(16);
     expect(second.data[0].id).toBe('v16');
+  });
+});
+
+describe('VenuesService — модерація закладів (ревʼю крок 2)', () => {
+  let service: VenuesService;
+  let venues: any;
+  let cache: any;
+  let perms: any;
+  let events: any;
+  let storage: any;
+  let audit: any;
+  let roles: any;
+  let userRoles: any;
+
+  beforeEach(async () => {
+    perms = { hasPermission: jest.fn().mockResolvedValue(false) };
+    cache = { get: jest.fn().mockResolvedValue(undefined), set: jest.fn() };
+    events = { emit: jest.fn() };
+    storage = { save: jest.fn(), remove: jest.fn() };
+    audit = { log: jest.fn().mockResolvedValue(undefined) };
+    roles = {};
+    userRoles = { findOne: jest.fn().mockResolvedValue({ id: 'ur1' }) };
+    venues = {
+      findOne: jest.fn(),
+      save: jest.fn((v) => v),
+      create: jest.fn((x) => x),
+      findAndCount: jest.fn().mockResolvedValue([[], 0]),
+      createQueryBuilder: jest.fn().mockReturnValue(qb()),
+    };
+    const module = await Test.createTestingModule({
+      providers: [
+        VenuesService,
+        { provide: getRepositoryToken(Venue), useValue: venues },
+        { provide: getRepositoryToken(VenuePhoto), useValue: {} },
+        { provide: getRepositoryToken(VenueFeature), useValue: {} },
+        { provide: getRepositoryToken(VenueFeatureAssignment), useValue: {} },
+        { provide: getRepositoryToken(Tag), useValue: {} },
+        { provide: getRepositoryToken(VenueTag), useValue: {} },
+        { provide: getRepositoryToken(VenueType), useValue: {} },
+        { provide: getRepositoryToken(VenueTypeAssignment), useValue: {} },
+        { provide: PermissionsService, useValue: perms },
+        { provide: CacheService, useValue: cache },
+        { provide: FileStorageService, useValue: storage },
+        { provide: getRepositoryToken(Role), useValue: roles },
+        { provide: getRepositoryToken(UserRole), useValue: userRoles },
+        { provide: AuditService, useValue: audit },
+        { provide: EventEmitter2, useValue: events },
+      ],
+    }).compile();
+    service = module.get(VenuesService);
+  });
+
+  it('апрув видаленого (archived) закладу заборонений', async () => {
+    venues.findOne.mockResolvedValueOnce({
+      id: 'v1',
+      status: 'archived',
+      ownerId: 'u9',
+    });
+    // changeStatus/save не мають апрувнути archived
+    await expect(service.approve('admin1', 'v1')).rejects.toThrow(
+      ForbiddenException,
+    );
+    expect(venues.save).not.toHaveBeenCalled();
+  });
+
+  it('супер-адмін (venue:moderate) створює заклад одразу approved', async () => {
+    perms.hasPermission.mockResolvedValueOnce(true);
+    const v = await service.create('admin1', { name: 'Кеш', address: 'а' });
+    expect(v.status).toBe('approved');
+  });
+
+  it('звичайний юзер створює заклад у pending', async () => {
+    perms.hasPermission.mockResolvedValue(false);
+    const v = await service.create('u1', { name: 'Звичайний', address: 'а' });
+    expect(v.status).toBe('pending');
   });
 });

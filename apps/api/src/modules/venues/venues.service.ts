@@ -89,6 +89,8 @@ export class VenuesService {
   }
 
   async create(ownerId: string, dto: CreateVenueDto): Promise<Venue> {
+    // Супер-адмін (venue:moderate) створює заклад одразу схваленим (ревʼю крок 2)
+    const autoApprove = await this.perms.hasPermission(ownerId, 'venue:moderate');
     const venue = this.venues.create({
       ownerId,
       name: dto.name,
@@ -99,7 +101,7 @@ export class VenuesService {
       contacts: dto.contacts ?? {},
       workingHours: dto.workingHours ?? {},
       averageCheck: dto.averageCheck ?? null,
-      status: VenueStatus.Pending,
+      status: autoApprove ? VenueStatus.Approved : VenueStatus.Pending,
     });
     await this.venues.save(venue);
     if (dto.featureCodes?.length) {
@@ -406,7 +408,11 @@ export class VenuesService {
 
   // Апрув: статус → approved + власник отримує роль venue_admin (ідемпотентно).
   // Ручна видача ролей супер-адміном лишається незалежною.
+  // Видалений (archived) заклад апрувнути не можна (ревʼю крок 2).
   async approve(actorId: string, venueId: string): Promise<Venue> {
+    const current = await this.findOneOrThrow(venueId);
+    if (current.status === VenueStatus.Archived)
+      throw new ForbiddenException('Видалений заклад не можна підтвердити');
     const venue = await this.changeStatus(venueId, VenueStatus.Approved);
     const roleGranted = venue.ownerId
       ? await this.grantVenueAdmin(venue.ownerId)
