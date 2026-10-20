@@ -330,8 +330,8 @@ export class VenuesService {
     if (query.feature) {
       // AND-семантика (ревʼю крок 3): заклад має ВСІ запитані фічі —
       // окремий EXISTS-підзапит на кожен код, а не один IN (OR).
-      for (const code of csvCodes(query.feature)) {
-        const key = `feature_${code.replace(/\W/g, '')}`;
+      for (const [i, code] of csvCodes(query.feature).entries()) {
+        const key = `feature_${i}`;
         qb.andWhere(
           `EXISTS (SELECT 1 FROM venue_feature_assignments fa2 JOIN venue_features f2 ON f2.id = fa2."featureId" WHERE fa2."venueId" = v.id AND f2.code = :${key})`,
           { [key]: code },
@@ -340,8 +340,8 @@ export class VenuesService {
     }
     if (query.tag) {
       // AND-семантика для тегів — так само
-      for (const slug of csvCodes(query.tag)) {
-        const key = `tag_${slug.replace(/\W/g, '')}`;
+      for (const [i, slug] of csvCodes(query.tag).entries()) {
+        const key = `tag_${i}`;
         qb.andWhere(
           `EXISTS (SELECT 1 FROM venue_tags vt2 JOIN tags t2 ON t2.id = vt2."tagId" WHERE vt2."venueId" = v.id AND t2.slug = :${key})`,
           { [key]: slug },

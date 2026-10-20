@@ -126,6 +126,7 @@ export class HangoutsService {
       throw new ForbiddenException('Тільки творець може видалити запит');
     }
     await this.hangouts.delete(hangoutId);
+    this.events.emit(HANGOUT_CANCELLED, { hangoutId, deleted: true });
     await this.invalidateListCache();
   }
 

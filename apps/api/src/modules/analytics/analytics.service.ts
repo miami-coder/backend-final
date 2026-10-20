@@ -77,9 +77,12 @@ export class AnalyticsService {
     if (to)
       // to — дата без часу: включно до кінця дня (ревʼю крок 3:
       // «останній день діапазону не рахується» — <= to зрізає опівноччя)
-      viewsQb.andWhere('v."viewedAt" < :toExclusive', {
-        toExclusive: `${to} 23:59:59.999`,
-      });
+      viewsQb.andWhere(
+        // to — ISO-дата (може містити час): включно до кінця дня (ревʼю крок 3
+        // + ревʼю Stage 3: строкова конкатенація з ISO-часом падала в PG 22007)
+        'v."viewedAt" < (:to)::date + interval \'1 day\'',
+        { to },
+      );
     const viewsByDay = await viewsQb.getRawMany<{
       date: string;
       count: number;
@@ -94,9 +97,7 @@ export class AnalyticsService {
       .orderBy('count', 'DESC');
     if (from) eventsQb.andWhere('e."occurredAt" >= :from', { from });
     if (to)
-      eventsQb.andWhere('e."occurredAt" < :toExclusive', {
-        toExclusive: `${to} 23:59:59.999`,
-      });
+      eventsQb.andWhere('e."occurredAt" < (:to)::date + interval \'1 day\'', { to });
     const eventsByType = await eventsQb.getRawMany<{
       eventType: string;
       count: number;
@@ -142,7 +143,8 @@ export class AnalyticsService {
       .groupBy('date')
       .orderBy('date', 'ASC');
     if (opts.from) qb.andWhere('v."viewedAt" >= :from', { from: opts.from });
-    if (opts.to) qb.andWhere('v."viewedAt" <= :to', { to: opts.to });
+    if (opts.to)
+      qb.andWhere('v."viewedAt" < (:to)::date + interval \'1 day\'', { to: opts.to });
     return qb.getRawMany<{ date: string; count: number }>();
   }
 
@@ -166,7 +168,8 @@ export class AnalyticsService {
       .offset(offset)
       .limit(limit);
     if (opts.from) qb.andWhere('v."viewedAt" >= :from', { from: opts.from });
-    if (opts.to) qb.andWhere('v."viewedAt" <= :to', { to: opts.to });
+    if (opts.to)
+      qb.andWhere('v."viewedAt" < (:to)::date + interval \'1 day\'', { to: opts.to });
     const data = await qb.getRawMany<{
       venueId: string;
       venueName: string | null;
@@ -178,7 +181,8 @@ export class AnalyticsService {
       .select('COUNT(DISTINCT v."venueId")::int', 'total');
     if (opts.from)
       totalQb.andWhere('v."viewedAt" >= :from', { from: opts.from });
-    if (opts.to) totalQb.andWhere('v."viewedAt" <= :to', { to: opts.to });
+    if (opts.to)
+      totalQb.andWhere('v."viewedAt" < (:to)::date + interval \'1 day\'', { to: opts.to });
     const row = await totalQb.getRawOne<{ total: number }>();
     return { data, meta: buildMeta({ page, limit, offset }, row?.total ?? 0) };
   }

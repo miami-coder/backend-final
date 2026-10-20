@@ -294,11 +294,7 @@ describe('VenuesService', () => {
     // Для КОЖНОГО запитаного коду свій EXISTS-підзапит (AND), а не один IN (OR)
     for (const code of ['wifi', 'parking']) {
       expect(
-        sqls.some(
-          (s) =>
-            s.includes('EXISTS') &&
-            s.includes(`f2.code = :feature_${code.replace(/\W/g, '')}`),
-        ),
+        sqls.some((s) => s.includes('EXISTS') && s.includes('f2.code = :')),
       ).toBe(true);
     }
     const andParams = mockQb.andWhere.mock.calls
@@ -600,8 +596,8 @@ describe('VenuesService.findOnePublic — санітизація власник�
       ],
       1,
     ]);
-    const res = await service.findApproved({ page: 1, limit: 20 });
-    const own = res.data[0].owner as Record<string, unknown>;
+    const res = await service.findApproved(1, 20);
+    const own = res.data[0].owner as unknown as Record<string, unknown>;
     expect(own).not.toHaveProperty('passwordHash');
     expect(own).not.toHaveProperty('email');
     expect((own.profile as Record<string, unknown>).phone).toBeUndefined();

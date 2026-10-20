@@ -102,9 +102,6 @@ export class NewsService {
    *  закладу (власник не втрачає доступ до своїх новин схованого закладу,
    *  тикет з ревʼю Stage 2). */
   async listMine(userId: string, page = 1, limit = 20) {
-    const myVenues = await this.venues.listMineForUser(userId);
-    if (myVenues.length === 0)
-      return { data: [], meta: buildMeta({ page, limit, offset: 0 }, 0) };
     const {
       page: p,
       limit: l,
@@ -113,6 +110,9 @@ export class NewsService {
       page,
       limit,
     });
+    const myVenues = await this.venues.listMineForUser(userId);
+    if (myVenues.length === 0)
+      return { data: [], meta: buildMeta({ page: p, limit: l, offset: 0 }, 0) };
     const qb = this.news
       .createQueryBuilder('n')
       .where('n.venueId IN (:...ids)', {
