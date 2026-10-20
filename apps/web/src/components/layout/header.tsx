@@ -8,6 +8,7 @@ import { NotificationBell } from '@/components/layout/notification-bell'
 
 const NAV = [
   { href: '/', label: 'Каталог' },
+  { href: '/top', label: 'Топ' },
   { href: '/news', label: 'Новини' },
   { href: '/hangouts', label: 'Зустрічі' },
 ]

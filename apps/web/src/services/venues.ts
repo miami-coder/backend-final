@@ -133,3 +133,51 @@ export function recommendVenue(venueId: string): Promise<unknown> {
 export function unrecommendVenue(venueId: string): Promise<void> {
   return apiVoid(`/venues/${venueId}/recommend`, { method: 'DELETE' })
 }
+
+// --- Топ закладів (revʼю викладача: редагує супер-адмін) ---
+
+export interface TopCategoryAdmin {
+  id: string
+  title: string
+  position: number
+  entries: { id: string; venueId: string; position: number; venue?: { id: string; name: string } | null }[]
+}
+
+export function getTopAdmin(): Promise<TopCategoryAdmin[]> {
+  return api<TopCategoryAdmin[]>('/admin/top/categories')
+}
+
+export function createTopCategory(title: string, position = 0): Promise<unknown> {
+  return api('/admin/top/categories', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title, position }),
+  })
+}
+
+export function updateTopCategory(
+  id: string,
+  data: { title?: string; position?: number },
+): Promise<unknown> {
+  return api(`/admin/top/categories/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  })
+}
+
+export function deleteTopCategory(id: string): Promise<unknown> {
+  return api(`/admin/top/categories/${id}`, { method: 'DELETE' })
+}
+
+export function addTopEntry(categoryId: string, venueId: string, position?: number): Promise<unknown> {
+  return api(`/admin/top/categories/${categoryId}/entries`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ venueId, position }),
+  })
+}
+
+export function removeTopEntry(categoryId: string, entryId: string): Promise<unknown> {
+  return api(`/admin/top/categories/${categoryId}/entries/${entryId}`, { method: 'DELETE' })
+}
