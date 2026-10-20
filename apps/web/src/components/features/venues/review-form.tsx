@@ -17,7 +17,7 @@ import { reviewFormSchema } from '@/lib/validation/review'
 const MAX_FILE = 5 * 1024 * 1024
 const ALLOWED = ['image/jpeg', 'image/png', 'image/webp']
 
-interface MyReview { id: string; rating: number; text: string }
+interface MyReview { id: string; rating: number; text: string; billAmount?: number | null }
 
 // initialEditing: відкрити редактор одразу (для вбудовування у модалку —
 // my-review-item); без нього наявний відгук показується компактною карткою

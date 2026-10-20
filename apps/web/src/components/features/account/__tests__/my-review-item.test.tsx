@@ -16,7 +16,7 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ push, refresh }) }))
 const testUser: SessionUser = { id: 'u1', email: 'a@b.c', roles: ['user'] }
 
 const review: Review = {
-  id: 'r1', venueId: 'v1', rating: 4, text: 'Гарне місце, смачне пиво', checkPhotoUrl: null,
+  id: 'r1', venueId: 'v1', rating: 4, text: 'Гарне місце, смачне пиво', checkPhotoUrl: null, billAmount: null,
   isFeatured: false, createdAt: '2026-09-01T10:00:00Z', updatedAt: '2026-09-01T10:00:00Z',
   author: { firstname: 'Іван', lastname: null },
 }
