@@ -38,7 +38,7 @@ function HangoutItem({ h, userId }: { h: Hangout; userId: string }) {
         {genderLabel(h.gender)} · до {h.groupSize} осіб · {payerLabel(h.payer)}{h.desiredBudget !== null ? ` · бюджет ${formatMoney(h.desiredBudget)}` : ''}
       </p>
       <div className="mt-3">
-        <HangoutActions hangoutId={h.id} isCreator={canCancel} canLeave={!isCreator && h.status !== 'cancelled' && h.status !== 'completed'} />
+        <HangoutActions hangoutId={h.id} isCreator={canCancel} canDelete={isCreator && h.status === 'cancelled'} canLeave={!isCreator && h.status !== 'cancelled' && h.status !== 'completed'} />
       </div>
     </li>
   )

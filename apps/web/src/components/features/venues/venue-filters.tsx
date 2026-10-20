@@ -132,12 +132,18 @@ export function VenueFilters({ initial }: { initial: CatalogQuery }) {
         </label>
         <label className="w-44 shrink-0 text-sm lg:w-auto">
           Тип закладу
-          <Select value={type} onChange={(e) => setType(e.target.value)} className="mt-1">
-            <option value="">Всі типи</option>
-            {types.map((t) => (
-              <option key={t.id} value={t.slug}>{t.name}</option>
-            ))}
-          </Select>
+          {/* Фолбек (revʼю Stage 3 M4): довідник не вантажиться — не ховай
+              блок, а лиши ручний input, щоб активний URL-фільтр лишався десь видимим */}
+          {types.length > 0 ? (
+            <Select value={type} onChange={(e) => setType(e.target.value)} className="mt-1">
+              <option value="">Всі типи</option>
+              {types.map((t) => (
+                <option key={t.id} value={t.slug}>{t.name}</option>
+              ))}
+            </Select>
+          ) : (
+            <Input value={type} onChange={(e) => setType(e.target.value)} placeholder="напр. bar" className="mt-1" />
+          )}
         </label>
         <div className="w-44 shrink-0 text-sm lg:w-auto">
           <span>Теги</span>
@@ -164,6 +170,14 @@ export function VenueFilters({ initial }: { initial: CatalogQuery }) {
         </div>
         <div className="w-44 shrink-0 text-sm lg:w-auto">
           <span>Особливості</span>
+          {features.length === 0 && feature && (
+            <Input
+              value={feature}
+              onChange={(e) => setFeature(e.target.value)}
+              aria-label="Особливості вручну (через кому)"
+              className="mt-1"
+            />
+          )}
           {features.length > 0 && (
             <div className="mt-1 flex flex-wrap gap-1" role="group" aria-label="Особливості">
               {features.map((f) => {

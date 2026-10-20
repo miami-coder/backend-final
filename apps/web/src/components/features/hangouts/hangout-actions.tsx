@@ -4,13 +4,15 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/toast'
-import { hangoutAction } from '@/services/hangouts'
+import { deleteHangout, hangoutAction } from '@/services/hangouts'
 import { ApiError } from '@/lib/api/parse'
 
-export function HangoutActions({ hangoutId, isCreator, canLeave, leaveRedirect }: {
+export function HangoutActions({ hangoutId, isCreator, canLeave, canDelete, leaveRedirect }: {
   hangoutId: string
   isCreator: boolean
   canLeave: boolean
+  /** Ревʼю крок 3: творець може і повністю видалити запит (не лише скасувати). */
+  canDelete?: boolean
   /** Вказати — після «Покинути» перейти на адресу замість перевитягу поточної
    *  сторінки (деталі зустрічі → назад до списку зустрічей). */
   leaveRedirect?: string
@@ -35,7 +37,21 @@ export function HangoutActions({ hangoutId, isCreator, canLeave, leaveRedirect }
     }
   }
 
-  if (!isCreator && !canLeave) return null
+  async function remove() {
+    setBusy(true)
+    try {
+      await deleteHangout(hangoutId)
+      toast('Запит видалено')
+      router.push('/account/hangouts')
+      router.refresh()
+    } catch (e) {
+      toast(e instanceof ApiError ? e.message : 'Не вдалося видалити запит', 'error')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  if (!isCreator && !canLeave && !canDelete) return null
   return (
     <div className="flex gap-2">
       {isCreator && (
@@ -43,6 +59,9 @@ export function HangoutActions({ hangoutId, isCreator, canLeave, leaveRedirect }
       )}
       {canLeave && (
         <Button variant="ghost" size="sm" disabled={busy} onClick={() => act('leave')}>Покинути</Button>
+      )}
+      {canDelete && (
+        <Button variant="danger" size="sm" disabled={busy} onClick={() => void remove()}>Видалити</Button>
       )}
     </div>
   )
