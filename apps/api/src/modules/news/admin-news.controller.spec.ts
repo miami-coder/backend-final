@@ -15,7 +15,13 @@ describe('AdminNewsController', () => {
     };
     const module = await Test.createTestingModule({
       controllers: [AdminNewsController],
-      providers: [{ provide: PermissionsService, useValue: { hasAnyPermission: jest.fn().mockResolvedValue(true) } }, { provide: NewsService, useValue: news }],
+      providers: [
+        {
+          provide: PermissionsService,
+          useValue: { hasAnyPermission: jest.fn().mockResolvedValue(true) },
+        },
+        { provide: NewsService, useValue: news },
+      ],
     }).compile();
     controller = module.get(AdminNewsController);
   });

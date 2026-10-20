@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { News, NewsStatus } from './entities/news.entity';
+import { VenueStatus } from '../venues/entities/venue.entity';
 import { CreateNewsDto } from './dto/create-news.dto';
 import { VenuesService } from '../venues/venues.service';
 import { PermissionsService } from '../rbac/permissions.service';
@@ -32,14 +33,25 @@ export class NewsService {
     ) {
       throw new ForbiddenException('Не можна керувати новинами цього закладу');
     }
-    return this.save(dto, venueId);
+    return this.save(dto, venueId, userId);
   }
 
+  // Глобальні новини створюються лише через адмін-роут (news:manage:any) —
+  // гвард вже пропустив адміна, тому isPromoted тут правомірний.
   async createGlobal(dto: CreateNewsDto) {
-    return this.save(dto, null);
+    return this.save(dto, null, undefined, true);
   }
 
-  private async save(dto: CreateNewsDto, venueId: string | null) {
+  private async save(
+    dto: CreateNewsDto,
+    venueId: string | null,
+    userId?: string,
+    canPromote = false,
+  ) {
+    if (!canPromote) {
+      canPromote =
+        !!userId && (await this.perms.hasPermission(userId, 'news:manage:any'));
+    }
     const now = new Date();
     const entity = this.news.create({
       venueId,
@@ -48,7 +60,8 @@ export class NewsService {
       content: dto.content,
       imageUrl: dto.imageUrl ?? null,
       status: dto.status ?? NewsStatus.Published,
-      isPromoted: dto.isPromoted ?? false,
+      // «Просунута» новина — лише супер-адміну (ревʼю крок 2)
+      isPromoted: canPromote ? (dto.isPromoted ?? false) : false,
       publishedAt: now,
     });
     return this.news.save(entity);
@@ -65,6 +78,13 @@ export class NewsService {
     const qb = this.news
       .createQueryBuilder('n')
       .where('n.status = :status', { status: NewsStatus.Published });
+    // Новини схованого (pending/archived) закладу публічно не видимі
+    qb.leftJoin('n.venue', 'v').andWhere(
+      '(n.venueId IS NULL OR v.status = :approved)',
+      {
+        approved: VenueStatus.Approved,
+      },
+    );
     if (opts.category)
       qb.andWhere('n.category = :category', { category: opts.category });
     if (opts.venueId)
@@ -103,6 +123,20 @@ export class NewsService {
     return { data, meta: buildMeta({ page, limit, offset }, total) };
   }
 
+  /** Публічний перегляд новини (ревʼю крок 2): тільки Published і тільки
+   *  для схваленого закладу (глобальні — venueId відсутній). */
+  async getPublic(id: string) {
+    const n = await this.get(id);
+    if (n.status !== NewsStatus.Published)
+      throw new NotFoundException('Новину не знайдено');
+    if (n.venueId) {
+      const venue = await this.venues.findOneOrThrow(n.venueId);
+      if (venue.status !== VenueStatus.Approved)
+        throw new NotFoundException('Новину не знайдено');
+    }
+    return n;
+  }
+
   async get(id: string) {
     const n = await this.news.findOne({ where: { id } });
     if (!n) throw new NotFoundException('Новину не знайдено');
@@ -112,6 +146,11 @@ export class NewsService {
   async update(id: string, userId: string, dto: Partial<CreateNewsDto>) {
     const n = await this.get(id);
     await this.assertCanManage(userId, n);
+    // Юзер без news:manage:any не може міняти «просунутий» прапор:
+    // ключ просто не застосовується (і не знімає існуючий прапор).
+    if (!(await this.perms.hasPermission(userId, 'news:manage:any'))) {
+      delete dto.isPromoted;
+    }
     Object.assign(n, dto);
     return this.news.save(n);
   }

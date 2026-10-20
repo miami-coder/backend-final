@@ -11,13 +11,20 @@ describe('NewsController', () => {
     news = {
       listPublic: jest.fn(),
       get: jest.fn(),
+      getPublic: jest.fn(),
       createForVenue: jest.fn(),
       update: jest.fn(),
       softDelete: jest.fn(),
     };
     const module = await Test.createTestingModule({
       controllers: [NewsController],
-      providers: [{ provide: PermissionsService, useValue: { hasAnyPermission: jest.fn().mockResolvedValue(true) } }, { provide: NewsService, useValue: news }],
+      providers: [
+        {
+          provide: PermissionsService,
+          useValue: { hasAnyPermission: jest.fn().mockResolvedValue(true) },
+        },
+        { provide: NewsService, useValue: news },
+      ],
     }).compile();
     controller = module.get(NewsController);
   });
@@ -47,9 +54,9 @@ describe('NewsController', () => {
   });
 
   it('get wraps result in { data }', async () => {
-    news.get.mockResolvedValue({ id: 'n1' });
+    news.getPublic.mockResolvedValue({ id: 'n1' });
     const res = await controller.get('n1');
-    expect(news.get).toHaveBeenCalledWith('n1');
+    expect(news.getPublic).toHaveBeenCalledWith('n1');
     expect(res.data.id).toBe('n1');
   });
 
@@ -66,11 +73,9 @@ describe('NewsController', () => {
 
   it('update wraps result in { data }', async () => {
     news.update.mockResolvedValue({ id: 'n1' });
-    const res = await controller.update(
-      { sub: 'u1' } as any,
-      'n1',
-      { title: 'Оновлено' } as any,
-    );
+    const res = await controller.update({ sub: 'u1' } as any, 'n1', {
+      title: 'Оновлено',
+    } as any);
     expect(news.update).toHaveBeenCalledWith('n1', 'u1', {
       title: 'Оновлено',
     });

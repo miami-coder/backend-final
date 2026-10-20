@@ -103,7 +103,7 @@ export class NewsController {
   @ApiDataResponse({ type: News, description: 'Деталі новини' })
   @ApiNotFoundResponse({ description: 'Новину не знайдено' })
   get(@Param('id') id: string) {
-    return this.news.get(id).then((data) => ({ data }));
+    return this.news.getPublic(id).then((data) => ({ data }));
   }
 
   @ApiBearerAuth('access-token')

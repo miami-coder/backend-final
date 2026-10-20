@@ -1,6 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { ForbiddenException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { NewsService } from './news.service';
 import { News, NewsCategory, NewsStatus } from './entities/news.entity';
 import { VenuesService } from '../venues/venues.service';
@@ -132,5 +132,112 @@ describe('NewsService', () => {
     expect(qb.where).toHaveBeenCalledWith('n.status = :status', {
       status: NewsStatus.Draft,
     });
+  });
+});
+
+describe('NewsService — видимість новин і «просунутий» прапор (ревʼю крок 2)', () => {
+  let service: NewsService;
+  let news: any;
+  let venues: any;
+  let perms: any;
+
+  beforeEach(async () => {
+    news = {
+      create: jest.fn((x) => x),
+      save: jest.fn((x) => Promise.resolve(x)),
+      findOne: jest.fn(),
+      createQueryBuilder: jest.fn().mockReturnValue({
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        leftJoin: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
+      }),
+    };
+    venues = { findOneOrThrow: jest.fn() };
+    perms = { hasPermission: jest.fn().mockResolvedValue(false) };
+    const module = await Test.createTestingModule({
+      providers: [
+        NewsService,
+        { provide: getRepositoryToken(News), useValue: news },
+        { provide: VenuesService, useValue: venues },
+        { provide: PermissionsService, useValue: perms },
+        { provide: FileStorageService, useValue: { save: jest.fn() } },
+      ],
+    }).compile();
+    service = module.get(NewsService);
+  });
+
+  it('getPublic archived-новини → 404', async () => {
+    news.findOne.mockResolvedValueOnce({ id: 'n1', status: 'archived' });
+    await expect(service.getPublic('n1')).rejects.toThrow(NotFoundException);
+  });
+
+  it('getPublic новини Published схованого закладу (pending) → 404', async () => {
+    news.findOne.mockResolvedValueOnce({
+      id: 'n1',
+      status: 'published',
+      venueId: 'v1',
+    });
+    venues.findOneOrThrow.mockResolvedValueOnce({
+      id: 'v1',
+      status: 'pending',
+    });
+    await expect(service.getPublic('n1')).rejects.toThrow(NotFoundException);
+  });
+
+  it('getPublic Published новини approved закладу — ок', async () => {
+    news.findOne.mockResolvedValueOnce({
+      id: 'n1',
+      status: 'published',
+      venueId: 'v1',
+    });
+    venues.findOneOrThrow.mockResolvedValueOnce({
+      id: 'v1',
+      status: 'approved',
+    });
+    await expect(service.getPublic('n1')).resolves.toBeDefined();
+  });
+
+  it('create від юзера без news:manage:any: isPromoted=true → false', async () => {
+    venues.findOneOrThrow.mockResolvedValueOnce({ id: 'v1', ownerId: 'u1' });
+    const n = await service.createForVenue('u1', 'v1', {
+      title: 't',
+      content: 'b',
+      category: NewsCategory.VenueNews,
+      isPromoted: true,
+    } as any);
+    expect(n.isPromoted).toBe(false);
+  });
+
+  it('create глобальної новини (адмін-роут) — isPromoted зберігається', async () => {
+    const n = await service.createGlobal({
+      title: 't',
+      content: 'b',
+      category: NewsCategory.VenueNews,
+      isPromoted: true,
+    } as any);
+    expect(n.isPromoted).toBe(true);
+  });
+
+  it('update юзером без права не міняє існуючий isPromoted', async () => {
+    news.findOne.mockResolvedValueOnce({
+      id: 'n1',
+      status: 'published',
+      venueId: 'v1',
+      isPromoted: true,
+    });
+    venues.findOneOrThrow.mockResolvedValueOnce({
+      id: 'v1',
+      ownerId: 'u1',
+      status: 'approved',
+    });
+    await service.update('n1', 'u1', { isPromoted: false } as any);
+    expect(news.save).toHaveBeenCalledWith(
+      expect.objectContaining({ isPromoted: true }),
+    );
   });
 });
