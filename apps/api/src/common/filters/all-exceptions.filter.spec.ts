@@ -60,3 +60,37 @@ describe('AllExceptionsFilter', () => {
     expect(statusMock).toHaveBeenCalledWith(500);
   });
 });
+
+describe('AllExceptionsFilter — невалідний UUID (ревʼю крок 3)', () => {
+  it('PG 22P02 (invalid input syntax for uuid) → 400, не 500', () => {
+    const json = jest.fn();
+    const filter = new AllExceptionsFilter();
+    const host = {
+      switchToHttp: () => ({
+        getResponse: () => ({ status: jest.fn().mockReturnValue({ json }) }),
+        getRequest: () => ({ method: 'GET', url: '/x' }),
+      }),
+    } as unknown as ArgumentsHost;
+    const err = new Error('invalid input syntax for type uuid: "abc"') as Error & { code?: string };
+    err.code = '22P02';
+    filter.catch(err, host);
+    expect(json).toHaveBeenCalledWith(
+      expect.objectContaining({ error: expect.objectContaining({ code: 'BAD_REQUEST' }) }),
+    );
+  });
+
+  it('звичайна Error без коду — 500 як раніше', () => {
+    const json = jest.fn();
+    const filter = new AllExceptionsFilter();
+    const host = {
+      switchToHttp: () => ({
+        getResponse: () => ({ status: jest.fn().mockReturnValue({ json }) }),
+        getRequest: () => ({ method: 'GET', url: '/x' }),
+      }),
+    } as unknown as ArgumentsHost;
+    filter.catch(new Error('boom'), host);
+    expect(json).toHaveBeenCalledWith(
+      expect.objectContaining({ error: expect.objectContaining({ code: 'INTERNAL_ERROR' }) }),
+    );
+  });
+});

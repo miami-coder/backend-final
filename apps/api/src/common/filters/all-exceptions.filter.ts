@@ -44,7 +44,15 @@ export class AllExceptionsFilter implements ExceptionFilter {
       }
       code = this.codeFromStatus(status);
     } else if (exception instanceof Error) {
-      this.logger.error(exception.message, exception.stack);
+      // Невалідний UUID у URL/запиті — не помилка сервера (ревʼю крок 3):
+      // PG повертає 22P02, віддаємо 400 замість 500.
+      if ((exception as { code?: string }).code === '22P02') {
+        status = HttpStatus.BAD_REQUEST;
+        code = 'BAD_REQUEST';
+        message = 'Некоректний ідентифікатор';
+      } else {
+        this.logger.error(exception.message, exception.stack);
+      }
     } else {
       this.logger.error('Unknown exception', String(exception));
     }

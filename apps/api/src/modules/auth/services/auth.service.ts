@@ -1,5 +1,5 @@
 import {
-  ConflictException,
+  BadRequestException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -27,7 +27,8 @@ export class AuthService {
 
   async register(dto: RegisterDto) {
     if (!dto.acceptEula) {
-      throw new ConflictException('Потрібно прийняти угоду користувача');
+      // 400 (клієнтська помилка валідації), не 409 (ревʼю крок 3)
+      throw new BadRequestException('Потрібно прийняти угоду користувача');
     }
     const user = await this.users.create(dto);
 

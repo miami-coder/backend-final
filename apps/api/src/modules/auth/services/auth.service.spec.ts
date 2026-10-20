@@ -1,6 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { UnauthorizedException, ConflictException } from '@nestjs/common';
+import { UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
@@ -66,7 +66,7 @@ describe('AuthService', () => {
     service = module.get(AuthService);
   });
 
-  it('register throws when acceptEula false', async () => {
+  it('register acceptEula:false → 400 BadRequest (ревʼю крок 3)', async () => {
     await expect(
       service.register({
         email: 'a@b.com',
@@ -75,7 +75,7 @@ describe('AuthService', () => {
         lastname: 'B',
         acceptEula: false,
       } as any),
-    ).rejects.toThrow(ConflictException);
+    ).rejects.toThrow(BadRequestException);
   });
 
   it('register creates user, assigns user role, returns tokens', async () => {
