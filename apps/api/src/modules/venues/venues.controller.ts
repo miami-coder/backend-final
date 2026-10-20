@@ -83,6 +83,19 @@ export class VenuesController {
   listTags() {
     return this.venues.listTags().then((data) => ({ data }));
   }
+  @Public()
+  @Get('types')
+  @ApiOperation({ summary: 'Довідник типів закладів (для select-фільтра)' })
+  listTypes() {
+    return this.venues.listTypes().then((data) => ({ data }));
+  }
+
+  @Public()
+  @Get('features')
+  @ApiOperation({ summary: 'Довідник особливостей (для чип-фільтра)' })
+  listFeatures() {
+    return this.venues.listFeatures().then((data) => ({ data }));
+  }
 
   @Public()
   @Get(':id')
@@ -97,7 +110,9 @@ export class VenuesController {
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Post(':id/recommend')
   @Permissions('venue:recommend')
-  @ApiOperation({ summary: 'Рекомендувати заклад (критик; 1 критик на заклад)' })
+  @ApiOperation({
+    summary: 'Рекомендувати заклад (критик; 1 критик на заклад)',
+  })
   @ApiDataResponse({ type: Venue, description: 'Рекомендований заклад' })
   @ApiUnauthorizedResponse({ description: 'Не авторизований' })
   @ApiForbiddenResponse({

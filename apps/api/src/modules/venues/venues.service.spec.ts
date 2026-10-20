@@ -293,12 +293,25 @@ describe('VenuesService', () => {
     const sqls = mockQb.andWhere.mock.calls.map((c) => c[0] as string);
     // Для КОЖНОГО запитаного коду свій EXISTS-підзапит (AND), а не один IN (OR)
     for (const code of ['wifi', 'parking']) {
-      expect(sqls.some((s) => s.includes('EXISTS') && s.includes(`f2.code = :feature_${code.replace(/\W/g, '')}`))).toBe(true);
+      expect(
+        sqls.some(
+          (s) =>
+            s.includes('EXISTS') &&
+            s.includes(`f2.code = :feature_${code.replace(/\W/g, '')}`),
+        ),
+      ).toBe(true);
     }
-    const andParams = mockQb.andWhere.mock.calls.flat().filter((x) => typeof x === 'object' && x !== null) as Record<string, string>[];
+    const andParams = mockQb.andWhere.mock.calls
+      .flat()
+      .filter((x) => typeof x === 'object' && x !== null) as Record<
+      string,
+      string
+    >[];
     const flat = andParams.map((o) => Object.entries(o)).flat();
     for (const code of ['wifi', 'parking']) {
-      expect(flat.some(([k, v]) => k.includes('feature') && v === code)).toBe(true);
+      expect(flat.some(([k, v]) => k.includes('feature') && v === code)).toBe(
+        true,
+      );
     }
     for (const slug of ['cocktails', 'dj']) {
       expect(flat.some(([k, v]) => k.includes('tag') && v === slug)).toBe(true);
@@ -775,9 +788,9 @@ describe('VenuesService.search — %/_ літерали, не wildcard (ревʼ
     await service.search({ page: 1, limit: 20, q: '10%_off' });
     const calls = venues.createQueryBuilder().andWhere.mock.calls;
     // ILIKE живе в Brackets — розгортаємо фабрику проти фейкового будівника
-    const bracketArg = calls.map((c) => c[0]).find(
-      (a: any) => a && typeof a.whereFactory === 'function',
-    );
+    const bracketArg = calls
+      .map((c) => c[0])
+      .find((a: any) => a && typeof a.whereFactory === 'function');
     expect(bracketArg).toBeTruthy();
     const rec: { sql: string[]; params: Record<string, unknown>[] } = {
       sql: [],
@@ -798,5 +811,49 @@ describe('VenuesService.search — %/_ літерали, не wildcard (ревʼ
     bracketArg.whereFactory(recorder);
     expect(rec.sql[0]).toContain("ESCAPE '!'");
     expect(rec.params[0].q).toBe('%10!%!_off%');
+  });
+});
+
+describe('VenuesService — довідники типів і фіч (ревʼю крок 3, для select-фільтрів)', () => {
+  it('listTypes → [{id, name, slug}], listFeatures → [{id, name, code, icon}]', async () => {
+    const typesMock = {
+      find: jest
+        .fn()
+        .mockResolvedValue([{ id: 't1', name: 'Бар', slug: 'bar' }]),
+    };
+    const featuresMock = {
+      find: jest
+        .fn()
+        .mockResolvedValue([
+          { id: 'f1', name: 'Wi-Fi', code: 'wifi', icon: '📶' },
+        ]),
+    };
+    const module = await Test.createTestingModule({
+      providers: [
+        VenuesService,
+        { provide: getRepositoryToken(Venue), useValue: {} },
+        { provide: getRepositoryToken(VenuePhoto), useValue: {} },
+        { provide: getRepositoryToken(VenueFeature), useValue: featuresMock },
+        { provide: getRepositoryToken(VenueFeatureAssignment), useValue: {} },
+        { provide: getRepositoryToken(Tag), useValue: {} },
+        { provide: getRepositoryToken(VenueTag), useValue: {} },
+        { provide: getRepositoryToken(VenueType), useValue: typesMock },
+        { provide: getRepositoryToken(VenueTypeAssignment), useValue: {} },
+        { provide: PermissionsService, useValue: { hasPermission: jest.fn() } },
+        { provide: CacheService, useValue: { get: jest.fn(), set: jest.fn() } },
+        { provide: FileStorageService, useValue: { save: jest.fn() } },
+        { provide: getRepositoryToken(Role), useValue: {} },
+        { provide: getRepositoryToken(UserRole), useValue: {} },
+        { provide: AuditService, useValue: {} },
+        { provide: EventEmitter2, useValue: { emit: jest.fn() } },
+      ],
+    }).compile();
+    const service = module.get(VenuesService);
+    expect(await service.listTypes()).toEqual([
+      { id: 't1', name: 'Бар', slug: 'bar' },
+    ]);
+    expect(await service.listFeatures()).toEqual([
+      { id: 'f1', name: 'Wi-Fi', code: 'wifi', icon: '📶' },
+    ]);
   });
 });

@@ -23,7 +23,10 @@ describe('VenuesAdminController', () => {
     const module = await Test.createTestingModule({
       controllers: [VenuesAdminController],
       providers: [
-        { provide: PermissionsService, useValue: { hasAnyPermission: jest.fn().mockResolvedValue(true) } },
+        {
+          provide: PermissionsService,
+          useValue: { hasAnyPermission: jest.fn().mockResolvedValue(true) },
+        },
         { provide: VenuesService, useValue: venues },
         { provide: UsersService, useValue: users },
       ],

@@ -39,10 +39,12 @@ import {
   VenueUpdatedEvent,
 } from './events';
 
-
 /** CSV «wifi, parking» → [ 'wifi', 'parking' ] (пробіли по краях зріжувати). */
 function csvCodes(csv: string): string[] {
-  return csv.split(',').map((s) => s.trim()).filter(Boolean);
+  return csv
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
 }
 
 /** Екранування % та _ для ILIKE: вони не wildcard, а літерали (ревʼю крок 3). */
@@ -76,6 +78,16 @@ export class VenuesService {
     private readonly events: EventEmitter2,
     private readonly storage: FileStorageService,
   ) {}
+
+  /** Довідник типів закладів (для select-фільтра каталогу). */
+  listTypes(): Promise<VenueType[]> {
+    return this.venueTypes.find({ order: { name: 'ASC' } });
+  }
+
+  /** Довідник особливостей (для чип-фільтра каталогу). */
+  listFeatures(): Promise<VenueFeature[]> {
+    return this.features.find({ order: { name: 'ASC' } });
+  }
 
   /** Довідник тегів: тег + кількість закладів, де він використаний. */
   async listTags(): Promise<
