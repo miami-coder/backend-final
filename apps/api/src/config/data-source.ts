@@ -35,6 +35,8 @@ import { AuditLog } from '../modules/admin/entities/audit-log.entity';
 import { Admin1700000008000 } from '../migrations/1700000008000-Admin';
 import { Messages1700000009000 } from '../migrations/1700000009000-Messages';
 import { Recommendations1700000010000 } from '../migrations/1700000010000-Recommendations';
+import { ReviewBillAmount1700000011000 } from '../migrations/1700000011000-ReviewBillAmount';
+import { Top1700000012000 } from '../migrations/1700000012000-Top';
 
 loadEnv();
 
@@ -89,6 +91,8 @@ export default new DataSource({
     Admin1700000008000,
     Messages1700000009000,
     Recommendations1700000010000,
+    ReviewBillAmount1700000011000,
+    Top1700000012000,
   ],
   synchronize: false,
 });

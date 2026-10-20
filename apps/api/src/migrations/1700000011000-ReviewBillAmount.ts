@@ -7,7 +7,7 @@ export class ReviewBillAmount1700000011000 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `ALTER TABLE "reviews" ADD "billAmount" integer NULL`,
+      `ALTER TABLE "reviews" ADD IF NOT EXISTS "billAmount" integer NULL`,
     );
     await queryRunner.query(
       `COMMENT ON COLUMN "reviews"."billAmount" IS 'Сума чека відвідувача, грн (опційно)'`,

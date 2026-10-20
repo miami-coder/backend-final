@@ -13,6 +13,7 @@ import { RbacModule } from './modules/rbac/rbac.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { VenuesModule } from './modules/venues/venues.module';
+import { TopModule } from './modules/top/top.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { FavoritesModule } from './modules/favorites/favorites.module';
 import { NewsModule } from './modules/news/news.module';
@@ -50,6 +51,7 @@ import { AdminModule } from './modules/admin/admin.module';
     AuthModule,
     UsersModule,
     VenuesModule,
+    TopModule,
     ReviewsModule,
     FavoritesModule,
     NewsModule,
