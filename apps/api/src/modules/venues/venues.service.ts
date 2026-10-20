@@ -180,6 +180,14 @@ export class VenuesService {
     return venue;
   }
 
+  /** Призначити власника (існування користувача перевіряє контролер через
+   *  UsersService; ревʼю крок 3 — хак `['venues'].save()` прибраний). */
+  async assignOwner(venueId: string, userId: string): Promise<Venue> {
+    const venue = await this.findOneOrThrow(venueId);
+    venue.ownerId = userId;
+    return this.venues.save(venue);
+  }
+
   async softDelete(userId: string, venueId: string): Promise<void> {
     const venue = await this.findOneOrThrow(venueId);
     await this.assertCanEdit(userId, venue);

@@ -135,9 +135,7 @@ export class VenuesAdminController {
   @ApiForbiddenResponse({ description: 'Немає дозволу user:manage' })
   @ApiNotFoundResponse({ description: 'Заклад або користувач не знайдено' })
   async assignOwner(@Param('id') id: string, @Body('userId') userId: string) {
-    const venue = await this.venues.findOneOrThrow(id);
     await this.users.findById(userId); // кинуть NotFound, якщо користувача немає
-    venue.ownerId = userId;
-    return { data: await this.venues['venues'].save(venue) };
+    return { data: await this.venues.assignOwner(id, userId) };
   }
 }

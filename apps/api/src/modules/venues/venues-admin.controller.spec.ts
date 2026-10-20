@@ -18,6 +18,7 @@ describe('VenuesAdminController', () => {
       approve: jest.fn(),
       findOneOrThrow: jest.fn(),
       venues: { save: jest.fn() },
+      assignOwner: jest.fn(),
     };
     users = { findById: jest.fn() };
     const module = await Test.createTestingModule({
@@ -63,16 +64,10 @@ describe('VenuesAdminController', () => {
     expect(res.data.id).toBe('v1');
   });
 
-  it('assignOwner assigns owner and saves venue', async () => {
-    const venue = { id: 'v1', ownerId: null };
-    venues.findOneOrThrow.mockResolvedValue(venue);
-    users.findById.mockResolvedValue({ id: 'u1' });
-    venues.venues.save.mockResolvedValue({ id: 'v1', ownerId: 'u1' });
+  it('assignOwner делегує у VenuesService.assignOwner (хак — прибрано)', async () => {
+    venues.assignOwner.mockResolvedValue({ id: 'v1', ownerId: 'u1' });
     const res = await controller.assignOwner('v1', 'u1');
-    expect(venues.findOneOrThrow).toHaveBeenCalledWith('v1');
-    expect(users.findById).toHaveBeenCalledWith('u1');
-    expect(venue.ownerId).toBe('u1');
-    expect(venues.venues.save).toHaveBeenCalledWith(venue);
+    expect(venues.assignOwner).toHaveBeenCalledWith('v1', 'u1');
     expect(res.data.ownerId).toBe('u1');
   });
 });
