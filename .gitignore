@@ -13,6 +13,7 @@ node_modules/
 
 # локальні робочі області
 /.claude
+/memory
 /.superpowers
 
 # рантайм
