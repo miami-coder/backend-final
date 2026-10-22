@@ -51,7 +51,7 @@ export class HangoutsService {
       throw new ForbiddenException(
         'Пиячки можна створювати лише на схвалені заклади',
       );
-    // Дата+час: «сьогодні о 00:01» — вже минуле (ревʼю крок 3), тільки
+    // Дата+час: «сьогодні о 00:01» — вже минуле, тільки
     // до початку дня перевірка це пропускала.
     const at = new Date(`${dto.date}T${dto.time}`);
     if (Number.isNaN(at.getTime()) || at.getTime() < Date.now() - 60_000) {
@@ -118,7 +118,7 @@ export class HangoutsService {
     await this.invalidateListCache();
   }
 
-  /** Видалення запиту автором повністю (ревʼю крок 3): cancel лишає запис
+  /** Видалення запиту автором повністю: cancel лишає запис
    *  зі статусом cancelled — автор має право і стерти його зовсім. */
   async delete(userId: string, hangoutId: string): Promise<void> {
     const h = await this.findOneOrThrow(hangoutId);
@@ -152,7 +152,7 @@ export class HangoutsService {
     const { page, limit, offset } = normalizePagination(opts);
     const cacheKey = `hangouts:list:${createHash('sha1').update(JSON.stringify(opts)).digest('hex')}`;
     // Кешуємо {data, total}, а не довжину сторінки — total на хіті
-    // інакше рахується як кількість рядків сторінки (ревʼю крок 2).
+    // інакше рахується як кількість рядків сторінки.
     const cached = await this.cache.get<{ data: Hangout[]; total: number }>(
       cacheKey,
     );

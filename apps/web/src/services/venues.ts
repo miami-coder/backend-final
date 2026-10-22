@@ -134,7 +134,7 @@ export function unrecommendVenue(venueId: string): Promise<void> {
   return apiVoid(`/venues/${venueId}/recommend`, { method: 'DELETE' })
 }
 
-// --- Топ закладів (revʼю викладача: редагує супер-адмін) ---
+// --- Топ закладів (редагує супер-адмін) ---
 
 export interface TopCategoryAdmin {
   id: string

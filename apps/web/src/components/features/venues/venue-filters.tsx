@@ -132,7 +132,7 @@ export function VenueFilters({ initial }: { initial: CatalogQuery }) {
         </label>
         <label className="w-44 shrink-0 text-sm lg:w-auto">
           Тип закладу
-          {/* Фолбек (revʼю Stage 3 M4): довідник не вантажиться — не ховай
+          {/* Фолбек: довідник не вантажиться — не ховай
               блок, а лиши ручний input, щоб активний URL-фільтр лишався десь видимим */}
           {types.length > 0 ? (
             <Select value={type} onChange={(e) => setType(e.target.value)} className="mt-1">

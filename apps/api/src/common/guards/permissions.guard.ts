@@ -28,7 +28,7 @@ export class PermissionsGuard implements CanActivate {
     if (!user) throw new ForbiddenException('No authenticated user');
 
     // Перевірка конкретного права має відбуватись у самому захисті маршруту,
-    // а не залежати від того, чи сервіс про неї згадав (рев'ю викладача).
+    // а не залежати від того, чи сервіс про неї згадав.
     // hasAnyPermission читає role_permissions у БД через кеш Redis (TTL 300s).
     const allowed = await this.perms.hasAnyPermission(user.sub, required);
     if (!allowed) throw new ForbiddenException('Недостатньо дозволів');

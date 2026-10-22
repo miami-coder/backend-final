@@ -307,7 +307,7 @@ describe('ReviewsService.create — лише схвалені заклади', (
   });
 });
 
-describe('ReviewsService.listForVenue — видалений автор (ревʼю Stage 2)', () => {
+describe('ReviewsService.listForVenue — видалений автор', () => {
   it('автор з deletedAt → isDeleted-псевдо-профіль замість реальних даних', async () => {
     let service: ReviewsService;
     const reviews = {

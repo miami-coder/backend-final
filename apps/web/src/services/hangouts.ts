@@ -20,7 +20,7 @@ export function joinHangout(hangoutId: string): Promise<void> {
 export function hangoutAction(hangoutId: string, kind: 'cancel' | 'leave'): Promise<void> {
   return apiVoid(`/hangouts/${hangoutId}/${kind}`, { method: 'POST' })
 }
-/** DELETE /hangouts/:id — видалити запит повністю (тільки творець; revʼю крок 3). */
+/** DELETE /hangouts/:id — видалити запит повністю (тільки творець). */
 export function deleteHangout(hangoutId: string): Promise<void> {
   return apiVoid(`/hangouts/${hangoutId}`, { method: 'DELETE' })
 }

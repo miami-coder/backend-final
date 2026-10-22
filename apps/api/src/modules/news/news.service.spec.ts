@@ -135,7 +135,7 @@ describe('NewsService', () => {
   });
 });
 
-describe('NewsService — видимість новин і «просунутий» прапор (ревʼю крок 2)', () => {
+describe('NewsService — видимість новин і «просунутий» прапор', () => {
   let service: NewsService;
   let news: any;
   let venues: any;
@@ -242,7 +242,7 @@ describe('NewsService — видимість новин і «просунути�
   });
 });
 
-describe('NewsService.listPublic — фільтр схованого закладу (ревʼю Stage 2)', () => {
+describe('NewsService.listPublic — фільтр схованого закладу', () => {
   let service: NewsService;
   let news: any;
   let venues: any;
@@ -305,7 +305,7 @@ describe('NewsService.listPublic — фільтр схованого закла�
   });
 });
 
-describe('NewsService.listMine — власник бачить свої новини (ревʼю крок 3)', () => {
+describe('NewsService.listMine — власник бачить свої новини', () => {
   it('список новин усіх своїх закладів — незалежно від статусу закладу', async () => {
     let service: NewsService;
     let chain: any;

@@ -61,7 +61,7 @@ describe('AllExceptionsFilter', () => {
   });
 });
 
-describe('AllExceptionsFilter — невалідний UUID (ревʼю крок 3)', () => {
+describe('AllExceptionsFilter — невалідний UUID', () => {
   it('PG 22P02 (invalid input syntax for uuid) → 400, не 500', () => {
     const json = jest.fn();
     const filter = new AllExceptionsFilter();

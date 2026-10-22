@@ -119,7 +119,7 @@ export class TopService {
       return await this.entries.save(entry);
     } catch (e) {
       // Гонка дублікатів: service-level findOne пропускає обидва паралельні
-      // запити, UNIQUE(categoryId, venueId) ріже другий — 409, не 500 (M3).
+      // запити, UNIQUE(categoryId, venueId) ріже другий — 409, не 500.
       if ((e as { code?: string }).code === '23505') {
         throw new ConflictException('Заклад уже в цій категорії Топу');
       }

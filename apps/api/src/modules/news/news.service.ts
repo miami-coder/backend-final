@@ -60,7 +60,7 @@ export class NewsService {
       content: dto.content,
       imageUrl: dto.imageUrl ?? null,
       status: dto.status ?? NewsStatus.Published,
-      // «Просунута» новина — лише супер-адміну (ревʼю крок 2)
+      // «Просунута» новина — лише супер-адміну
       isPromoted: canPromote ? (dto.isPromoted ?? false) : false,
       publishedAt: now,
     });
@@ -80,7 +80,7 @@ export class NewsService {
       .where('n.status = :status', { status: NewsStatus.Published });
     // Новини схованого (pending/archived) закладу публічно не видимі.
     // News не має venue-релішена (тільки колонка venueId) — leftJoin тут
-    // валиться в рантайм (500 на /news); тож фільтр через EXISTS (Stage 4 ревʼю).
+    // валиться в рантайм (500 на /news); тож фільтр через EXISTS.
     qb.andWhere(
       '(n.venueId IS NULL OR EXISTS (SELECT 1 FROM venues v WHERE v.id = n.venueId AND v.status = :approved))',
       {
@@ -102,7 +102,7 @@ export class NewsService {
 
   /** Список новин власника за всіма його закладами — будь-якого статусу
    *  закладу (власник не втрачає доступ до своїх новин схованого закладу,
-   *  тикет з ревʼю Stage 2). */
+   *  до схвалення закладу доступ до новин втрачався). */
   async listMine(userId: string, page = 1, limit = 20) {
     const {
       page: p,
@@ -152,7 +152,7 @@ export class NewsService {
     return { data, meta: buildMeta({ page, limit, offset }, total) };
   }
 
-  /** Публічний перегляд новини (ревʼю крок 2): тільки Published і тільки
+  /** Публічний перегляд новини: тільки Published і тільки
    *  для схваленого закладу (глобальні — venueId відсутній). */
   async getPublic(id: string) {
     const n = await this.get(id);

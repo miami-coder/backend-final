@@ -5,7 +5,7 @@ import { AdminUsersController } from './admin-users.controller';
 import { AdminUsersService } from './admin-users.service';
 import { PermissionsService } from '../rbac/permissions.service';
 
-// Ревʼю крок 3: контролер більше не працює з репозиторіями — кожен ендпоінт
+// Контролер більше не працює з репозиторіями — кожен ендпоінт
 // лише делегує в AdminUsersService. Бізнес-тести — в admin-users.service.spec.
 describe('AdminUsersController — делегація в сервіс', () => {
   let controller: AdminUsersController;

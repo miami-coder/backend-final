@@ -94,7 +94,7 @@ export class UsersService {
     });
     if (existingAccount) {
       const existing = await this.findById(existingAccount.userId);
-      // Видалення адміном — фінальне (ревʼю крок 2): OAuth-перезаходу з
+      // Видалення адміном — фінальне: OAuth-перезаходу з
       // авто-оживанням більше нема.
       if (existing.deletedAt)
         throw new ConflictException('Обліковий запис видалено');
@@ -128,14 +128,14 @@ export class UsersService {
     return user;
   }
 
-  /** Видалення власного профілю з кабінету (revʼю крок 3): той самий
+  /** Видалення власного профілю з кабінету: той самий
    *  soft-delete, що й адмінський — deletedAt; логін/refresh далі 401. */
   async deleteMe(userId: string): Promise<void> {
     const user = await this.users.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('Користувача не знайдено');
     user.deletedAt = new Date();
     await this.users.save(user);
-    // Симметрія з AdminUsersService.softDelete (M4 Stage 4): старий
+    // Симметрія з AdminUsersService.softDelete: старий
     // access-токен самовидаленого юзера теж вмирає одразу.
     await this.cache.set(`deleted:${userId}`, true, 960);
   }

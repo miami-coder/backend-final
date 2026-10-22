@@ -24,7 +24,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: JwtPayload): Promise<JwtUser> {
     // Видалений адміном юзер не може жити зі старим access-токеном
-    // (ревʼю крок 2). Прапор кешується адмін-видаленням; на кожному хіті
+    //. Прапор кешується адмін-видаленням; на кожному хіті
     // TTL продовжується (sliding) — вікно не стухає до конці життя токена.
     if (this.cache) {
       const deleted = await this.cache.get(`deleted:${payload.sub}`);

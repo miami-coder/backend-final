@@ -8,8 +8,8 @@ export interface TopCategoryPublic {
     id: string
     name: string
     mainPhotoUrl: string | null
-    /** TypeORM numeric віддається строкою — парсер нормалізує (ревʼю Stage 4:
-     *  RatingStars робив .toFixed на строку → «Щось пішло не так»). */
+    /** TypeORM numeric віддається строкою — парсер нормалізує (RatingStars
+     *  робив .toFixed на строку → «Щось пішло не так»). */
     ratingAvg: number | null
   }[]
 }
@@ -22,8 +22,8 @@ interface RawTopVenue {
 }
 
 /**
- * Публічний Топ: GET /top (revʼю викладача — розділ «Топ»).
- * Увага (ревʼю Stage 4 C1): serverFetch вже повертає розгорнуте data —
+ * Публічний Топ: GET /top.
+ * Увага: serverFetch вже повертає розгорнуте data —
  * другий .data тут давав завжди порожній список на живій сторінці.
  */
 export async function getTop(revalidate = 60): Promise<TopCategoryPublic[]> {

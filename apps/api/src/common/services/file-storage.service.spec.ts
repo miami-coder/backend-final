@@ -21,7 +21,7 @@ const WEBP_BUFFER = Buffer.concat([
   Buffer.alloc(64),
 ]);
 
-describe('FileStorageService — тип файлу за magic bytes (ревʼю викладача)', () => {
+describe('FileStorageService — тип файлу за magic bytes', () => {
   let service: FileStorageService;
   let writeFileMock: jest.Mock;
 

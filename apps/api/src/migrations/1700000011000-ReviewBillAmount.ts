@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-/** Ревʼю викладача: у відгуку є сума чека відвідувача (рейтинг, текст і
+/** У відгуку є сума чека відвідувача (рейтинг, текст і
  *  фото чека вже є, а суми не було). */
 export class ReviewBillAmount1700000011000 implements MigrationInterface {
   name = 'ReviewBillAmount1700000011000';

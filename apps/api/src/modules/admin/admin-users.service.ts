@@ -22,7 +22,7 @@ import {
 import { CacheService } from '../../common/services/cache.service';
 
 /**
- * Бізнес-логіка адміністрування юзерів (ревʼю викладача: контролер у
+ * Бізнес-логіка адміністрування юзерів (контролер у
  * адмінці не має напряму працювати з репозиторіями).
  */
 @Injectable()
@@ -87,7 +87,7 @@ export class AdminUsersService {
     return { data: saved };
   }
 
-  /** Мʼяке видалення: deletedAt + прапор кешу для jwt-strategy (Stage 2). */
+  /** Мʼяке видалення: deletedAt + прапор кешу для jwt-strategy. */
   async softDelete(
     actorId: string,
     id: string,

@@ -47,7 +47,7 @@ function csvCodes(csv: string): string[] {
     .filter(Boolean);
 }
 
-/** Екранування % та _ для ILIKE: вони не wildcard, а літерали (ревʼю крок 3). */
+/** Екранування % та _ для ILIKE: вони не wildcard, а літерали. */
 function escapeLike(input: string): string {
   return input.replace(/[!%_\\]/g, (ch) => `!${ch}`);
 }
@@ -112,7 +112,7 @@ export class VenuesService {
   }
 
   async create(ownerId: string, dto: CreateVenueDto): Promise<Venue> {
-    // Супер-адмін (venue:moderate) створює заклад одразу схваленим (ревʼю крок 2)
+    // Супер-адмін (venue:moderate) створює заклад одразу схваленим
     const autoApprove = await this.perms.hasPermission(
       ownerId,
       'venue:moderate',
@@ -181,7 +181,7 @@ export class VenuesService {
   }
 
   /** Призначити власника (існування користувача перевіряє контролер через
-   *  UsersService; ревʼю крок 3 — хак `['venues'].save()` прибраний). */
+   *  UsersService). */
   async assignOwner(venueId: string, userId: string): Promise<Venue> {
     const venue = await this.findOneOrThrow(venueId);
     venue.ownerId = userId;
@@ -300,7 +300,7 @@ export class VenuesService {
     );
     if (cached) {
       // cached.data — це вже сторінка (ключ включає page); повторне
-      // зріжування робило повторні сторінки порожніми (ревʼю крок 2).
+      // зріжування робило повторні сторінки порожніми.
       return {
         data: cached.data,
         meta: buildMeta({ page, limit, offset }, cached.total),
@@ -319,7 +319,7 @@ export class VenuesService {
       .where('v.status = :status', { status: VenueStatus.Approved });
 
     if (query.q) {
-      // % и _ — літерали, не wildcard (ревʼю крок 3)
+      // % и _ — літерали, не wildcard
       const safe = `%${escapeLike(query.q)}%`;
       qb.andWhere(
         new Brackets((b) =>
@@ -336,7 +336,7 @@ export class VenuesService {
     if (query.maxCheck != null)
       qb.andWhere('v.averageCheck <= :maxCheck', { maxCheck: query.maxCheck });
     if (query.feature) {
-      // AND-семантика (ревʼю крок 3): заклад має ВСІ запитані фічі —
+      // AND-семантика: заклад має ВСІ запитані фічі —
       // окремий EXISTS-підзапит на кожен код, а не один IN (OR).
       for (const [i, code] of csvCodes(query.feature).entries()) {
         const key = `feature_${i}`;
@@ -457,7 +457,7 @@ export class VenuesService {
 
   // Апрув: статус → approved + власник отримує роль venue_admin (ідемпотентно).
   // Ручна видача ролей супер-адміном лишається незалежною.
-  // Видалений (archived) заклад апрувнути не можна (ревʼю крок 2).
+  // Видалений (archived) заклад апрувнути не можна.
   async approve(actorId: string, venueId: string): Promise<Venue> {
     const current = await this.findOneOrThrow(venueId);
     if (current.status === VenueStatus.Archived)

@@ -5,7 +5,7 @@ import {
 } from 'typeorm';
 
 /** Редакційні тексти сайту («Про нас», контакти): key/value, змінює
- *  супер-адмін (revʼю викладача — «немає редагування загальних текстів»). */
+ *  супер-адмін («Про нас», контакти — правка в адмінці). */
 @Entity('site_content')
 export class SiteContent {
   @Column({ type: 'varchar', length: 64, primary: true })

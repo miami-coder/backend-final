@@ -6,7 +6,7 @@ import { TopCategory } from './top-category.entity';
 import { TopEntry } from './top-entry.entity';
 import { Venue } from '../venues/entities/venue.entity';
 
-describe('TopService (фіча «Топ закладів» — ревʼю викладача)', () => {
+describe('TopService (фіча «Топ закладів»)', () => {
   let service: TopService;
   let categories: any;
   let entries: any;

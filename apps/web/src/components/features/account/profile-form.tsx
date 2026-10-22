@@ -96,7 +96,7 @@ export function ProfileForm({ profile }: { profile: ProfileFields }) {
       {error && <p role="alert" className="text-sm text-danger">{error}</p>}
       <Button type="submit" disabled={saving}>{saving ? 'Зберігаємо…' : 'Зберегти'}</Button>
 
-      {/* Видалення профілю (revʼю крок 3): модалка-підтвердження, після —
+      {/* Видалення профілю: модалка-підтвердження, після —
           логаут і редірект на каталог. */}
       <div className="mt-6 border-t border-line pt-4">
         <button

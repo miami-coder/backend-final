@@ -204,7 +204,7 @@ describe('UsersService', () => {
 
     // Дефект: soft-видалений акаунт (адмін-видалення) при повторному oauth-вході
     // логінився «мулликом» — прихованим зі списку користувачів
-    it('oauth-вхід soft-видаленого акаунта НЕ оживає — 409 (ревʼю крок 2)', async () => {
+    it('oauth-вхід soft-видаленого акаунта НЕ оживає — 409', async () => {
       oauth.findOne.mockResolvedValueOnce({ userId: 'u-del' });
       users.findOne.mockResolvedValueOnce({
         id: 'u-del',
@@ -223,7 +223,7 @@ describe('UsersService', () => {
       );
     });
 
-    it('матч по email на soft-видаленого НЕ оживає — 409 (ревʼю крок 2)', async () => {
+    it('матч по email на soft-видаленого НЕ оживає — 409', async () => {
       oauth.findOne.mockResolvedValueOnce(null);
       users.findOne.mockResolvedValueOnce({
         id: 'u-del',
@@ -290,7 +290,7 @@ describe('UsersService — OAuth-регістрація на видалений 
   });
 });
 
-describe('UsersService.deleteMe — видалення власного профілю (revʼю крок 3: кабінет)', () => {
+describe('UsersService.deleteMe — видалення власного профілю (кабінет)', () => {
   it('ставить deletedAt, оживає через 401 при повторному логіні, токен-прапор — на боці адмін-логіки', async () => {
     const users = {
       findOne: jest.fn().mockResolvedValue({ id: 'u1', deletedAt: null }),

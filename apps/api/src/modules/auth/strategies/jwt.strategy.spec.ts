@@ -28,7 +28,7 @@ describe('JwtStrategy', () => {
   });
 });
 
-describe('JwtStrategy — видалений юзер (ревʼю крок 2)', () => {
+describe('JwtStrategy — видалений юзер', () => {
   const SECRET = 'b'.repeat(40);
   beforeEach(() => {
     process.env.JWT_ACCESS_SECRET = SECRET;

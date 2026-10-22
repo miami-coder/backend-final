@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { Button } from '@/components/ui/button'
 
-// localStorage (ревʼю крок 3): попередження 18+ — один раз на пристрій,
+// localStorage: попередження 18+ — один раз на пристрій,
 // а не на кожну сесію/вкладку. localStorage недоступний під час SSR:
 // серверний снапшот — «підтверджено» (до гідратації нічого не рендеримо).
 const listeners = new Set<() => void>()

@@ -11,7 +11,7 @@ export function HangoutActions({ hangoutId, isCreator, canLeave, canDelete, leav
   hangoutId: string
   isCreator: boolean
   canLeave: boolean
-  /** Ревʼю крок 3: творець може і повністю видалити запит (не лише скасувати). */
+  /** Творець може і повністю видалити запит (не лише скасувати). */
   canDelete?: boolean
   /** Вказати — після «Покинути» перейти на адресу замість перевитягу поточної
    *  сторінки (деталі зустрічі → назад до списку зустрічей). */

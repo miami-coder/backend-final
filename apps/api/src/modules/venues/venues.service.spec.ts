@@ -619,7 +619,7 @@ describe('VenuesService.findOnePublic — санітизація власник�
   });
 });
 
-describe('VenuesService.search — кеш-хіт повторної сторінки (ревʼю крок 2)', () => {
+describe('VenuesService.search — кеш-хіт повторної сторінки', () => {
   let service: VenuesService;
   let venues: any;
   let cache: any;
@@ -690,7 +690,7 @@ describe('VenuesService.search — кеш-хіт повторної сторін
   });
 });
 
-describe('VenuesService — модерація закладів (ревʼю крок 2)', () => {
+describe('VenuesService — модерація закладів', () => {
   let service: VenuesService;
   let venues: any;
   let cache: any;
@@ -765,7 +765,7 @@ describe('VenuesService — модерація закладів (ревʼю кр
   });
 });
 
-describe('VenuesService.search — %/_ літерали, не wildcard (ревʼю крок 3)', () => {
+describe('VenuesService.search — %/_ літерали, не wildcard', () => {
   it('q з % та _ залишається літералом у ILIKE', async () => {
     const venues = {
       findOne: jest.fn(),
@@ -824,7 +824,7 @@ describe('VenuesService.search — %/_ літерали, не wildcard (ревʼ
   });
 });
 
-describe('VenuesService — довідники типів і фіч (ревʼю крок 3, для select-фільтрів)', () => {
+describe('VenuesService — довідники типів і фіч (для select-фільтрів)', () => {
   it('listTypes → [{id, name, slug}], listFeatures → [{id, name, code, icon}]', async () => {
     const typesMock = {
       find: jest

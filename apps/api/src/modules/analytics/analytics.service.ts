@@ -43,7 +43,7 @@ export class AnalyticsService {
       userId: userId ?? null,
       sessionId: sessionId ?? null,
     });
-    // Лічильник закладу ніколи не оновлювався і був завжди 0 (ревʼю крок 3)
+    // Лічильник закладу ніколи не оновлювався і був завжди 0
     await this.venues.increment({ id: venueId }, 'viewCount', 1);
     return { recorded: true };
   }
@@ -75,11 +75,10 @@ export class AnalyticsService {
       .orderBy('date', 'ASC');
     if (from) viewsQb.andWhere('v."viewedAt" >= :from', { from });
     if (to)
-      // to — дата без часу: включно до кінця дня (ревʼю крок 3:
-      // «останній день діапазону не рахується» — <= to зрізає опівноччя)
+      // to — дата без часу: включно до кінця дня (<= to зрізає опівноччя)
       viewsQb.andWhere(
-        // to — ISO-дата (може містити час): включно до кінця дня (ревʼю крок 3
-        // + ревʼю Stage 3: строкова конкатенація з ISO-часом падала в PG 22007)
+        // to — ISO-дата (може містити час): включно до кінця дня (строкова
+        // конкатенація з ISO-часом падала в PG 22007)
         'v."viewedAt" < (:to)::date + interval \'1 day\'',
         { to },
       );
@@ -103,8 +102,7 @@ export class AnalyticsService {
       count: number;
     }>();
 
-    // total — сума тих самих днів (діапазон поважається; ревʼю крок 3:
-    // «загальна цифра ігнорує вибраний діапазон дат»)
+    // total — сума тих самих днів (діапазон поважається, не просто last page)
     const totalViews = viewsByDay.reduce((sum, d) => sum + Number(d.count), 0);
     return { totalViews, viewsByDay, eventsByType };
   }

@@ -88,7 +88,7 @@ describe('AnalyticsService', () => {
   });
 });
 
-describe('AnalyticsService.stats — діапазон дат (ревʼю крок 3)', () => {
+describe('AnalyticsService.stats — діапазон дат', () => {
   it('totalViews рахується у відборі from..to (інклюзивно до кінця дня to), а не глобально', async () => {
     // загальний у репозиторії 120, але в діапазоні запит — 5; total має бути 5
     const viewsQb = {
@@ -144,7 +144,7 @@ describe('AnalyticsService.stats — діапазон дат (ревʼю кро�
   });
 });
 
-describe('AnalyticsService.recordView — лічильник закладу (ревʼю крок 3)', () => {
+describe('AnalyticsService.recordView — лічильник закладу', () => {
   it('recorded → viewCount закладу інкрементується', async () => {
     const views = {
       save: jest.fn().mockResolvedValue(undefined),

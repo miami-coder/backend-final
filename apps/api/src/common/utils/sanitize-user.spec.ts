@@ -1,7 +1,7 @@
 import { sanitizeUser } from './sanitize-user';
 import { User } from '../../modules/users/entities/user.entity';
 
-describe('sanitizeUser (ревʼю викладача)', () => {
+describe('sanitizeUser', () => {
   it('живий юзер → {id, profile-білий-список}, без приватних полів', () => {
     const u = {
       id: 'u1',

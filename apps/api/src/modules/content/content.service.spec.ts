@@ -4,7 +4,7 @@ import { NotFoundException } from '@nestjs/common';
 import { ContentService } from './content.service';
 import { SiteContent } from './site-content.entity';
 
-describe('ContentService (загальні тексти — revʼю викладача)', () => {
+describe('ContentService (загальні тексти)', () => {
   let service: ContentService;
   let repo: any;
 

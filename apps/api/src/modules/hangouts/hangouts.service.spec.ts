@@ -332,7 +332,7 @@ describe('HangoutsService.create — лише схвалені заклади', 
   });
 });
 
-describe('HangoutsService.getOne — видалений учасник (ревʼю Stage 2)', () => {
+describe('HangoutsService.getOne — видалений учасник', () => {
   it('імʼя видаленого учасника приховано як «Обліковий запис видалено»', async () => {
     const repo = () => ({
       save: jest.fn(),
@@ -397,7 +397,7 @@ describe('HangoutsService.getOne — видалений учасник (ревʼ
   });
 });
 
-describe('HangoutsService — дата+час і видалення автором (ревʼю крок 3)', () => {
+describe('HangoutsService — дата+час і видалення автором', () => {
   let service: HangoutsService;
   let hangouts: any;
   let participants: any;

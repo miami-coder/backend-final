@@ -1,6 +1,6 @@
 'use client'
 
-// Редагування Топу супер-адміном (revʼю викладача): категорії + записи.
+// Редагування Топу супер-адміном: категорії + записи.
 // Серверний пейдж не юзається — список перезавантажується router.refresh().
 
 import { useState } from 'react'
@@ -27,7 +27,7 @@ export function TopManager({
   const router = useRouter()
   const [title, setTitle] = useState('')
   const [busyCat, setBusyCat] = useState<string | null>(null)
-  // Ревʼю Stage 4 M1: спільний venueId-стан дзеркалився в усі категорії —
+  // Спільний venueId-стан дзеркалився в усі категорії —
   // тепер у кожної категорії свій вибір
   const [entryInputs, setEntryInputs] = useState<Record<string, string>>({})
 

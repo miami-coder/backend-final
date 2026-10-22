@@ -19,7 +19,7 @@ import {
 } from '../../common/utils/pagination.util';
 import { sanitizeUser } from '../../common/utils/sanitize-user';
 
-/** Жодних приватних даних авторів у відповідях (рев'ю викладача). */
+/** Жодних приватних даних авторів у відповідях. */
 function sanitizeReviewAuthors(data: Review[]) {
   return data.map((r) => ({
     ...r,

@@ -4,7 +4,7 @@ import type { SiteContentMap } from '@/services/content'
 
 /**
  * Публічний GET /content — тексти сайту.
- * Увага (ревʼю Stage 4 C1): serverFetch вже розгортає {data}; другий .data
+ * Увага: serverFetch вже розгортає {data}; другий .data
  * вертав undefined і валив сторінку адмінки.
  */
 export async function getSiteContent(

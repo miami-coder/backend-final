@@ -157,7 +157,7 @@ describe('ReviewForm (редагування/видалення наявного
     expect(JSON.parse(String(init.body))).toEqual({ rating: 3, text: 'Стало ще краще', billAmount: null })
   })
 
-  it('edit-режим: уведена сума чека потрапляє в PATCH (ревʼю: сума чека у відгуку)', async () => {
+  it('edit-режим: уведена сума чека потрапляє в PATCH', async () => {
     const fetchMock = vi.fn(async () => ok201())
     vi.stubGlobal('fetch', fetchMock)
     renderWithProviders(

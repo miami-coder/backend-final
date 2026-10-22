@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { TopEntry } from './top-entry.entity';
 
-/** Категорія Топу («Найкращий заклад для весілля»), ревʼю викладача. */
+/** Категорія Топу («Найкращий заклад для весілля»). */
 @Entity('top_categories')
 export class TopCategory {
   @PrimaryGeneratedColumn('uuid') id: string;

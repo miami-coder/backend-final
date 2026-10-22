@@ -29,7 +29,7 @@ export class AuthService {
 
   async register(dto: RegisterDto) {
     if (!dto.acceptEula) {
-      // 400 (клієнтська помилка валідації), не 409 (ревʼю крок 3)
+      // 400 (клієнтська помилка валідації), не 409
       throw new BadRequestException('Потрібно прийняти угоду користувача');
     }
     const user = await this.users.create(dto);
@@ -50,7 +50,7 @@ export class AuthService {
     if (!user) throw new UnauthorizedException('Невірний email або пароль');
     const ok = await this.users.verifyPassword(user, dto.password);
     if (!ok) throw new UnauthorizedException('Невірний email або пароль');
-    // Видалення адміном — фінальне (ревʼю крок 2): жодного авто-оживання
+    // Видалення адміном — фінальне: жодного авто-оживання
     // при повторному заході паролем.
     if (user.deletedAt)
       throw new UnauthorizedException('Обліковий запис видалено');

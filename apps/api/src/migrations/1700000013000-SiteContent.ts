@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-/** Ревʼю викладача: супер-адмін має редагувати загальні тексти
+/** Супер-адмін має редагувати загальні тексти
  *  («Про нас», контакти). Зберігаємо у key/value. */
 export class SiteContent1700000013000 implements MigrationInterface {
   name = 'SiteContent1700000013000';

@@ -22,7 +22,7 @@ export class Review {
   @Column({ type: 'smallint' }) rating: number;
   @Column({ type: 'text' }) text: string;
   @Column({ type: 'text', nullable: true }) checkPhotoUrl: string | null;
-  /** Сума чека відвідувача, грн (опційно; ревʼю викладача крок про відгук). */
+  /** Сума чека відвідувача, грн (опційно). */
   @Column({ type: 'integer', nullable: true }) billAmount: number | null;
   @Column({ type: 'boolean', default: false }) isFeatured: boolean;
   @CreateDateColumn() createdAt: Date;

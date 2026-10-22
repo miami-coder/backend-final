@@ -79,7 +79,7 @@ describe('AuthService', () => {
     service = module.get(AuthService);
   });
 
-  it('register acceptEula:false → 400 BadRequest (ревʼю крок 3)', async () => {
+  it('register acceptEula:false → 400 BadRequest', async () => {
     await expect(
       service.register({
         email: 'a@b.com',
@@ -135,7 +135,7 @@ describe('AuthService', () => {
 
   // Дефект: soft-видалений (адмін-видалення) акаунт міг логінитесь паролем
   // «мулликом» — без ролей і невидимий у списку користувачів
-  it('login soft-видаленого акаунта не оживає, а відкидається 401 (ревʼю крок 2)', async () => {
+  it('login soft-видаленого акаунта не оживає, а відкидається 401', async () => {
     users.findByEmail.mockResolvedValueOnce({
       id: 'u-del',
       email: 'a@b.com',
@@ -174,7 +174,7 @@ describe('AuthService', () => {
   });
 });
 
-describe('AuthService — видалення юзера фінальне (ревʼю крок 2)', () => {
+describe('AuthService — видалення юзера фінальне', () => {
   let service: AuthService;
   let users: any;
   let userRoles: any;

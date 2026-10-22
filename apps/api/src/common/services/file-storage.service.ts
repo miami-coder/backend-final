@@ -7,7 +7,7 @@ import { put, del } from '@vercel/blob';
 const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 
-/** Реальний тип зображення за магічними байтами (рев'ю викладача: тип
+/** Реальний тип зображення за магічними байтами (тип
  *  визначається перевіреним вмістом, а не заявою клієнта). */
 function detectImageType(buffer: Buffer): 'jpeg' | 'png' | 'webp' | null {
   const isPng =
