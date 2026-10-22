@@ -357,6 +357,9 @@ export class VenuesService {
       }
     }
     if (query.type) qb.andWhere('ty.slug = :type', { type: query.type });
+    if (query.recommended)
+      // «Рекомендовані критиком» (секція на /top): критик-прапор на закладі.
+      qb.andWhere('v.recommendedBy IS NOT NULL');
     if (query.lat != null && query.lng != null && query.radiusKm != null) {
       qb.andWhere(
         `ST_DWithin(v.location, ST_MakePoint(:lng, :lat)::geography, :meters)`,

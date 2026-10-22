@@ -282,6 +282,20 @@ describe('VenuesService', () => {
     expect(res.data).toEqual([]);
   });
 
+  it('search: recommended=1 — only рекомендовані критиком (/,top), фільтр іде в where', async () => {
+    const mockQb = venues.createQueryBuilder();
+    await service.search({ page: 1, limit: 12, recommended: '1' });
+    const sqls = mockQb.andWhere.mock.calls.map((c) => c[0] as string);
+    expect(sqls).toContain('v.recommendedBy IS NOT NULL');
+  });
+
+  it('search без recommended — клаузи рекомендацій у where НЕ додаються (каталог не лізе у вибір критика)', async () => {
+    const mockQb = venues.createQueryBuilder();
+    await service.search({ page: 1, limit: 12 });
+    const sqls = mockQb.andWhere.mock.calls.map((c) => c[0] as string);
+    expect(sqls.some((s) => s.includes('recommendedBy'))).toBe(false);
+  });
+
   it('search: фічі/теги — AND-семантика (заклад має ВСІ запитані), CSV не втрачає значення', async () => {
     const mockQb = venues.createQueryBuilder(); // той самий обʼєкт, що піде у search
     await service.search({

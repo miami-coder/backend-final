@@ -18,6 +18,7 @@ export type VenueSort = 'rating' | 'check' | 'newest' | 'name' | 'distance';
 
 export class QueryVenuesDto {
   @IsOptional() @IsString() q?: string;
+  @IsOptional() @IsIn(['1']) recommended?: '1'; // «Рекомендовані критиком» (розділ /top)
   @IsOptional() @IsString() type?: string;
   @IsOptional() @IsString() feature?: string; // csv
   @IsOptional() @IsString() tag?: string; // csv
