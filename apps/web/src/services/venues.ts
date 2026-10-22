@@ -181,3 +181,12 @@ export function addTopEntry(categoryId: string, venueId: string, position?: numb
 export function removeTopEntry(categoryId: string, entryId: string): Promise<unknown> {
   return api(`/admin/top/categories/${categoryId}/entries/${entryId}`, { method: 'DELETE' })
 }
+
+/** Новий порядок записів категорії — повний список айді (індекс = позиція). */
+export function reorderTopEntries(categoryId: string, entryIds: string[]): Promise<unknown> {
+  return api(`/admin/top/categories/${categoryId}/entries/reorder`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ entryIds }),
+  })
+}

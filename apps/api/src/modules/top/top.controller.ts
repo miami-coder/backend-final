@@ -17,6 +17,7 @@ import { TopService } from './top.service';
 import {
   CreateTopCategoryDto,
   CreateTopEntryDto,
+  ReorderTopEntriesDto,
   UpdateTopCategoryDto,
 } from './dto/top.dto';
 
@@ -78,6 +79,22 @@ export class TopController {
   @ApiOperation({ summary: 'Адмін: додати заклад у категорію Топу' })
   addEntry(@Param('id') id: string, @Body() dto: CreateTopEntryDto) {
     return this.top.addEntry(id, dto).then((data) => ({ data }));
+  }
+
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions('user:manage')
+  @Post('admin/top/categories/:id/entries/reorder')
+  @ApiOperation({
+    summary: 'Адмін: новий порядок записів категорії (полний список айді)',
+  })
+  reorderEntries(
+    @Param('id') id: string,
+    @Body() dto: ReorderTopEntriesDto,
+  ) {
+    return this.top.reorderEntries(id, dto.entryIds).then(() => ({
+      data: { reordered: dto.entryIds.length },
+    }));
   }
 
   @ApiBearerAuth('access-token')

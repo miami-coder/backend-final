@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
 import {
+  IsArray,
   IsInt,
   IsOptional,
   IsString,
@@ -24,4 +25,11 @@ export class UpdateTopCategoryDto {
 export class CreateTopEntryDto {
   @IsUUID() venueId: string;
   @IsOptional() @Type(() => Number) @IsInt() @Min(0) position?: number;
+}
+
+/** Новий порядок записів категорії — повний список айді (індекс = позиція). */
+export class ReorderTopEntriesDto {
+  @IsArray()
+  @IsUUID('all', { each: true })
+  entryIds: string[];
 }

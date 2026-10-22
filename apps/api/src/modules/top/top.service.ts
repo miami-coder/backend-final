@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -133,6 +134,27 @@ export class TopService {
       categoryId,
     });
     if (!res.affected) throw new NotFoundException('Запис Топу не знайдено');
+  }
+
+  /** Порядок записів у категорії — повний список айді в новому порядку.
+   *  position = індекс у списку; список має точно збігатися з записами
+   *  категорії (без чужих/пропущених), інакше 400 і нічого не зберігається —
+   *  це захист від розсинхрону після паралельних правок двох вкладок. */
+  async reorderEntries(categoryId: string, entryIds: string[]): Promise<void> {
+    const cat = await this.categories.findOne({ where: { id: categoryId } });
+    if (!cat) throw new NotFoundException('Категорію не знайдено');
+    const rows = await this.entries.find({ where: { categoryId } });
+    const idSet = new Set(entryIds);
+    if (rows.length !== entryIds.length || rows.some((e) => !idSet.has(e.id)))
+      throw new BadRequestException('Список записів не відповідає категорії');
+    for (const [i, id] of entryIds.entries()) {
+      const row = rows.find((e) => e.id === id) as {
+        id: string;
+        position: number;
+      };
+      row.position = i;
+    }
+    await this.entries.save(rows);
   }
 
   /** Категорії, у яких складено заклад — щоб адмінка показувала "де він у Топі". */

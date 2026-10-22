@@ -11,6 +11,7 @@ import {
   createTopCategory,
   deleteTopCategory,
   removeTopEntry,
+  reorderTopEntries,
   type TopCategoryAdmin,
 } from '@/services/venues'
 import { useToast } from '@/components/ui/toast'
@@ -103,13 +104,53 @@ export function TopManager({
                 <li key={e.id} className="flex items-center gap-2 text-sm">
                   <span className="w-5 text-right font-bold text-amber-500">{place + 1}</span>
                   <span className="text-ink">{e.venue?.name ?? e.venueId}</span>
-                  <button
-                    type="button"
-                    onClick={() => void run(() => removeTopEntry(c.id, e.id), 'Прибрано з Топу')}
-                    className="ml-auto text-xs text-muted hover:text-red-500"
-                  >
-                    прибрати
-                  </button>
+                  <span className="ml-auto flex items-center gap-1">
+                    {/* ↑/↓: повний reorder категорії одним запитом
+                        (ідекс у списку = нова position на бекенді) */}
+                    <button
+                      type="button"
+                      aria-label="Вгору"
+                      disabled={place === 0 || busyCat === c.id}
+                      onClick={() => {
+                        const list = c.entries ?? []
+                        const next = [...list]
+                        ;[next[place - 1], next[place]] = [next[place], next[place - 1]]
+                        setBusyCat(c.id)
+                        void run(
+                          () => reorderTopEntries(c.id, next.map((x) => x.id)),
+                          'Порядок оновлено',
+                        ).finally(() => setBusyCat(null))
+                      }}
+                      className="rounded px-1.5 py-0.5 text-xs text-muted hover:bg-raised hover:text-amber-500 disabled:opacity-30"
+                    >
+                      ↑
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Вниз"
+                      disabled={place === (c.entries ?? []).length - 1 || busyCat === c.id}
+                      onClick={() => {
+                        const list = c.entries ?? []
+                        const next = [...list]
+                        ;[next[place + 1], next[place]] = [next[place], next[place + 1]]
+                        setBusyCat(c.id)
+                        void run(
+                          () => reorderTopEntries(c.id, next.map((x) => x.id)),
+                          'Порядок оновлено',
+                        ).finally(() => setBusyCat(null))
+                      }}
+                      className="rounded px-1.5 py-0.5 text-xs text-muted hover:bg-raised hover:text-amber-500 disabled:opacity-30"
+                    >
+                      ↓
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void run(() => removeTopEntry(c.id, e.id), 'Прибрано з Топу')}
+                      className="text-xs text-muted hover:text-red-500"
+                    >
+                      прибрати
+                    </button>
+                  </span>
                 </li>
               ))}
             </ol>

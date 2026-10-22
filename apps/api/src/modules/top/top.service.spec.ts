@@ -1,6 +1,10 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { TopService } from './top.service';
 import { TopCategory } from './top-category.entity';
 import { TopEntry } from './top-entry.entity';
@@ -72,6 +76,42 @@ describe('TopService (фіча «Топ закладів»)', () => {
     await expect(service.removeEntry('c1', 'nope')).rejects.toThrow(
       NotFoundException,
     );
+  });
+
+  it('reorderEntries: новий порядок — position = індекс у списку', async () => {
+    categories.findOne.mockResolvedValueOnce({ id: 'c1' });
+    entries.find.mockResolvedValueOnce([
+      { id: 'e2', position: 1 },
+      { id: 'e1', position: 0 },
+    ]);
+    await service.reorderEntries('c1', ['e1', 'e2']);
+    // зберігаються ТІ САМІ обʼєкти записів (не нові) з новими позиціями
+    expect(entries.save).toHaveBeenCalledTimes(1);
+    const saved = entries.save.mock.calls[0][0];
+    expect(saved.find((e: { id: string }) => e.id === 'e1').position).toBe(0);
+    expect(saved.find((e: { id: string }) => e.id === 'e2').position).toBe(1);
+  });
+
+  it('reorderEntries: неіснуюча категорія → 404', async () => {
+    categories.findOne.mockResolvedValueOnce(null);
+    await expect(
+      service.reorderEntries('nope', ['e1']),
+    ).rejects.toThrow(NotFoundException);
+  });
+
+  it('reorderEntries: список не відповідає записам категорії → 400 (нічого не зберігається)', async () => {
+    categories.findOne.mockResolvedValue({ id: 'c1' });
+    entries.find.mockResolvedValue([{ id: 'e1', position: 0 }]);
+    // чужий/зайвий айді — не зберігаєм
+    await expect(
+      service.reorderEntries('c1', ['e1', 'e-hack']),
+    ).rejects.toThrow(BadRequestException);
+    expect(entries.save).not.toHaveBeenCalled();
+    // пропущений запис — теж
+    await expect(
+      service.reorderEntries('c1', []),
+    ).rejects.toThrow(BadRequestException);
+    expect(entries.save).not.toHaveBeenCalled();
   });
 
   it('deleteCategory: неіснуюча → 404', async () => {
