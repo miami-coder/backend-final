@@ -48,6 +48,8 @@ export function AgeGate() {
 
   if (confirmed) return null
 
+  // НЕ загальний ui/Modal: гейт 18+ — навмисно жорсткий (Esc/клік поза
+  // панель не закриває, інакше мінор однією клавішею проходить warning).
   return (
     <div
       ref={dialogRef}

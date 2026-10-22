@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation'
 import { useUser } from '@/components/providers/user-provider'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Modal } from '@/components/ui/modal'
 import { deleteMe } from '@/services/users'
 import { useToast } from '@/components/ui/toast'
 import { updateMyProfile } from '@/services/users'
@@ -106,30 +107,27 @@ export function ProfileForm({ profile }: { profile: ProfileFields }) {
         >
           Видалити профіль
         </button>
-        {deleting && (
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label="Видалити профіль?"
-            className="fixed inset-0 z-50 flex items-center justify-center bg-bg p-4"
-          >
-            <div className="max-w-md rounded-xl border border-line bg-surface p-8 text-center">
-              <p className="text-ink">Видалити профіль?</p>
-              <p className="mt-1 text-sm text-muted">
-                Відгуки залишаться з позначкою «Обліковий запис видалено».
-                Увійти назад цим акаунтом буде неможливо.
-              </p>
-              <div className="mt-4 flex justify-center gap-2">
-                <Button variant="secondary" onClick={() => setDeleting(false)}>
-                  Скасувати
-                </Button>
-                <Button variant="danger" onClick={() => void removeMe()}>
-                  Так, видалити
-                </Button>
-              </div>
-            </div>
+        {/* Загальна модалка (Esc, фокус-трап, повернення фокусу) —
+            замість самописного оверлея без нього. */}
+        <Modal
+          open={deleting}
+          onClose={() => setDeleting(false)}
+          title="Видалити профіль?"
+        >
+          <p className="text-ink">Видалити профіль?</p>
+          <p className="mt-1 text-sm text-muted">
+            Відгуки залишаться з позначкою «Обліковий запис видалено».
+            Увійти назад цим акаунтом буде неможливо.
+          </p>
+          <div className="mt-4 flex justify-end gap-2">
+            <Button variant="secondary" onClick={() => setDeleting(false)}>
+              Скасувати
+            </Button>
+            <Button variant="danger" onClick={() => void removeMe()}>
+              Так, видалити
+            </Button>
           </div>
-        )}
+        </Modal>
       </div>
     </form>
   )

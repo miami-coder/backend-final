@@ -9,9 +9,11 @@ import type { SessionUser } from '@/types/user'
 afterEach(() => vi.unstubAllGlobals())
 
 const refresh = vi.fn()
+const push = vi.fn()
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ refresh }),
+  useRouter: () => ({ refresh, push }),
 }))
+afterEach(() => { refresh.mockReset(); push.mockReset() })
 
 const testUser: SessionUser = { id: 'u1', email: 'a@b.c', roles: ['user'] }
 
@@ -66,5 +68,48 @@ describe('ProfileForm', () => {
     fireEvent.click(screen.getByRole('button', { name: /Зберегти/i }))
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(/мінімум 2/i))
     expect(apiCalls().length).toBe(0)
+  })
+
+  function stubDeleteFetch() {
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+      if (String(input).endsWith('/auth/me')) {
+        return new Response(JSON.stringify({ data: testUser }), { status: 200, headers: { 'content-type': 'application/json' } })
+      }
+      return new Response(JSON.stringify({ data: { ok: true } }), { status: 200, headers: { 'content-type': 'application/json' } })
+    }))
+  }
+
+  function openDeleteDialog() {
+    renderWithProviders(<ProfileForm profile={profile} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Видалити профіль' }))
+    return screen.getByRole('dialog', { name: 'Видалити профіль?' })
+  }
+
+  it('видалення профілю: Esc закриває підтвердження, DELETE /me не шлеться', async () => {
+    stubDeleteFetch()
+    const dialog = openDeleteDialog()
+    expect(screen.getByRole('button', { name: 'Так, видалити' })).toBeInTheDocument()
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(dialog).not.toBeInTheDocument()
+    // DELETE /me не викликався (лише /auth/me від UserProvider немає у apiCalls)
+    expect(apiCalls()).toHaveLength(0)
+  })
+
+  it('видалення профілю: «Так, видалити» → DELETE /me + toast', async () => {
+    stubDeleteFetch()
+    openDeleteDialog()
+    fireEvent.click(screen.getByRole('button', { name: 'Так, видалити' }))
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(/видалено/i))
+    const call = apiCalls()[0]
+    expect(String(call[0])).toBe('/api/v1/me')
+    expect((call[1] as RequestInit).method).toBe('DELETE')
+  })
+
+  it('видалення профілю: «Скасувати» закриває без DELETE', async () => {
+    stubDeleteFetch()
+    const dialog = openDeleteDialog()
+    fireEvent.click(screen.getByRole('button', { name: 'Скасувати' }))
+    expect(dialog).not.toBeInTheDocument()
+    expect(apiCalls()).toHaveLength(0)
   })
 })
