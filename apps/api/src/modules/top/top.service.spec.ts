@@ -160,6 +160,30 @@ describe('TopService (фіча «Топ закладів»)', () => {
     expect(res[0].venues.map((v) => v.name)).toEqual(['A', 'B']);
   });
 
+  it('reorderCategories: новий порядок — position = індекс у списку', async () => {
+    categories.find.mockResolvedValueOnce([
+      { id: 'c2', position: 1, createdAt: new Date() },
+      { id: 'c1', position: 0, createdAt: new Date() },
+    ]);
+    await service.reorderCategories(['c1', 'c2']);
+    expect(categories.save).toHaveBeenCalledTimes(1);
+    const saved = categories.save.mock.calls[0][0];
+    expect(saved.find((c: { id: string }) => c.id === 'c1').position).toBe(0);
+    expect(saved.find((c: { id: string }) => c.id === 'c2').position).toBe(1);
+  });
+
+  it('reorderCategories: список не відповідає категоріям → 400 (нічого не зберігається)', async () => {
+    categories.find.mockResolvedValue([{ id: 'c1', position: 0 }]);
+    await expect(
+      service.reorderCategories(['c1', 'c-hack']),
+    ).rejects.toThrow(BadRequestException);
+    expect(categories.save).not.toHaveBeenCalled();
+    await expect(service.reorderCategories([])).rejects.toThrow(
+      BadRequestException,
+    );
+    expect(categories.save).not.toHaveBeenCalled();
+  });
+
   it('reorderEntries: неіснуюча категорія → 404', async () => {
     categories.findOne.mockResolvedValueOnce(null);
     await expect(

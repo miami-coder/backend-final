@@ -33,3 +33,10 @@ export class ReorderTopEntriesDto {
   @IsUUID('all', { each: true })
   entryIds: string[];
 }
+
+/** Новий порядок самих категорій Топу. */
+export class ReorderTopCategoriesDto {
+  @IsArray()
+  @IsUUID('all', { each: true })
+  categoryIds: string[];
+}

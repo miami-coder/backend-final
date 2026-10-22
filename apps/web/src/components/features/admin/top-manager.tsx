@@ -12,6 +12,7 @@ import {
   deleteTopCategory,
   removeTopEntry,
   reorderTopEntries,
+  reorderTopCategories,
   type TopCategoryAdmin,
 } from '@/services/venues'
 import { useToast } from '@/components/ui/toast'
@@ -40,6 +41,18 @@ export function TopManager({
     } catch (e) {
       toast(authApiError(e) ?? 'Помилка', 'error')
     }
+  }
+
+  function moveCategory(i: number, dir: -1 | 1) {
+    const target = i + dir
+    if (target < 0 || target >= categories.length || busyCat) return
+    const next = [...categories]
+    ;[next[target], next[i]] = [next[i], next[target]]
+    setBusyCat(next[target].id)
+    void run(
+      () => reorderTopCategories(next.map((c) => c.id)),
+      'Порядок категорій оновлено',
+    ).finally(() => setBusyCat(null))
   }
 
   return (
@@ -77,9 +90,30 @@ export function TopManager({
         {categories.map((c, i) => (
           <li key={c.id} className="rounded-xl border border-line p-4">
             <div className="flex items-center justify-between gap-3">
-              <h3 className="font-medium text-ink">
-                {i + 1}. {c.title}
-              </h3>
+              <div className="flex items-center gap-1.5">
+                {/* ↑/↓ для категорій — такий самий reorder, як і для записів */}
+                <button
+                  type="button"
+                  aria-label="Категорію вгору"
+                  disabled={i === 0 || busyCat === c.id}
+                  onClick={() => moveCategory(i, -1)}
+                  className="rounded px-1.5 py-0.5 text-sm text-muted hover:bg-raised hover:text-amber-500 disabled:opacity-30"
+                >
+                  ↑
+                </button>
+                <button
+                  type="button"
+                  aria-label="Категорію вниз"
+                  disabled={i === categories.length - 1 || busyCat === c.id}
+                  onClick={() => moveCategory(i, 1)}
+                  className="rounded px-1.5 py-0.5 text-sm text-muted hover:bg-raised hover:text-amber-500 disabled:opacity-30"
+                >
+                  ↓
+                </button>
+                <h3 className="font-medium text-ink">
+                  {i + 1}. {c.title}
+                </h3>
+              </div>
               <button
                 type="button"
                 disabled={busyCat === c.id}

@@ -175,6 +175,23 @@ export class TopService {
     await this.entries.save(rows);
   }
 
+  /** Порядок категорій Топу — так само: повний список айді в новому
+   *  порядку, position = індекс; розсинхрон → 400 без збереження. */
+  async reorderCategories(categoryIds: string[]): Promise<void> {
+    const cats = await this.categories.find();
+    const idSet = new Set(categoryIds);
+    if (cats.length !== categoryIds.length || cats.some((c) => !idSet.has(c.id)))
+      throw new BadRequestException('Список категорій не відповідає наявним');
+    for (const [i, id] of categoryIds.entries()) {
+      const row = cats.find((c) => c.id === id) as {
+        id: string;
+        position: number;
+      };
+      row.position = i;
+    }
+    await this.categories.save(cats);
+  }
+
   /** Категорії, у яких складено заклад — щоб адмінка показувала "де він у Топі". */
   async categoriesOfVenue(venueId: string): Promise<TopCategory[]> {
     const rows = await this.entries.find({ where: { venueId } });

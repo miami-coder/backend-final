@@ -12,6 +12,7 @@ const createTopCategory = vi.fn()
 const deleteTopCategory = vi.fn()
 const removeTopEntry = vi.fn()
 const reorderTopEntries = vi.fn()
+const reorderTopCategories = vi.fn()
 vi.mock('@/services/venues', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/services/venues')>()),
   addTopEntry: (...a: unknown[]) => addTopEntry(...a),
@@ -19,6 +20,7 @@ vi.mock('@/services/venues', async (importOriginal) => ({
   deleteTopCategory: (...a: unknown[]) => deleteTopCategory(...a),
   removeTopEntry: (...a: unknown[]) => removeTopEntry(...a),
   reorderTopEntries: (...a: unknown[]) => reorderTopEntries(...a),
+  reorderTopCategories: (...a: unknown[]) => reorderTopCategories(...a),
 }))
 
 afterEach(() => {
@@ -27,6 +29,7 @@ afterEach(() => {
   deleteTopCategory.mockReset()
   removeTopEntry.mockReset()
   reorderTopEntries.mockReset()
+  reorderTopCategories.mockReset()
   refresh.mockReset()
 })
 
@@ -35,15 +38,18 @@ const entries2 = [
   { id: 'e2', venueId: 'v-2', position: 1, venue: { name: 'Паб «Union Jack»' } },
 ]
 
-function renderTwoEntries() {
+function renderWith(
+  categories: Parameters<typeof TopManager>[0]['categories'],
+) {
   return render(
     <ToastProvider>
-      <TopManager
-        categories={[{ ...makeCategory(entries2 as TopCategoryAdmin['entries']) }]}
-        venues={venueOptions}
-      />
+      <TopManager categories={categories} venues={venueOptions} />
     </ToastProvider>,
   )
+}
+
+function renderTwoEntries() {
+  return renderWith([{ ...makeCategory(entries2 as TopCategoryAdmin['entries']) }])
 }
 
 const venueOptions = [
@@ -145,5 +151,30 @@ describe('TopManager', () => {
     expect(downButtons[1]).toBeDisabled()
     fireEvent.click(downButtons[0])
     await waitFor(() => expect(reorderTopEntries).toHaveBeenCalledWith('c1', ['e2', 'e1']))
+  })
+
+  const cats2 = [
+    { id: 'c1', title: 'Перша категорія', position: 0, entries: [] },
+    { id: 'c2', title: 'Друга категорія', position: 1, entries: [] },
+  ] as TopCategoryAdmin[]
+
+  it('стрілки категорій: ↑ підняти другу → reorderTopCategories([c2, c1]) + refresh', async () => {
+    reorderTopCategories.mockResolvedValue({})
+    renderWith(cats2)
+    const ups = screen.getAllByRole('button', { name: 'Категорію вгору' })
+    expect(ups[0]).toBeDisabled()
+    expect(ups[1]).toBeEnabled()
+    fireEvent.click(ups[1])
+    await waitFor(() => expect(reorderTopCategories).toHaveBeenCalledWith(['c2', 'c1']))
+    await waitFor(() => expect(refresh).toHaveBeenCalled())
+  })
+
+  it('стрілки категорій: ↓ опустити першу → reorderTopCategories([c2, c1]); крайні вимкнені', async () => {
+    reorderTopCategories.mockResolvedValue({})
+    renderWith(cats2)
+    const downs = screen.getAllByRole('button', { name: 'Категорію вниз' })
+    expect(downs[1]).toBeDisabled()
+    fireEvent.click(downs[0])
+    await waitFor(() => expect(reorderTopCategories).toHaveBeenCalledWith(['c2', 'c1']))
   })
 })

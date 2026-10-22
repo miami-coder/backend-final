@@ -190,3 +190,12 @@ export function reorderTopEntries(categoryId: string, entryIds: string[]): Promi
     body: JSON.stringify({ entryIds }),
   })
 }
+
+/** Новий порядок самих категорій Топу. */
+export function reorderTopCategories(categoryIds: string[]): Promise<unknown> {
+  return api('/admin/top/categories/reorder', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ categoryIds }),
+  })
+}
