@@ -26,7 +26,9 @@ interface RawTopVenue {
  * Увага: serverFetch вже повертає розгорнуте data —
  * другий .data тут давав завжди порожній список на живій сторінці.
  */
-export async function getTop(revalidate = 60): Promise<TopCategoryPublic[]> {
+export async function getTop(revalidate = 0): Promise<TopCategoryPublic[]> {
+  // revalidate 0: reorder стрілками в адмінці має бути видно одразу; кеш
+  // на 60с показував стороий порядок до хвилини (Router Cache додає ще).
   const raw = await serverFetch<
     { id: string; title: string; venues: RawTopVenue[] }[]
   >('/top', { revalidate }).catch(() => [])
