@@ -6,7 +6,41 @@ import { RatingStars } from '@/components/ui/rating-stars'
 import { placeholderFor } from '@/lib/utils/placeholder'
 import type { Venue } from '@/types/venue'
 
-export function VenueCard({ venue }: { venue: Venue }) {
+export function VenueCard({
+  venue,
+  variant = 'default',
+}: {
+  venue: Venue
+  // compact — маленька плитка (секція «Рекомендовані критиком» на /top):
+  // тільки фото + назва + зірки, без адреси/чеку/типів/тегів
+  variant?: 'default' | 'compact'
+}) {
+  if (variant === 'compact') {
+    return (
+      <Link
+        href={`/venues/${venue.id}`}
+        className="block overflow-hidden rounded-xl border border-line bg-surface transition-colors hover:border-amber-500/70"
+      >
+        <div className="h-24 overflow-hidden bg-raised">
+          {venue.mainPhotoUrl ? (
+            /* eslint-disable-next-line @next/next/no-img-element -- зовнішній URL з бекенда */
+            <img
+              src={venue.mainPhotoUrl}
+              alt={venue.name}
+              loading="lazy"
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div style={{ background: placeholderFor(venue.id) }} className="h-full w-full" />
+          )}
+        </div>
+        <div className="p-2.5">
+          <h3 className="truncate text-sm font-semibold text-ink">{venue.name}</h3>
+          <RatingStars value={venue.ratingAvg} />
+        </div>
+      </Link>
+    )
+  }
   return (
     <Link
       href={`/venues/${venue.id}`}

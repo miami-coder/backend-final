@@ -1,4 +1,5 @@
-import { serverFetch } from '@/lib/api/server-client'
+import { serverFetch, serverFetchList } from '@/lib/api/server-client'
+import type { RawVenue } from '@/types/venue'
 
 export interface TopCategoryPublic {
   id: string
@@ -40,4 +41,17 @@ export async function getTop(revalidate = 60): Promise<TopCategoryPublic[]> {
         v.ratingAvg == null || v.ratingAvg === '' ? null : Number(v.ratingAvg),
     })),
   }))
+}
+
+/**
+ * «Рекомендовані критиком» (секція на /top): публічний каталог з фільтром
+ * recommended=1 (схвалені + прапор критика). Раніше «вибір критика» був
+ * лишень в кабінеті критика — публічного списку не існувало.
+ */
+export async function getRecommendedVenues(): Promise<RawVenue[]> {
+  const res = await serverFetchList<RawVenue>(
+    '/venues?recommended=1&limit=12&page=1',
+    { revalidate: 0 },
+  ).catch(() => ({ data: [] as RawVenue[] }))
+  return res.data
 }

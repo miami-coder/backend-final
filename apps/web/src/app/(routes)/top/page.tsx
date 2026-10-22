@@ -1,21 +1,27 @@
 // Розділ «Топ» (ревʼю викладача): тематичні збірки «Найкращий заклад для
-// весілля» тощо — список редагує супер-адмін в адмінці. SSR через BFF.
+// весілля» тощо — список редагує супер-адмін в адмінці. Плюс «Рекомендовані
+// критиком» — компактні плитки закладів з прапором критика. SSR через BFF.
 
 import Link from 'next/link'
 import { RatingStars } from '@/components/ui/rating-stars'
 import { placeholderFor } from '@/lib/utils/placeholder'
-import { getTop } from '@/services/top.server'
+import { VenueCard } from '@/components/features/venues/venue-card'
+import { parseVenue } from '@/types/venue'
+import { getRecommendedVenues, getTop } from '@/services/top.server'
 
 export const metadata = { title: 'Топ закладів — Пиячок' }
 
 export default async function TopPage() {
   const categories = await getTop()
+  // Рекомендації критиків (approved + recommendedBy) — окрема секція, без імен
+  const recommendedRaw = await getRecommendedVenues()
+  const recommended = recommendedRaw.map((v) => parseVenue(v))
 
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-8">
       <h1 className="text-2xl font-bold">Топ закладів</h1>
       <p className="mt-1 text-sm text-muted">
-        Вибір редакції: головні місця Хмельницького за категоріями.
+        Вибір редакції: головні місця України за категоріями.
       </p>
 
       {categories.map((c, idx) => (
@@ -78,6 +84,29 @@ export default async function TopPage() {
 
       {categories.length === 0 && (
         <p className="mt-8 text-sm text-faint">Топ ще не наповнено.</p>
+      )}
+
+      {recommended.length > 0 && (
+        <section aria-labelledby="critics-choice" className="mt-12">
+          <h2
+            id="critics-choice"
+            className="flex items-center gap-2 text-lg font-semibold"
+          >
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-amber-500/15 text-xs font-bold text-amber-500">
+              ✦
+            </span>
+            Рекомендовані критиком
+          </h2>
+          {/* Компактні плитки (не карта каталогу): фото + назва + зірки,
+              вся плитка — посилання на заклад. 4-5 у ряд десктопу, 2 — мобілки. */}
+          <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
+            {recommended.map((v) => (
+              <li key={v.id}>
+                <VenueCard venue={v} variant="compact" />
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </main>
   )
