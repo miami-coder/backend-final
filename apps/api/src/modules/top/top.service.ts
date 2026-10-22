@@ -30,6 +30,16 @@ export class TopService {
     @InjectRepository(Venue) private readonly venues: Repository<Venue>,
   ) {}
 
+  /** Детерміновий сорт: position → createdAt. Усі записи/категорії без
+   *  reorder мають position=0 — без вторинного ключа PG віддає «перетасовку»
+   *  між запитами (виглядало як категорії, що самі міняються місцями). */
+  private static byPositionThenCreated(
+    a: { position: number; createdAt: Date },
+    b: { position: number; createdAt: Date },
+  ): number {
+    return a.position - b.position || +a.createdAt - +b.createdAt;
+  }
+
   /** Публічний Топ: категорії за позицією, усередині — заклади за позицією. */
   async listPublic(): Promise<
     {
@@ -45,16 +55,18 @@ export class TopService {
   > {
     const cats = await this.categories.find({ order: { position: 'ASC' } });
     if (cats.length === 0) return [];
+    const sortedCats = cats.sort(TopService.byPositionThenCreated);
     const rows = await this.entries
       .createQueryBuilder('e')
       .leftJoinAndSelect('e.venue', 'v')
       .where('e.categoryId IN (:...ids)', { ids: cats.map((c) => c.id) })
       .orderBy('e.position', 'ASC')
       .getMany();
-    return cats.map((c) => ({
+    const sortedRows = rows.sort(TopService.byPositionThenCreated);
+    return sortedCats.map((c) => ({
       id: c.id,
       title: c.title,
-      venues: rows
+      venues: sortedRows
         .filter((e) => e.categoryId === c.id)
         .map((e) => ({
           id: e.venue.id,
@@ -65,12 +77,18 @@ export class TopService {
     }));
   }
 
-  /** Адмін-список: повний, з усіма полями редагування. */
-  listAdmin(): Promise<TopCategory[]> {
-    return this.categories.find({
+  /** Адмін-список: повний, з усіма полями редагування. Сортування як у
+   *  listPublic — інакше після ↑/↓ адмінка показує записи в старому порядку. */
+  async listAdmin(): Promise<TopCategory[]> {
+    const cats = await this.categories.find({
       relations: { entries: { venue: true } },
       order: { position: 'ASC' },
     });
+    const sortedCats = cats.sort(TopService.byPositionThenCreated);
+    for (const c of sortedCats) {
+      if (c.entries) c.entries.sort(TopService.byPositionThenCreated);
+    }
+    return sortedCats;
   }
 
   async createCategory(dto: CreateTopCategoryDto): Promise<TopCategory> {

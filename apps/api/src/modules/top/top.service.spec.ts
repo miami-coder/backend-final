@@ -92,6 +92,74 @@ describe('TopService (фіча «Топ закладів»)', () => {
     expect(saved.find((e: { id: string }) => e.id === 'e2').position).toBe(1);
   });
 
+  it('listAdmin: категорії і записи — сортування position → createdAt (при однакових position порядок стабільний, не «тасується»)', async () => {
+    const late = new Date('2026-10-22T10:00:00Z');
+    const early = new Date('2026-10-21T10:00:00Z');
+    categories.find.mockResolvedValueOnce([
+      // position однакові — порядок визначає createdAt (раніше створена — вище);
+      // сірниковий вхід навмисно «перекинутий»
+      { id: 'c2', position: 0, createdAt: late, entries: [] },
+      { id: 'c1', position: 0, createdAt: early, entries: [] },
+      { id: 'c3', position: 5, createdAt: early, entries: [] },
+    ]);
+    const res = await service.listAdmin();
+    expect(res.map((c) => c.id)).toEqual(['c1', 'c2', 'c3']);
+  });
+
+  it('listAdmin: записи всередині категорії теж сортовані position → createdAt', async () => {
+    const late = new Date('2026-10-22T10:00:00Z');
+    const early = new Date('2026-10-21T10:00:00Z');
+    categories.find.mockResolvedValueOnce([
+      {
+        id: 'c1',
+        position: 0,
+        createdAt: early,
+        entries: [
+          { id: 'e2', position: 0, createdAt: late, venue: { id: 'v2', name: 'B' } },
+          { id: 'e1', position: 0, createdAt: early, venue: { id: 'v1', name: 'A' } },
+          { id: 'e3', position: 1, createdAt: late, venue: { id: 'v3', name: 'C' } },
+        ],
+      },
+    ]);
+    const res = await service.listAdmin();
+    expect(res[0].entries.map((e: { id: string }) => e.id)).toEqual([
+      'e1',
+      'e2',
+      'e3',
+    ]);
+  });
+
+  it('listPublic: записи з однаковим position — стабільний порядок за createdAt', async () => {
+    categories.find.mockResolvedValueOnce([
+      { id: 'c1', title: 'Т', position: 0 },
+    ]);
+    const late = new Date('2026-10-22T10:00:00Z');
+    const early = new Date('2026-10-21T10:00:00Z');
+    entries.createQueryBuilder.mockReturnValue({
+      leftJoinAndSelect: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
+      orderBy: jest.fn().mockReturnThis(),
+      getMany: jest.fn().mockResolvedValue([
+        {
+          id: 'r2',
+          categoryId: 'c1',
+          position: 0,
+          createdAt: late,
+          venue: { id: 'v2', name: 'B', mainPhotoUrl: null, ratingAvg: null },
+        },
+        {
+          id: 'r1',
+          categoryId: 'c1',
+          position: 0,
+          createdAt: early,
+          venue: { id: 'v1', name: 'A', mainPhotoUrl: null, ratingAvg: null },
+        },
+      ]),
+    });
+    const res = await service.listPublic();
+    expect(res[0].venues.map((v) => v.name)).toEqual(['A', 'B']);
+  });
+
   it('reorderEntries: неіснуюча категорія → 404', async () => {
     categories.findOne.mockResolvedValueOnce(null);
     await expect(
