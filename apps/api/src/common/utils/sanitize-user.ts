@@ -10,7 +10,7 @@ export function sanitizeUser(
   user: User | null | undefined,
 ): Record<string, unknown> | null | undefined {
   if (!user) return user;
-  // Видалений автор — «як у телеграмі»: позначка замість персональних даних.
+  // Видалений автор: позначка замість персональних даних.
   if (user.deletedAt) {
     return {
       id: user.id,
