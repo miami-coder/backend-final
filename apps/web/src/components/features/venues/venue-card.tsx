@@ -9,11 +9,14 @@ import type { Venue } from '@/types/venue'
 export function VenueCard({
   venue,
   variant = 'default',
+  place,
 }: {
   venue: Venue
-  // compact — маленька плитка (секція «Рекомендовані критиком» на /top):
+  // compact — маленька плитка (Топ/«Рекомендовані критиком» на /top):
   // тільки фото + назва + зірки, без адреси/чеку/типів/тегів
   variant?: 'default' | 'compact'
+  // номер місця (Топ) — бейдж у кутку фото; для критика не передається
+  place?: number
 }) {
   if (variant === 'compact') {
     return (
@@ -21,7 +24,7 @@ export function VenueCard({
         href={`/venues/${venue.id}`}
         className="block overflow-hidden rounded-xl border border-line bg-surface transition-colors hover:border-amber-500/70"
       >
-        <div className="h-24 overflow-hidden bg-raised">
+        <div className="relative h-24 overflow-hidden bg-raised">
           {venue.mainPhotoUrl ? (
             /* eslint-disable-next-line @next/next/no-img-element -- зовнішній URL з бекенда */
             <img
@@ -33,6 +36,18 @@ export function VenueCard({
           ) : (
             <div style={{ background: placeholderFor(venue.id) }} className="h-full w-full" />
           )}
+          {place !== undefined ? (
+            <span className="absolute top-1.5 left-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 px-1 text-xs font-bold text-espresso">
+              {place}
+            </span>
+          ) : venue.recommendedBy ? (
+            <span
+              title="Рекомендовано критиком Пиячок"
+              className="absolute top-1.5 left-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-amber-500/15 text-xs font-bold text-amber-500"
+            >
+              ✦
+            </span>
+          ) : null}
         </div>
         <div className="p-2.5">
           <h3 className="truncate text-sm font-semibold text-ink">{venue.name}</h3>

@@ -2,11 +2,8 @@
 // весілля» тощо — список редагує супер-адмін в адмінці. Плюс «Рекомендовані
 // критиком» — компактні плитки закладів з прапором критика. SSR через BFF.
 
-import Link from 'next/link'
-import { RatingStars } from '@/components/ui/rating-stars'
-import { placeholderFor } from '@/lib/utils/placeholder'
 import { VenueCard } from '@/components/features/venues/venue-card'
-import { parseVenue } from '@/types/venue'
+import { parseVenue, type Venue } from '@/types/venue'
 import { getRecommendedVenues, getTop } from '@/services/top.server'
 
 export const metadata = { title: 'Топ закладів — Пиячок' }
@@ -39,42 +36,14 @@ export default async function TopPage() {
           {c.venues.length === 0 ? (
             <p className="mt-3 text-sm text-faint">Тимчасово порожньо</p>
           ) : (
-            <ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            /* Той самий компакт-формат, що й «Рекомендовані критиком»:
+               різниця тільки в бейджі місця (1/2/3) */
+            <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
               {c.venues.map((v, place) => (
                 <li key={v.id}>
-                  <Link
-                    href={`/venues/${v.id}`}
-                    className="block overflow-hidden rounded-xl border border-line bg-surface transition-colors hover:border-amber-500/70"
-                  >
-                    <div className="flex items-center gap-3"
-                    >
-                      <span className="ml-3 w-6 shrink-0 text-center text-lg font-bold text-amber-500">
-                        {place + 1}
-                      </span>
-                      <div className="h-16 w-24 shrink-0 overflow-hidden rounded-r-xl bg-raised">
-                        {v.mainPhotoUrl ? (
-                          /* eslint-disable-next-line @next/next/no-img-element -- зовнішній URL з бекенда */
-                          <img
-                            src={v.mainPhotoUrl}
-                            alt={v.name}
-                            loading="lazy"
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <div
-                            style={{ background: placeholderFor(v.id) }}
-                            className="h-full w-full"
-                          />
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1 pr-3">
-                        <h3 className="truncate text-sm font-semibold text-ink">
-                          {v.name}
-                        </h3>
-                        <RatingStars value={v.ratingAvg} />
-                      </div>
-                    </div>
-                  </Link>
+                  {/* top/page не має повного Venue з types/tags — плаский
+                      обʼєкт /top достатній компакт-варіанту */}
+                  <VenueCard venue={v as unknown as Venue} variant="compact" place={place + 1} />
                 </li>
               ))}
             </ul>

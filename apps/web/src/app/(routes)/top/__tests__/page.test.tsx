@@ -84,6 +84,21 @@ describe('TopPage', () => {
     expect(cardChunk).toMatch(/h-24/)
   })
 
+  it('плитки Топ-категорії — той самий compact-формат, номер місця — бейдж на плитці', async () => {
+    const out = await html()
+    // караоке з категорії Топу — плитка (фото h-24, лінк), не рядок таблиці
+    expect(out).toContain('href="/venues/v1"')
+    // бейдж місця 1 — в кутку плитки караоке
+    const chunk = out.slice(
+      Math.max(0, out.indexOf('/venues/v1') - 900),
+      out.indexOf('/venues/v1') + 1200,
+    )
+    expect(chunk).toMatch(/h-24/)
+    expect(chunk).toContain('>1</span>')
+    // рядкового формату (h-16 w-24 зліва) більше немає
+    expect(chunk).not.toContain('h-16 w-24')
+  })
+
   it('секція критика відсутня, коли рекомендацій немає', async () => {
     vi.mocked(getRecommendedVenues).mockResolvedValue([])
     const out = await html()
