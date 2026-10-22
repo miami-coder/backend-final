@@ -15,13 +15,20 @@ import {
 } from '@/services/venues'
 import { useToast } from '@/components/ui/toast'
 
-export function TopManager({ categories }: { categories: TopCategoryAdmin[] }) {
+export function TopManager({
+  categories,
+  venues,
+}: {
+  categories: TopCategoryAdmin[]
+  /** Схвалені заклади для дропдауна (айді не юзер бачить, лише назви). */
+  venues: { id: string; name: string }[]
+}) {
   const { toast } = useToast()
   const router = useRouter()
   const [title, setTitle] = useState('')
   const [busyCat, setBusyCat] = useState<string | null>(null)
   // Ревʼю Stage 4 M1: спільний venueId-стан дзеркалився в усі категорії —
-  // тепер у кожної категорії свій інпут
+  // тепер у кожної категорії свій вибір
   const [entryInputs, setEntryInputs] = useState<Record<string, string>>({})
 
   async function run(fn: () => Promise<unknown>, done: string) {
@@ -112,21 +119,34 @@ export function TopManager({ categories }: { categories: TopCategoryAdmin[] }) {
               onSubmit={(e) => {
                 e.preventDefault()
                 const idValue = (entryInputs[c.id] ?? '').trim()
-                if (!idValue) return
+                if (!idValue) {
+                  toast(venues.length === 0 ? 'Закладів ще нема' : 'Оберіть заклад зі списку', 'error')
+                  return
+                }
                 void run(() => addTopEntry(c.id, idValue), 'Заклад додано').then(
                   () => setEntryInputs((m) => ({ ...m, [c.id]: '' })),
                 )
               }}
             >
-              <input
+              {/* Дропдаун схвалених закладів: бекенд (top.service) 409-ить
+                  не-схвалені, тож список тягнеться з каталозі (approved only). */}
+              <select
                 value={entryInputs[c.id] ?? ''}
                 onChange={(e) =>
                   setEntryInputs((m) => ({ ...m, [c.id]: e.target.value }))
                 }
-                placeholder="UUID закладу (див. каталог адмінки)"
-                aria-label={`UUID закладу для категорії ${c.title}`}
+                aria-label={`Заклад для категорії ${c.title}`}
                 className="flex-1 rounded-xl border border-line bg-surface px-3 py-1.5 text-xs text-ink outline-none focus-visible:border-amber-500"
-              />
+              >
+                <option value="" disabled>
+                  {venues.length === 0 ? 'Немає закладів' : 'Оберіть заклад…'}
+                </option>
+                {venues.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.name}
+                  </option>
+                ))}
+              </select>
               <button
                 type="submit"
                 className="rounded-xl border border-line px-3 py-1.5 text-xs hover:border-amber-500 hover:text-amber-500"
