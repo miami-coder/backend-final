@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { UserProvider } from '@/components/providers/user-provider'
 import { ToastProvider } from '@/components/ui/toast'
@@ -88,6 +88,8 @@ describe('ProfileForm', () => {
   it('видалення профілю: Esc закриває підтвердження, DELETE /me не шлеться', async () => {
     stubDeleteFetch()
     const dialog = openDeleteDialog()
+    // Питання «Видалити профіль?» — тільки в title модалки, без дубля в тілі
+    expect(within(dialog).getAllByText('Видалити профіль?')).toHaveLength(1)
     expect(screen.getByRole('button', { name: 'Так, видалити' })).toBeInTheDocument()
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(dialog).not.toBeInTheDocument()

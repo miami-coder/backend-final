@@ -114,8 +114,7 @@ export function ProfileForm({ profile }: { profile: ProfileFields }) {
           onClose={() => setDeleting(false)}
           title="Видалити профіль?"
         >
-          <p className="text-ink">Видалити профіль?</p>
-          <p className="mt-1 text-sm text-muted">
+          <p className="text-sm text-muted">
             Відгуки залишаться з позначкою «Обліковий запис видалено».
             Увійти назад цим акаунтом буде неможливо.
           </p>
