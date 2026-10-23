@@ -480,6 +480,40 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "Видалити свій профіль",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser2}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "raw": "{{baseUrl}}/me",
+              "path": [
+                "me"
+              ]
+            },
+            "description": "⚠️ Необоротно. Після виклику старий access-токен віддає 401 одразу, повторний логін цим акаунтом неможливий. У колекційному прогоні виконувати LAST у папері."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -586,6 +620,52 @@
           ]
         },
         {
+          "name": "Рекомендовані критиком (розділ Топ)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "raw": "{{baseUrl}}/venues?recommended=1&limit=12&page=1",
+              "query": [
+                {
+                  "key": "recommended",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "12",
+                  "disabled": false
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                }
+              ],
+              "path": [
+                "venues"
+              ]
+            },
+            "description": "Заклади, які критик/супер-адмін рекомендував (recommendedBy IS NOT NULL). Без auth — те саме, що секція «Рекомендовані критиком» на /top."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "Довідник тегів закладів (з кількістю закладів)",
           "request": {
             "method": "GET",
@@ -622,6 +702,66 @@
             "description": ""
           },
           "response": []
+        },
+        {
+          "name": "Довідник типів закладів",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "raw": "{{baseUrl}}/venues/types",
+              "path": [
+                "venues",
+                "types"
+              ]
+            },
+            "description": "Довідник для select-фільтра типів."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Довідник фіч закладів",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "raw": "{{baseUrl}}/venues/features",
+              "path": [
+                "venues",
+                "features"
+              ]
+            },
+            "description": "Довідник для чипсів-фільтрів фіч."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -1603,6 +1743,41 @@
             "description": ""
           },
           "response": []
+        },
+        {
+          "name": "Новини власника по всіх закладах (включно зі схованими)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser1}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "raw": "{{baseUrl}}/me/news",
+              "path": [
+                "me",
+                "news"
+              ]
+            },
+            "description": "Кабінет власника: новини по всіх своїх закладах, incl. draft/archived."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -3048,6 +3223,497 @@
                   "pm.test('200 рекомендація знята', () => pm.expect(pm.response.code).to.eql(200));",
                   "const d = pm.response.json().data || pm.response.json();",
                   "pm.test('recommendedBy скинуто в null', () => pm.expect(d.recommendedBy).to.eql(null));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "16. Топ закладів (супер-адмін)",
+      "description": "Топ закладів: GET /top публічний; решта — тільки супер-адмін (user:manage). reorder приймає ПОВНИЙ список айді (position = індекс у масиві; розсинхрон → 400 і нічого не пише). Життєвий цикл знизу вгору: створити категорію → додати запис → reorder → прибрати запис → видалити категорію.",
+      "item": [
+        {
+          "name": "Публічний Топ закладів",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "raw": "{{baseUrl}}/top",
+              "path": [
+                "top"
+              ]
+            },
+            "description": "Категорії Топу з закладами (без auth; те саме бачить сторінка /top)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Категорії Топу з записами (адмін)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "raw": "{{baseUrl}}/admin/top/categories",
+              "path": [
+                "admin",
+                "top",
+                "categories"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Створити категорію Топу",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\": \"Тест-категорія з Postman\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "raw": "{{baseUrl}}/admin/top/categories",
+              "path": [
+                "admin",
+                "top",
+                "categories"
+              ]
+            },
+            "description": "→ айді нової категорії пишеться у {{topCategoryId}}."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));",
+                  "const j = pm.response.json();",
+                  "const id = j?.data?.id ?? (Array.isArray(j?.data) ? j.data[0]?.id : undefined) ?? j?.id;",
+                  "if (id) pm.environment.set('topCategoryId', id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Оновити категорію Топу",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\": \"Оновлена назва з Postman\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "raw": "{{baseUrl}}/admin/top/categories/{{topCategoryId}}",
+              "path": [
+                "admin",
+                "top",
+                "categories",
+                "{{topCategoryId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Додати заклад у категорію",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"venueId\": \"{{venueId}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "raw": "{{baseUrl}}/admin/top/categories/{{topCategoryId}}/entries",
+              "path": [
+                "admin",
+                "top",
+                "categories",
+                "{{topCategoryId}}",
+                "entries"
+              ]
+            },
+            "description": "→ айді нового запису пишеться у {{topEntryId}}."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));",
+                  "const j = pm.response.json();",
+                  "const id = j?.data?.id ?? (Array.isArray(j?.data) ? j.data[0]?.id : undefined) ?? j?.id;",
+                  "if (id) pm.environment.set('topEntryId', id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Порядок записів категорії (reorder)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"entryIds\": [\"{{topEntryId}}\"]}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "raw": "{{baseUrl}}/admin/top/categories/{{topCategoryId}}/entries/reorder",
+              "path": [
+                "admin",
+                "top",
+                "categories",
+                "{{topCategoryId}}",
+                "entries",
+                "reorder"
+              ]
+            },
+            "description": "entryIds — ПОВНИЙ список записів категорії, position = індекс. Пропустив/зайвий айді → 400, порядок не змінюється."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Порядок категорій (reorder)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"categoryIds\": [\"{{topCategoryId}}\"]}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "raw": "{{baseUrl}}/admin/top/categories/reorder",
+              "path": [
+                "admin",
+                "top",
+                "categories",
+                "reorder"
+              ]
+            },
+            "description": "categoryIds — ПОВНИЙ список категорій, position = індекс. Розсинхрон → 400."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Прибрати заклад із категорії",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "raw": "{{baseUrl}}/admin/top/categories/{{topCategoryId}}/entries/{{topEntryId}}",
+              "path": [
+                "admin",
+                "top",
+                "categories",
+                "{{topCategoryId}}",
+                "entries",
+                "{{topEntryId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Видалити категорію Топу (з записами)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "raw": "{{baseUrl}}/admin/top/categories/{{topCategoryId}}",
+              "path": [
+                "admin",
+                "top",
+                "categories",
+                "{{topCategoryId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "17. Загальні тексти (супер-адмін)",
+      "description": "Загальні тексти сайту. GET /content публічний; PATCH — тільки супер-адмін (user:manage). Ключі: about | contacts (змінна {{contentKey}}, дефолт about). Зміна одразу видно на /about.",
+      "item": [
+        {
+          "name": "Публічні тексти сайту",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "raw": "{{baseUrl}}/content",
+              "path": [
+                "content"
+              ]
+            },
+            "description": "Повертає {\"about\": …, \"contacts\": …} (без auth)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));",
+                  "const j = pm.response.json();",
+                  "pm.test('є ключ about', () => pm.expect(Object.keys(j?.data ?? {})).to.include('about'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Оновити загальний текст",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"value\": \"<p>Текст оновлено з Postman</p>\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "raw": "{{baseUrl}}/admin/content/{{contentKey}}",
+              "path": [
+                "admin",
+                "content",
+                "{{contentKey}}"
+              ]
+            },
+            "description": "{{contentKey}}: about | contacts. Порожній value / null очищає текст."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));"
                 ]
               }
             }
