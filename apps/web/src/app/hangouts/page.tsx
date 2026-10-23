@@ -1,4 +1,4 @@
-// /hangouts — публічна стрічка зустрічей: фільтри статус/дата/заклад, пагінація, протерміновано 30с
+// /hangouts — публічна стрічка зустрічей: фільтри статус/дата/заклад, пагінація
 
 import Link from 'next/link'
 import { HangoutJoinButton } from '@/components/features/hangouts/hangout-join-button'
@@ -10,6 +10,11 @@ import { formatMoney } from '@/lib/utils/format'
 // Лейбл payer — та сама константа, що й у формі створення/кабінеті (єдине джерело копірайту)
 import { HANGOUT_PAYERS } from '@/lib/validation/hangout'
 
+// revalidate 0: після скасування/виходу/видалення зустрічі стрічка має
+// показувати актуальний стан одразу (раніше 30с — видалений запит «висів» у
+// списку ще до півхвилини); api-сайд кешує сам з інвалідаціями на мутаціях
+export const revalidate = 0
+
 const LIMIT = 12
 const STATUSES = ['open', 'filled', 'cancelled', 'completed'] as const
 // Формат дати фільтра з URL (YYYY-MM-DD): сире значення з query не
@@ -19,8 +24,6 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 interface Props {
   searchParams: Promise<{ venueId?: string; date?: string; status?: string; page?: string }>
 }
-
-export const revalidate = 30
 
 export default async function HangoutsPage({ searchParams }: Props) {
   const sp = await searchParams
