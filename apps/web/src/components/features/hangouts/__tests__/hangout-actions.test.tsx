@@ -46,7 +46,69 @@ describe('HangoutActions', () => {
     expect((call[1] as RequestInit).method).toBe('POST')
   })
 
-  it('учасник → «Покинути» → POST /hangouts/h2/leave', async () => {
+  // Сторінка деталей — клієнтський фетч: refresh її не оновлює, тож передає
+  // onChanged (перевитяг даних) замість router.refresh
+  it('onChanged — після «Скасувати» колбек замість router.refresh', async () => {
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+      if (String(input).endsWith('/auth/me')) {
+        return new Response(JSON.stringify({ data: testUser }), { status: 200, headers: { 'content-type': 'application/json' } })
+      }
+      return new Response(JSON.stringify({ data: {} }), { status: 200, headers: { 'content-type': 'application/json' } })
+    }))
+    const onChanged = vi.fn()
+    render(
+      <UserProvider initialUser={testUser}>
+        <ToastProvider>
+          <HangoutActions hangoutId="h1" isCreator canLeave={false} onChanged={onChanged} />
+        </ToastProvider>
+      </UserProvider>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Скасувати/i }))
+    await waitFor(() => expect(onChanged).toHaveBeenCalledTimes(1))
+    expect(refresh).not.toHaveBeenCalled()
+  })
+
+  it('onChanged не переданий — після «Скасувати» звичний refresh', async () => {
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+      if (String(input).endsWith('/auth/me')) {
+        return new Response(JSON.stringify({ data: testUser }), { status: 200, headers: { 'content-type': 'application/json' } })
+      }
+      return new Response(JSON.stringify({ data: {} }), { status: 200, headers: { 'content-type': 'application/json' } })
+    }))
+    render(
+      <UserProvider initialUser={testUser}>
+        <ToastProvider>
+          <HangoutActions hangoutId="h1" isCreator canLeave={false} />
+        </ToastProvider>
+      </UserProvider>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Скасувати/i }))
+    await waitFor(() => expect(refresh).toHaveBeenCalled())
+  })
+
+  it('canDelete → «Видалити» → DELETE /hangouts/h1 → push(deleteRedirect)', async () => {
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+      if (String(input).endsWith('/auth/me')) {
+        return new Response(JSON.stringify({ data: testUser }), { status: 200, headers: { 'content-type': 'application/json' } })
+      }
+      return new Response(JSON.stringify({ data: {} }), { status: 200, headers: { 'content-type': 'application/json' } })
+    }))
+    render(
+      <UserProvider initialUser={testUser}>
+        <ToastProvider>
+          <HangoutActions hangoutId="h1" isCreator={false} canLeave={false} canDelete deleteRedirect="/hangouts" />
+        </ToastProvider>
+      </UserProvider>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Видалити/i }))
+    await waitFor(() => expect(routerFns.push).toHaveBeenCalledWith('/hangouts'))
+    const call = apiCalls()[0]
+    expect(String(call[0])).toBe('/api/v1/hangouts/h1')
+    expect((call[1] as RequestInit).method).toBe('DELETE')
+  })
+
+  // Страница деталей передає leaveRedirect: після виходу — перехід на список
+  it('leaveRedirect → після «Покинути» перехід на вказану сторінку', async () => {
     vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
       if (String(input).endsWith('/auth/me')) {
         return new Response(JSON.stringify({ data: testUser }), { status: 200, headers: { 'content-type': 'application/json' } })

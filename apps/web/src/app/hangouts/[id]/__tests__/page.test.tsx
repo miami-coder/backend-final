@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { UserProvider } from '@/components/providers/user-provider'
 import { ToastProvider } from '@/components/ui/toast'
@@ -7,10 +7,11 @@ import type { SessionUser } from '@/types/user'
 
 afterEach(() => vi.unstubAllGlobals())
 
-// useParams мок: id = 'h1'
+// useParams мок: id = 'h1'; router — hoisted, щоб тест міг перевірити push
+const routerFns = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn() }))
 vi.mock('next/navigation', () => ({
   useParams: () => ({ id: 'h1' }),
-  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+  useRouter: () => routerFns,
 }))
 
 const testUser: SessionUser = { id: 'u1', email: 'a@b.c', roles: ['user'] }
@@ -70,6 +71,47 @@ describe('/hangouts/[id]', () => {
     await waitFor(() => expect(screen.getByText(/Посидіти з пивом/)).toBeInTheDocument())
     expect(screen.getByText(/Учасники \(2\)/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Приєднатися/i })).toBeInTheDocument()
+  })
+
+  // Творець скасовує зі сторінки деталей: дані перетягуються (onChanged),
+  // бейдж статусу міняється, зʼявляється «Видалити» — і після видалення
+  // перехід на список зустрічей
+  it('творець: «Скасувати» → перетяг даних → «Скасована» + «Видалити» → push(/hangouts)', async () => {
+    const cancelled = { ...rawHangout, status: 'cancelled' }
+    let detailGets = 0
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input)
+      if (url.endsWith('/auth/me')) {
+        return new Response(JSON.stringify({ data: testUser }), { status: 200, headers: { 'content-type': 'application/json' } })
+      }
+      if (url.endsWith('/hangouts/h1/cancel')) {
+        return new Response(JSON.stringify({ data: {} }), { status: 200, headers: { 'content-type': 'application/json' } })
+      }
+      if (url.endsWith('/api/v1/hangouts/')) {
+        return new Response(JSON.stringify({ data: cancelled }), { status: 200, headers: { 'content-type': 'application/json' } })
+      }
+      // GET /hangouts/h1
+      detailGets += 1
+      return new Response(JSON.stringify({ data: detailGets === 1 ? rawHangout : cancelled }), { status: 200, headers: { 'content-type': 'application/json' } })
+    }))
+    render(
+      <UserProvider initialUser={testUser}>
+        <ToastProvider><Page /></ToastProvider>
+      </UserProvider>,
+    )
+    await waitFor(() => expect(screen.getByText('Відкрита')).toBeInTheDocument())
+    fireEvent.click(screen.getByRole('button', { name: /Скасувати/i }))
+    // Бейдж статусу перетягнутий, а не завис у «Відкрита»
+    await waitFor(() => expect(screen.getByText('Скасована')).toBeInTheDocument())
+    expect(screen.queryByText('Відкрита')).not.toBeInTheDocument()
+    // У скасованої творець може повністю видалити запит
+    const remove = screen.getByRole('button', { name: /Видалити/i })
+    fireEvent.click(remove)
+    await waitFor(() => expect(routerFns.push).toHaveBeenCalledWith('/hangouts'))
+    const removeCall = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls
+      .find(([u, i]: unknown[]) => String(u).endsWith('/api/v1/hangouts/h1') && (i as RequestInit | undefined)?.method === 'DELETE')
+    expect(removeCall).toBeTruthy()
+    expect(detailGets).toBeGreaterThanOrEqual(2)
   })
 
   it('мережева помилка → retry-стан', async () => {

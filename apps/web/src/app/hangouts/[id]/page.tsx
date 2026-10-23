@@ -110,6 +110,11 @@ export default function HangoutDetailPage() {
           isCreator={isCreatorActive}
           canLeave={Boolean(user) && !isCreator && hangout.status !== 'cancelled' && hangout.status !== 'completed'}
           leaveRedirect="/hangouts"
+          // Скасувати зі деталей: клієнтський фетч не оновлюється router.refresh
+          onChanged={() => setAttempt((n) => n + 1)}
+          // Скасований запит творець може видалити і звідси (симетрично кабінету)
+          canDelete={isCreator && hangout.status === 'cancelled'}
+          deleteRedirect="/hangouts"
         />
         <Link href="/hangouts" className="text-sm text-muted hover:underline">До списку</Link>
       </div>

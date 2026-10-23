@@ -7,7 +7,7 @@ import { useToast } from '@/components/ui/toast'
 import { deleteHangout, hangoutAction } from '@/services/hangouts'
 import { ApiError } from '@/lib/api/parse'
 
-export function HangoutActions({ hangoutId, isCreator, canLeave, canDelete, leaveRedirect }: {
+export function HangoutActions({ hangoutId, isCreator, canLeave, canDelete, leaveRedirect, onChanged, deleteRedirect }: {
   hangoutId: string
   isCreator: boolean
   canLeave: boolean
@@ -16,6 +16,12 @@ export function HangoutActions({ hangoutId, isCreator, canLeave, canDelete, leav
   /** Вказати — після «Покинути» перейти на адресу замість перевитягу поточної
    *  сторінки (деталі зустрічі → назад до списку зустрічей). */
   leaveRedirect?: string
+  /** Клієнтська сторінка деталей не оновлюється через router.refresh —
+   *  передає колбек перевитягу (наприклад, підйом attempt). Без пропа —
+   *  звичний refresh (патерн кабінетних списків). */
+  onChanged?: () => void
+  /** Куди перейти після «Видалити» (дефолт — кабінетні зустрічі). */
+  deleteRedirect?: string
 }) {
   const router = useRouter()
   const { toast } = useToast()
@@ -26,9 +32,9 @@ export function HangoutActions({ hangoutId, isCreator, canLeave, canDelete, leav
     try {
       await hangoutAction(hangoutId, kind)
       // «Покинути» зі списку учасників: сторінка більше не актуальна для
-      // цього користувача → замість перевитягу — перехід куди сказали (за
-      // замовчуванням лишаємо звичний refresh — патерн кабінетних списків)
+      // цього користувача → замість перевитягу — перехід куди сказали
       if (kind === 'leave' && leaveRedirect) router.push(leaveRedirect)
+      else if (onChanged) onChanged()
       else router.refresh()
     } catch (e) {
       toast(e instanceof ApiError ? e.message : 'Не вдалося виконати дію', 'error')
@@ -42,7 +48,7 @@ export function HangoutActions({ hangoutId, isCreator, canLeave, canDelete, leav
     try {
       await deleteHangout(hangoutId)
       toast('Запит видалено')
-      router.push('/account/hangouts')
+      router.push(deleteRedirect ?? '/account/hangouts')
       router.refresh()
     } catch (e) {
       toast(e instanceof ApiError ? e.message : 'Не вдалося видалити запит', 'error')
