@@ -76,6 +76,9 @@ export class HangoutsService {
     });
     await this.hangouts.save(h);
     await this.participants.save({ hangoutId: h.id, userId });
+    // create — така сама мутація стрічки, як join/leave/cancel/delete:
+    // без скиду кешу новий запит не видний на /hangouts до кінця TTL
+    await this.invalidateListCache();
     return h;
   }
 
