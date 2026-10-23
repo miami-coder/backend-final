@@ -463,6 +463,39 @@ describe('HangoutsService — дата+час і видалення авторо
     ).resolves.toBeDefined();
   });
 
+  it('create «на пару годин назад» за Києвом → 400 (введений час трактується як київський, не UTC)', async () => {
+    // 2026-10-23 17:43 UTC = 20:43 за Києвом: «19:00» — це 2 години тому
+    jest.useFakeTimers().setSystemTime(new Date('2026-10-23T17:43:00Z'));
+    try {
+      await expect(
+        service.create('u1', 'v1', {
+          date: '2026-10-23',
+          time: '19:00',
+          purpose: 'Три години тому',
+          groupSize: 3,
+        }),
+      ).rejects.toThrow(BadRequestException);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('create «за годину вперед» за Києвом — ок (17:43 UTC = 20:43 Києва → 22:00 майбутнє)', async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2026-10-23T17:43:00Z'));
+    try {
+      await expect(
+        service.create('u1', 'v1', {
+          date: '2026-10-23',
+          time: '22:00',
+          purpose: 'Через годину',
+          groupSize: 3,
+        }),
+      ).resolves.toBeDefined();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it('delete: автор видаляє запит повністю', async () => {
     hangouts.findOne.mockResolvedValueOnce({
       id: 'h1',

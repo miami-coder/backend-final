@@ -53,7 +53,10 @@ export class HangoutsService {
       );
     // Дата+час: «сьогодні о 00:01» — вже минуле, тільки
     // до початку дня перевірка це пропускала.
-    const at = new Date(`${dto.date}T${dto.time}`);
+    // Час вводиться за Києвом (контейнер у UTC): без явного офсета
+    // «сьогодні ввечері» парсилось як UTC і виглядало майбутнім.
+    // Україна не переводить годинник (UTC+3 цілодобово), тож офсет константний.
+    const at = new Date(`${dto.date}T${dto.time}:00+03:00`);
     if (Number.isNaN(at.getTime()) || at.getTime() < Date.now() - 60_000) {
       throw new BadRequestException(
         'Дата й час зустрічі мають бути у майбутньому',
@@ -264,7 +267,7 @@ export class HangoutsService {
       .update()
       .set({ status: HangoutStatus.Completed })
       .where(
-        `status IN ('open','filled') AND (date + time::time)::timestamp < NOW()`,
+        `status IN ('open','filled') AND (date + time::time) AT TIME ZONE 'Europe/Kyiv' < NOW()`,
       )
       .execute();
     await this.invalidateListCache();
