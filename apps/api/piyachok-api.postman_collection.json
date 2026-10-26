@@ -480,40 +480,6 @@
             }
           },
           "response": []
-        },
-        {
-          "name": "Видалити свій профіль",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{tokenUser2}}"
-              }
-            ],
-            "url": {
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "raw": "{{baseUrl}}/me",
-              "path": [
-                "me"
-              ]
-            },
-            "description": "⚠️ Необоротно. Після виклику старий access-токен віддає 401 одразу, повторний логін цим акаунтом неможливий. У колекційному прогоні виконувати LAST у папері."
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));"
-                ]
-              }
-            }
-          ]
         }
       ]
     },
@@ -613,7 +579,12 @@
                   "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));",
                   "const j = pm.response.json();",
                   "const id = j?.data?.id ?? (Array.isArray(j?.data) ? j.data[0]?.id : undefined) ?? j?.id;",
-                  "if (id && !pm.environment.get('venueId')) pm.environment.set('venueId', id);"
+                  "if (id && !pm.environment.get('venueId')) pm.environment.set('venueId', id);",
+                  "const bodyD = pm.response.json().data;",
+                  "const list = Array.isArray(bodyD) ? bodyD : (bodyD?.items ?? []);",
+                  "// схвалений і ще не рекомендований заклад — для фолдерів 15/16",
+                  "const approvedId = (list.find(v => !v.recommendedBy) ?? list.find(v => v.status === 'approved') ?? list[0])?.id;",
+                  "if (approvedId) pm.environment.set('approvedVenueId', approvedId);"
                 ]
               }
             }
@@ -1173,13 +1144,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/venues/{{venueId}}/reviews",
+              "raw": "{{baseUrl}}/venues/{{approvedVenueId}}/reviews",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "venues",
-                "{{venueId}}",
+                "{{approvedVenueId}}",
                 "reviews"
               ]
             },
@@ -1890,13 +1861,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/venues/{{venueId}}/hangouts",
+              "raw": "{{baseUrl}}/venues/{{approvedVenueId}}/hangouts",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "venues",
-                "{{venueId}}",
+                "{{approvedVenueId}}",
                 "hangouts"
               ]
             },
@@ -3129,13 +3100,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/venues/{{venueId}}/recommend",
+              "raw": "{{baseUrl}}/venues/{{approvedVenueId}}/recommend",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "venues",
-                "{{venueId}}",
+                "{{approvedVenueId}}",
                 "recommend"
               ]
             }
@@ -3185,7 +3156,7 @@
                 "exec": [
                   "pm.test('200 список рекомендацій', () => pm.expect(pm.response.code).to.eql(200));",
                   "const d = pm.response.json().data || pm.response.json();",
-                  "pm.test('у списку є щойно рекомендований заклад', () => pm.expect(Array.isArray(d) ? d.some(v => v.id === pm.environment.get('venueId')) : false).to.eql(true));"
+                  "pm.test('у списку є щойно рекомендований заклад', () => pm.expect(Array.isArray(d) ? d.some(v => v.id === pm.environment.get('approvedVenueId')) : false).to.eql(true));"
                 ]
               }
             }
@@ -3202,13 +3173,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/venues/{{venueId}}/recommend",
+              "raw": "{{baseUrl}}/venues/{{approvedVenueId}}/recommend",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "venues",
-                "{{venueId}}",
+                "{{approvedVenueId}}",
                 "recommend"
               ]
             }
@@ -3417,7 +3388,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"venueId\": \"{{venueId}}\"}",
+              "raw": "{\"venueId\": \"{{approvedVenueId}}\"}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3523,7 +3494,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"categoryIds\": [\"{{topCategoryId}}\"]}",
+              "raw": "{\"categoryIds\": {{topCategoryIdsJson}}}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3552,6 +3523,21 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.sendRequest({url: pm.environment.get('baseUrl') + '/admin/top/categories', method: 'GET', header: {'Authorization': 'Bearer ' + pm.environment.get('tokenAdmin')}}, (err, res) => {",
+                  "  const d = res.json().data;",
+                  "  const cats = Array.isArray(d) ? d : (d?.items ?? []);",
+                  "  const ids = cats.map(c => c.id);",
+                  "  const cur = pm.environment.get('topCategoryId');",
+                  "  if (cur && !ids.includes(cur)) ids.push(cur);",
+                  "  pm.environment.set('topCategoryIdsJson', JSON.stringify(ids));",
+                  "});"
                 ]
               }
             }
@@ -3705,6 +3691,45 @@
               ]
             },
             "description": "{{contentKey}}: about | contacts. Порожній value / null очищає текст."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.at.most(299));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "18. Фінал прогону",
+      "item": [
+        {
+          "name": "Видалити свій профіль",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser2}}"
+              }
+            ],
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "raw": "{{baseUrl}}/me",
+              "path": [
+                "me"
+              ]
+            },
+            "description": "⚠️ Необоротно. Після виклику старий access-токен віддає 401 одразу, повторний логін цим акаунтом неможливий. У колекційному прогоні виконувати LAST у папері."
           },
           "response": [],
           "event": [
