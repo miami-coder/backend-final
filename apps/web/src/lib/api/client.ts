@@ -46,7 +46,7 @@ export async function apiVoid(path: string, init?: RequestInit): Promise<void> {
   if (res.status === 401) {
     redirectToLogin()
     // Редірект уже ініційовано — компоненти не показують toast перед
-    // перезавантаженням (резидуал Плану 2 №10): тихо завершуємо
+    // перезавантаженням: тихо завершуємо
     return
   }
   await parseEmpty(res)

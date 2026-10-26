@@ -17,8 +17,9 @@ export type NewsFormValues = z.infer<typeof newsFormSchema>
 
 // Адмінська версія публічної newsFormSchema: додано статус публікації
 // (draft|published, за замовчуванням published) та промо-прапорець.
-// Публічна схема лишається недоторканою — нею користуються форми Плану 3
-// (захисний тест у src/lib/validation/__tests__/news.test.ts).
+// Публічна схема лишається недоторканою — нею користуються і інші
+// форми новин (захисний тест у
+// src/lib/validation/__tests__/news.test.ts).
 export const adminNewsFormSchema = newsFormSchema.extend({
   status: z.enum(['draft', 'published']).default('published'),
   isPromoted: z.boolean().default(false),
