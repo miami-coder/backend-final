@@ -1167,6 +1167,11 @@
                   "key": "text",
                   "type": "text",
                   "value": "Атмосферно і смачно — тестовий відгук з Postman."
+                },
+                {
+                  "key": "billAmount",
+                  "type": "text",
+                  "value": "350"
                 }
               ]
             }
