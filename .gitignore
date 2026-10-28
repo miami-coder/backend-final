@@ -25,3 +25,7 @@ uploads/
 .vercel
 /.idea
 /docs
+
+# Playwright-артефакти браузерного прогону
+apps/e2e/test-results/
+apps/e2e/.playwright/

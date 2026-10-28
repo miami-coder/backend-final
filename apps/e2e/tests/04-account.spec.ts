@@ -54,8 +54,11 @@ test.describe.serial('Кабінет', () => {
     await page.goto('/account/favorites')
     await expect(page.getByText(venueName).first()).toBeVisible()
 
-    // прибрати з обраного прямо у списку
+    // прибрати з обраного прямо у списку — чекаємо DELETE, інакше
+    // навігація обжене запит і свіжа сторінка покаже заклад (флейт)
+    const delDone = page.waitForResponse((r) => r.request().method() === 'DELETE' && r.url().includes('/favorites/'))
     await page.getByRole('button', { name: 'Прибрати' }).first().click()
+    await delDone
     // списку більше немає
     await page.goto('/account/favorites')
     await expect(page.getByText(venueName).first()).toBeHidden()
