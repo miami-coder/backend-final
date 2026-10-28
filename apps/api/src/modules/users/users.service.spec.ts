@@ -245,7 +245,7 @@ describe('UsersService', () => {
 });
 
 describe('UsersService — OAuth-регістрація на видалений email', () => {
-  it('видалений акаунт на той самий email → 409, без restoreAccount', async () => {
+  it('видалений акаунт на той самий email → 409, профіль не оживає', async () => {
     const repo = () => ({
       findOne: jest.fn(),
       create: jest.fn((x) => x),
@@ -253,7 +253,6 @@ describe('UsersService — OAuth-регістрація на видалений 
       update: jest.fn().mockResolvedValue(undefined),
     });
     const users = repo();
-    const restoreAccount = jest.fn();
     const profiles = repo();
     const oauth = { ...repo(), findOne: jest.fn().mockResolvedValue(null) };
     users.findOne.mockResolvedValueOnce({

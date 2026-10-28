@@ -33,7 +33,6 @@ describe('AuthService', () => {
       findById: jest.fn().mockResolvedValue({ id: 'u1', email: 'a@b.com' }),
       findByEmail: jest.fn(),
       verifyPassword: jest.fn(),
-      restoreAccount: jest.fn().mockResolvedValue(undefined),
     };
     const qb = {
       innerJoin: jest.fn().mockReturnThis(),
@@ -145,7 +144,6 @@ describe('AuthService', () => {
     await expect(
       service.login({ email: 'a@b.com', password: 'Password1' }),
     ).rejects.toThrow(UnauthorizedException);
-    expect(users.restoreAccount).not.toHaveBeenCalled();
     expect(tokens.signAccess).not.toHaveBeenCalled();
   });
 
@@ -189,7 +187,6 @@ describe('AuthService — видалення юзера фінальне', () =>
       verifyPassword: jest.fn(),
       findById: jest.fn(),
       ensureUserRole: jest.fn().mockResolvedValue(undefined),
-      restoreAccount: jest.fn().mockResolvedValue(undefined),
     };
     userRoles = { save: jest.fn(), manager: { findOne: jest.fn() } };
     tokens = {
@@ -233,7 +230,6 @@ describe('AuthService — видалення юзера фінальне', () =>
     await expect(
       service.login({ email: 'a@b.com', password: 'p' }),
     ).rejects.toThrow(UnauthorizedException);
-    expect(users.restoreAccount).not.toHaveBeenCalled();
     expect(tokens.signAccess).not.toHaveBeenCalled();
   });
 
@@ -260,6 +256,5 @@ describe('AuthService — видалення юзера фінальне', () =>
         acceptEula: true,
       } as any),
     ).rejects.toThrow(ConflictException);
-    expect(users.restoreAccount).not.toHaveBeenCalled();
   });
 });

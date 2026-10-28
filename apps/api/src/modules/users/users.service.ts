@@ -140,13 +140,6 @@ export class UsersService {
     await this.cache.set(`deleted:${userId}`, true, 960);
   }
 
-  /** Soft-видалений акаунт (.deletedAt) знову заходить (OAuth або паролем):
-   *  знімаємо прапор видалення й гарантуємо дефолтну роль — акаунт оживає. */
-  async restoreAccount(userId: string): Promise<void> {
-    await this.users.update({ id: userId }, { deletedAt: null });
-    await this.ensureUserRole(userId);
-  }
-
   // Дефолтна роль — паритет із register(): OAuth-користувач мусить мати 'user'.
   // Ідемпотентно; бекфілить і старі oauth-акаунти, створені до цього виправлення.
   private async ensureUserRole(userId: string): Promise<void> {
