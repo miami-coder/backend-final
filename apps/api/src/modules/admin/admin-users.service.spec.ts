@@ -154,24 +154,24 @@ describe('AdminUsersService', () => {
 
   describe('updateProfile', () => {
     it('updates and audits the profile', async () => {
-      const existing = { userId: 'u1', name: 'old' };
+      const existing = { userId: 'u1', firstname: 'старе' };
       profiles.findOne.mockResolvedValue(existing);
       const res = await service.updateProfile(
         'u1',
-        { name: 'new' } as any,
+        { firstname: 'нове' } as any,
         'admin',
       );
-      expect(res.data.name).toBe('new');
+      expect(res.data.firstname).toBe('нове');
       expect(profiles.save).toHaveBeenCalledWith(
-        expect.objectContaining({ name: 'new' }),
+        expect.objectContaining({ firstname: 'нове' }),
       );
       expect(audit.log).toHaveBeenCalledWith(
         'admin',
         'update_profile',
         'user',
         'u1',
-        expect.objectContaining({ name: 'old' }),
-        expect.objectContaining({ name: 'new' }),
+        expect.objectContaining({ firstname: 'старе' }),
+        expect.objectContaining({ firstname: 'нове' }),
       );
     });
 

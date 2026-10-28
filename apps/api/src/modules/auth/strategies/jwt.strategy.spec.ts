@@ -1,7 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { UnauthorizedException } from '@nestjs/common';
 import { JwtStrategy } from './jwt.strategy';
-import * as jwt from 'jsonwebtoken';
 
 describe('JwtStrategy', () => {
   let strategy: JwtStrategy;
@@ -23,7 +22,7 @@ describe('JwtStrategy', () => {
   });
 
   it('validate defaults roles to []', async () => {
-    const user = await strategy.validate({ sub: 'u1' });
+    const user = await strategy.validate({ sub: 'u1', email: 'a@b.com' });
     expect(user.roles).toEqual([]);
   });
 });

@@ -32,13 +32,13 @@ describe('ContentService (загальні тексти)', () => {
   });
 
   it('update: зберігає нове значення', async () => {
-    repo.findOne.mockResolvedValueOnce({ key: 'about', value: ['Старе'] });
-    const res = await service.update('about', [' Новий текст ']);
-    expect(res.value).toEqual([' Новий текст ']);
+    repo.findOne.mockResolvedValueOnce({ key: 'about', value: 'Старе' });
+    const res = await service.update('about', ' Новий текст ');
+    expect(res.value).toBe(' Новий текст ');
   });
 
   it('update: невідомий ключ → 404', async () => {
-    await expect(service.update('hacker', ['x'])).rejects.toThrow(NotFoundException);
+    await expect(service.update('hacker', 'x')).rejects.toThrow(NotFoundException);
     expect(repo.save).not.toHaveBeenCalled();
   });
 });

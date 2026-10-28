@@ -207,7 +207,7 @@ describe('NewsService — видимість новин і «просунути�
     const n = await service.createForVenue('u1', 'v1', {
       title: 't',
       content: 'b',
-      category: NewsCategory.VenueNews,
+      category: NewsCategory.General,
       isPromoted: true,
     } as any);
     expect(n.isPromoted).toBe(false);
@@ -217,7 +217,7 @@ describe('NewsService — видимість новин і «просунути�
     const n = await service.createGlobal({
       title: 't',
       content: 'b',
-      category: NewsCategory.VenueNews,
+      category: NewsCategory.General,
       isPromoted: true,
     } as any);
     expect(n.isPromoted).toBe(true);

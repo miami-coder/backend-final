@@ -230,7 +230,7 @@ describe('ReviewsService — санітизація авторів відгук�
     expect(res.data[0].user).not.toHaveProperty('passwordHash');
     expect(res.data[0].user).not.toHaveProperty('emailVerified');
     expect(res.data[0].user).not.toHaveProperty('deletedAt');
-    expect(res.data[0].user.profile.firstname).toBe('Іван');
+    expect((res.data[0].user as any).profile.firstname).toBe('Іван');
   });
 });
 

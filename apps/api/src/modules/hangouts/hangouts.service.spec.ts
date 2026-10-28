@@ -351,6 +351,7 @@ describe('HangoutsService.getOne — видалений учасник', () => {
       save: jest.fn(),
       create: jest.fn((x) => x),
       findOne: jest.fn(),
+      findOneOrThrow: jest.fn(),
       createQueryBuilder: jest.fn(),
     });
     const hangouts = repo();
@@ -400,8 +401,8 @@ describe('HangoutsService.getOne — видалений учасник', () => {
     }).compile();
     const service = module.get(HangoutsService);
     const res = await service.getOne('h1');
-    const del = res.participants.find((p) => p.userId === 'u-del');
-    const ok = res.participants.find((p) => p.userId === 'u-ok');
+    const del = res.participants.find((p) => p.userId === 'u-del')!;
+    const ok = res.participants.find((p) => p.userId === 'u-ok')!;
     expect(del.firstname).toBe('Обліковий запис');
     expect(del.lastname).toBe('видалено');
     expect(ok.firstname).toBe('Олег');
