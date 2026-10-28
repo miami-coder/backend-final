@@ -1,10 +1,13 @@
 import { test, expect } from '@playwright/test'
-import { E2E_PASSWORD, e2eUserEmail, headerLoginLink, loginViaUI, logoutViaUI, registerE2eUser } from '../helpers/accounts'
+import { E2E_PASSWORD, e2eUserEmail, ensureE2eUser, headerLoginLink, liveE2eStatePath, loginViaUI, logoutViaUI } from '../helpers/accounts'
 import { skipAgeGate } from '../helpers/age-gate'
 
 test.describe('Реєстрація', () => {
-  test('успішна реєстрація: сесія стоїть, гість → хедер юзера', async ({ page }) => {
-    await registerE2eUser(page)
+  test('e2e-юзер прогону: реєстрація (якщо не живий) і сесія', async ({ browser }) => {
+    // тут створюється живий e2e-юзер прогону, якого далі перевикористовують
+    // 04/05/07; квота бек-тротлера register: 5/год на IP — тому один юзер
+    await ensureE2eUser(browser)
+    expect(liveE2eStatePath()).toBeTruthy()
   })
 
   test('без EULA — приймається валідація, акаунт не створюється', async ({ page }) => {

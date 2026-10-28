@@ -1,5 +1,5 @@
 import { test, expect, type Browser, type BrowserContext, type Page } from '@playwright/test'
-import { registerE2eUser } from '../helpers/accounts'
+import { ensureE2eUser, liveE2eStatePath } from '../helpers/accounts'
 import { skipAgeGate } from '../helpers/age-gate'
 
 /** Спільний e2e-юзер на весь файл: реєстрація вичерпує квоту бек-тротлера
@@ -23,15 +23,17 @@ test.describe.serial('Кабінет', () => {
     venueHref = v.id
   })
 
-  test('реєстрація e2e-юзера і огляд /account', async ({ browser }) => {
-    const ctx = await browser.newContext()
+  test('сесія e2e-юзера і огляд /account', async ({ browser }) => {
+    // живий e2e-юзер з 03 (або свіжий, якщо 03 не ганявся) —
+    // реєстрації лікують квоту бек-тротлера, перевикористання економить їх
+    await ensureE2eUser(browser)
+    stateFile = liveE2eStatePath()!
+    expect(stateFile).toBeTruthy()
+    const ctx = await browser.newContext({ storageState: stateFile })
     const page = await ctx.newPage()
-    await registerE2eUser(page)
+    await skipAgeGate(page)
     await page.goto('/account')
     await expect(page.getByRole('heading', { name: 'Профіль' })).toBeVisible()
-    // сесія для наступних тестів
-    stateFile = `/tmp/piyachok-e2e-state-${Date.now() % 100000}.json`
-    await page.context().storageState({ path: stateFile })
     await ctx.close()
   })
 
@@ -47,6 +49,8 @@ test.describe.serial('Кабінет', () => {
     const page = await sessionPage(browser)
     await page.goto(`/venues/${venueHref}`)
     await page.getByRole('button', { name: 'Додати до обраного' }).click()
+    // перемикач кнопки = імовірність, що POST/DELETE дійшов і записано
+    await expect(page.getByRole('button', { name: 'В обраному' })).toBeVisible({ timeout: 10_000 })
     await page.goto('/account/favorites')
     await expect(page.getByText(venueName).first()).toBeVisible()
 

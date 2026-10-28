@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { registerE2eUser } from '../helpers/accounts'
+import { ensureE2eUser, liveE2eStatePath } from '../helpers/accounts'
 import { skipAgeGate } from '../helpers/age-gate'
 
 /** Флоу власника закладу: подати → «На модерації» → редагувати → м'яке видалення. */
@@ -10,11 +10,13 @@ test.describe.serial('Володіння закладом', () => {
   let venuePath = ''
 
   test('подання закладу юзером → статус «На модерації» у «Мої заклади»', async ({ browser }) => {
-    const ctx = await browser.newContext()
+    // живий e2e-юзер (03), а не своя реєстрація — квота бек-тротлера
+    await ensureE2eUser(browser)
+    stateFile = liveE2eStatePath()!
+    expect(stateFile).toBeTruthy()
+    const ctx = await browser.newContext({ storageState: stateFile })
     const page = await ctx.newPage()
-    await registerE2eUser(page)
-    stateFile = `/tmp/piyachok-e2e-owner-${Date.now() % 100000}.json`
-    await page.context().storageState({ path: stateFile })
+    await skipAgeGate(page)
 
     await page.goto('/venues/new')
     await page.locator('#vn-name').fill(NAME)

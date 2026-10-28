@@ -13,8 +13,9 @@ test.describe('Публічні сторінки', () => {
     // список тягнеться клієнтськи — чекаємо першу картку
     await page.waitForSelector('a[href^="/venues/"]', { timeout: 20_000 })
     const cards = await page.locator('a[href^="/venues/"]').count()
+    // назви конкретних сідів не пінуються: каталог сортується за createdAt
+    // DESC і з ростом demo/E2E-закладів сідні витісняються за межі першої сторінки
     expect(cards).toBeGreaterThanOrEqual(10)
-    await expect(page.getByText('Паб «Union Jack»').first()).toBeVisible()
   })
 
   test('карточка закладу: назва, фото-заглушка/фото, опис і відгуки', async ({ page }) => {

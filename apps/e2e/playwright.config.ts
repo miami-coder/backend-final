@@ -4,6 +4,7 @@ import { defineConfig } from '@playwright/test'
 //   docker compose up -d --build web  →  web на http://localhost:3001, api на :3000.
 // webServer НЕ запускаємо (стека піднята докером), бо бачимо те саме, що і юзер.
 export default defineConfig({
+  globalSetup: './global-setup.ts',
   testDir: './tests',
   fullyParallel: false, // спільний стан (адмін-модерація і фінал) — послідовно
   workers: 1,

@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test'
+import type { Browser, Page } from '@playwright/test'
 import { expect } from '@playwright/test'
 import { skipAgeGate } from './age-gate'
 
@@ -41,8 +41,17 @@ export async function loginViaUI(page: Page, email: string, password: string): P
   await page.goto('/auth/login')
   await page.getByLabel('Email').fill(email)
   await page.getByLabel('Пароль').fill(password)
+  const respPromise = page.waitForResponse(
+    (r) => r.request().method() === 'POST' && r.url().includes('/api/auth/login'),
+    { timeout: 15_000 },
+  ).catch(() => null)
   await page.getByRole('button', { name: 'Увійти', exact: true }).click()
-  await expect(page.getByRole('banner').getByRole('link', { name: 'Увійти', exact: true })).toHaveCount(0)
+  const resp = await respPromise
+  if (!resp || resp.status() !== 200) {
+    const body = resp ? await resp.text().catch(() => '') : 'no response'
+    throw new Error(`BFF-логін не вдався: ${resp?.status ?? '—'} ${body.slice(0, 200)}`)
+  }
+  await expect(page.getByRole('banner').getByRole('link', { name: 'Увійти', exact: true })).toHaveCount(0, { timeout: 15_000 })
 }
 
 /** Логінічний вихід: меню в хедері → «Вийти». */
@@ -54,4 +63,60 @@ export async function logoutViaUI(page: Page): Promise<void> {
 /** Посилання «Увійти» саме в хедері (банер) — без форма-підписівок і Google-кнобки. */
 export function headerLoginLink(page: Page) {
   return page.getByRole('banner').getByRole('link', { name: 'Увійти', exact: true })
+}
+
+const LIVE_FILE = '/tmp/piyachok-e2e-live.json'
+
+interface LiveState {
+  email: string
+  password: string
+  ageMs: number
+}
+
+/** Живе e2e-обличчя на прогін: реєстрація вичерпує квоту бек-тротлера
+ *  (5/год на IP), тому один e2e-юзер реєструється (03-auth) і
+ *  перевикористовується файлами 04/05/07 через storageState.
+ *  Файл живе в /tmp; його чистить DELETE /me (07-final) — після нього новий
+ *  прогін реєструє свіжого. */
+/** Шлях до стану сесії живого e2e-юзера (для storageState нових контекстів). */
+export function liveE2eStatePath(): string | null {
+  try {
+    const data = JSON.parse(require('fs').readFileSync(LIVE_FILE, 'utf8'))
+    return data.state ?? null
+  } catch {
+    return null
+  }
+}
+
+export async function ensureE2eUser(browser: Browser): Promise<{ email: string; password: string }> {
+  const ctx = await browser.newContext()
+  const page = await ctx.newPage()
+  let live: LiveState | null = null
+  try {
+    live = JSON.parse(require('fs').readFileSync(LIVE_FILE, 'utf8')) as LiveState
+  } catch { /* немає файла */ }
+
+  if (live?.email) {
+    await skipAgeGate(page)
+    try {
+      await page.goto('/auth/login')
+      await page.getByLabel('Email').fill(live.email)
+      await page.getByLabel('Пароль').fill(live.password)
+      await page.getByRole('button', { name: 'Увійти', exact: true }).click()
+      await expect(page.getByRole('banner').getByRole('link', { name: 'Увійти', exact: true })).toHaveCount(0, { timeout: 15_000 })
+      // юзер живий — логін вдався
+      await page.context().storageState({ path: (live as unknown as { state: string }).state ?? '/tmp/piyachok-e2e-live-state.json' })
+      await ctx.close()
+      return { email: live.email, password: live.password }
+    } catch {
+      // видалений (фінал попереднього прогону) і/або інвалідний — реєструємо свіжого
+    }
+  }
+
+  const creds = await registerE2eUser(page)
+  const state = '/tmp/piyachok-e2e-live-state.json'
+  await page.context().storageState({ path: state })
+  require('fs').writeFileSync(LIVE_FILE, JSON.stringify({ ...creds, ageMs: Date.now(), state }))
+  await ctx.close()
+  return creds
 }
