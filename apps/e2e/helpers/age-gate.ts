@@ -17,3 +17,11 @@ export async function confirmAgeGate(page: Page): Promise<void> {
     await expect(page.getByRole('dialog')).toHaveCount(0)
   }
 }
+
+/** Неблокуюча підготовка пристрою: гейт 18+ вже підтверджено — без кліку.
+ *  Авто-чек через діалог має race на гідратації (SSR снапшот «підтверджено»,
+ *  діалог зʼявляється пізніше), тому для сьютів з бізнес-флоу ставить
+ *  localStorage одразу при кожному навігації (addInitScript). */
+export async function skipAgeGate(page: Page): Promise<void> {
+  await page.addInitScript(() => localStorage.setItem('age-confirmed', '1'))
+}
