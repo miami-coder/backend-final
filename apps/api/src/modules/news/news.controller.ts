@@ -170,7 +170,7 @@ export class NewsController {
   @ApiForbiddenResponse({ description: 'Немає дозволу news:manage' })
   @ApiNotFoundResponse({ description: 'Новину не знайдено' })
   remove(@CurrentUser() u: JwtUser, @Param('id') id: string) {
-    return this.news.softDelete(id, u.sub);
+    return this.news.softDelete(id, u.sub).then((data) => ({ data }));
   }
 
   @ApiBearerAuth('access-token')
