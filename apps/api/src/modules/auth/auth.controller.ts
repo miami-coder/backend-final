@@ -29,7 +29,7 @@ import { Public } from '../../common/decorators/public.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { JwtUser } from '../../common/decorators/current-user.decorator';
-import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
+import { ThrottlerGuard, Throttle, SkipThrottle } from '@nestjs/throttler';
 import { OAuthHandlerService } from './auth.service.oauth';
 
 @ApiTags('Auth')
@@ -106,6 +106,11 @@ export class AuthController {
 
   @ApiBearerAuth('access-token')
   @UseGuards(JwtAuthGuard)
+  // Не гується спільним тротлером контролера: SSR-проксі кличе /me на
+  // кожній сторінці (з одного IP Vercel-інстансу) — спільний ліміт 100/хв
+  // легко вичерпується легітимним трафіком і зламує сесії невинним юзерам.
+  // Брутфорсу тут немає: токен або валідний, або 401.
+  @SkipThrottle()
   @Get('me')
   @ApiOperation({ summary: 'Поточний користувач за access token' })
   @ApiOkResponse({
